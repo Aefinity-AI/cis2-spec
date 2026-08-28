@@ -1,5 +1,16 @@
 # E15g clean-room attempt #2 — file read log
 
+**Note (added v0.2.1, 2026-08-28):** the files this log refers to as
+NOT read — `src/*`, `tests/*`, `verify/*` (and, in the CI-scaffolding
+reference, `.github/workflows/e15e-cleanroom.yml`) — as well as the root
+`Cargo.toml` and `.gitignore` read for build-config purposes only (item
+2, item 3), live in the private reference repository and are **not part
+of this public release**. `verify2/SPEC_GAPS_v0.1.md`, referenced in the
+"Gaps found" section below, was likewise not carried into this release
+(see `verify2/`'s current gap-tracking file, if any, for this release's
+status). This log is left unedited below as the original evidence record
+of what was and was not read.
+
 Task: implement CIS-2 v0.1 conformance in `verify2/` from the normative
 spec text alone. Rule: read ONLY `docs/CIS2_SPEC_v0.1.md`; never open
 `src/`, `tests/`, or `verify/` (the prior clean-room attempt).

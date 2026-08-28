@@ -33,10 +33,21 @@ echo "-- running verify3 --"
 OUT="$(cd "$ROOT_DIR/verify3" && ./cis2_verify3 ../weights/model.safetensors ../weights/config.json ../weights/tokenizer.json)"
 echo "$OUT"
 
-witness=$(echo "$OUT" | grep -oP '(?<=^CIS2_VERIFY3 digest=)[0-9a-f]+')
-argmax=$(echo "$OUT"  | grep -oP '(?<=^CIS2_VERIFY3 argmax_digest=)[0-9a-f]+')
-table=$(echo "$OUT"   | grep -oP '(?<=^CIS2_VERIFY3 table_digest=)[0-9a-f]+')
-invfreq=$(echo "$OUT" | grep -oP '(?<=^CIS2_VERIFY3 inv_freq_table_digest=)[0-9a-f]+')
+# Portable field extraction: prefer GNU grep -P (PCRE lookbehind), fall
+# back to grep -E + sed for macOS/BSD grep (which lacks -P).
+extract_field() {
+  local field="$1"
+  if printf '' | grep -P '' >/dev/null 2>&1; then
+    echo "$OUT" | grep -oP "(?<=^CIS2_VERIFY3 ${field}=)[0-9a-f]+"
+  else
+    echo "$OUT" | grep -E "^CIS2_VERIFY3 ${field}=" | sed -E "s/^CIS2_VERIFY3 ${field}=([0-9a-f]+).*/\1/"
+  fi
+}
+
+witness=$(extract_field digest)
+argmax=$(extract_field argmax_digest)
+table=$(extract_field table_digest)
+invfreq=$(extract_field inv_freq_table_digest)
 
 exp_witness=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da
 exp_argmax=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff

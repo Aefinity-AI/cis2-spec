@@ -1,4 +1,4 @@
-# CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference, v0.2
+# CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference, v0.2.1
 
 **Status: DRAFT, not frozen.** Published by Aefinity AI Inc. as a normative
 specification, together with independent clean-room verifiers, so that
@@ -28,7 +28,8 @@ FPCR.FZ). Unlike v0.1, this version's RoPE construction (§7) is
 `config.json`, not just `100000.0`, and has been exercised against a second
 model family (`Qwen/Qwen2.5-0.5B`, `rope_theta = 1000000`) under an
 independent oracle (`docs/E15d_bc_RESULT.md`). This is still deliberately
-narrower than CIS-1 (§1 of `~/projects/alice-aegis/docs/CIS-1_SPEC_v1.0.md`):
+narrower than CIS-1 (§1 of `docs/CIS-1_SPEC_v1.0.md` in the public
+`Aefinity-AI/alice-aegis` repository, https://github.com/Aefinity-AI/alice-aegis):
 floating-point addition is not associative, so this spec does not claim "any
 reduction order is safe" — it claims exactly one pinned reduction order, one
 pinned transcendental route (now including a pinned general `ln`), and one
@@ -1402,6 +1403,16 @@ values changed underneath it.
 ---
 
 ## Appendix A — source citations (informative; not required to implement this spec)
+
+**Note (added v0.2.1, 2026-08-28):** Every `src/main.rs:…`, `src/math.rs:…`,
+and `docs/E15d_bc_RESULT.md`/`docs/E15h_REFACTOR_v0.2_RESULT.md`-style
+citation in this appendix refers to files in the private reference
+implementation, which is **not included in this repository** (see the
+top-level README's "Scope" section). These citations exist solely so a
+reviewer with access to that private repository can audit that this
+normative text did not silently diverge from what the reference actually
+computes; they are not required, and cannot be resolved, by a from-spec-
+text-only clean-room implementer working only from this public repository.
 
 Every normative choice above is taken from this repo's `src/` at the
 commit checked out on branch `cm/e15i-spec-v0.2-doc` (based on

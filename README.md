@@ -16,6 +16,19 @@ full-logit output digests:
 for a pinned (model, prompt, decode-length) test vector, matching a
 PyTorch/`transformers` oracle within floating-point tolerance.
 
+**What the clean-rooms in this repository actually verify:** `verify2/`
+(Rust) and `verify3/` (C) — the two independent, from-spec-text-only
+implementations shipped here — reproduce the primary bit-identical
+`CIS2_REF` digest for `HuggingFaceTB/SmolLM2-135M`, prompt `"Once upon a
+time"`, 16 greedy-decoded tokens, on both x86_64 and aarch64 (`verify3/`
+additionally under both gcc and clang). This is the pinned §13.1 test
+vector in `docs/CIS2_SPEC_v0.2.md` and `EXPECTED_DIGESTS.md`. The 20-cell
+compiler/ISA invariance matrix, the Qwen2.5-0.5B/1.5B results, and the
+128-/512-token decode horizons were obtained with the (unreleased) private
+Rust reference implementation, not with the clean-rooms in this
+repository; they are listed as **informative** evidence in
+`EXPECTED_DIGESTS.md`, not as claims about `verify2/`/`verify3/`.
+
 This is a narrower and harder claim than integer/bitwise determinism:
 floating-point addition is not associative, so this does not claim "any
 reduction order is safe." It claims that *one* pinned reduction order,
@@ -55,6 +68,25 @@ No timing numbers (tokens/sec, wall-clock, etc.) are published anywhere in
 this repository. The reference and both clean-room verifiers are scalar,
 unoptimized-for-speed implementations whose only goal is bit-exact,
 auditable determinism, not throughput.
+
+`scripts/self_check.sh` extracts digests from verifier output using
+`grep -P` (PCRE lookbehind) when GNU grep is available, and automatically
+falls back to a portable `grep -E` + `sed` form (equivalent for this
+fixed-format output) when it is not — so it also runs on macOS/BSD grep.
+
+## Provenance
+
+Both clean-room verifiers in this repository — `verify2/` (Rust) and
+`verify3/` (C) — were written by isolated AI coding agents (Claude, via
+Claude Code), each operating from `docs/CIS2_SPEC_v0.2.md` alone, with no
+access to the private reference implementation and no access to each
+other's work. Both agents were operated by the same sole author/operator
+(Aefinity AI Inc.) on the same day; the independence claim rests on the
+clean-room read-access boundary enforced during each implementation pass,
+not on separate human authors or separate calendar days. Each
+implementation directory contains a `CLEANROOM_LOG.md` recording, in
+order, every file each agent read and why, as the evidence for that
+boundary — see `verify2/CLEANROOM_LOG.md` and `verify3/CLEANROOM_LOG.md`.
 
 ## Threat model summary
 

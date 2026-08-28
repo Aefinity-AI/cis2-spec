@@ -1,5 +1,19 @@
 # E15j clean-room (C11) — spec ambiguities / gaps encountered
 
+**Note (added v0.2.1, 2026-08-28):** spec v0.2.1 added a normative §3.1
+(H4) that pins the tokenizer JSON schema and BPE algorithm this clean-room
+had to infer from general knowledge (item 1 below). This closes that
+ambiguity **at the spec level**, but `verify3/tokenizer.c` itself has
+**not** been re-derived from §3.1 — it was written before §3.1 existed,
+from general pretrained knowledge of the public HuggingFace `tokenizers`
+byte-level BPE format, not from the spec text. It happens to produce the
+pinned §13.1 tokenization and is runtime-checked against that pinned
+value (see item 2 below and `CLEANROOM_LOG.md`'s "Notes on non-spec
+knowledge required"), but a reader should not treat `verify3/tokenizer.c`
+as a from-§3.1-text-alone clean-room artifact until it is re-audited or
+rewritten against §3.1 directly. This is an honest gap, not a claim of
+compliance.
+
 1. **Tokenizer JSON schema and BPE algorithm are not specified by
    `CIS2_SPEC_v0.2.md`** (§3.1 only says "loaded as a complete,
    self-contained HuggingFace `tokenizers`-format tokenizer (BPE-family)").
