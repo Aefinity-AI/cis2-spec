@@ -1,0 +1,73 @@
+=== E15d(a) compiler-invariance CI, 2026-08-28 ===
+Repo: reference repository. Rule A: no timing numbers.
+Workflow: .github/workflows/e15d-compiler-invariance.yml
+Matrix: runner {ubuntu-latest=x86_64, ubuntu-24.04-arm=aarch64} x opt-level {0,1,2,3,s} x target-cpu {generic,native} = 20 build jobs + 1 fetch-weights + 1 aggregate = 22 jobs/run
+Pre-registered targets: CIS2_REF digest=ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f
+                        inv_freq table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+Model: HuggingFaceTB/SmolLM2-135M fp32 reference, prompt "Once upon a time", gen_toks=16 (same as E15c workflow)
+FMA gate: grep for vfmadd*/vfnmadd*/vfmsub*/vfnmsub*/fmadd/fmsub/fnmadd/fnmsub/fmla/fmls in objdump -d output; job fails if count != 0
+
+--- Run 1 (pre-pin): reference-repository CI run 33189498641 (private CI, not reproducible externally)
+    commit d1cfa7f334545a406f4bfe3cdee6ebf52e82d814 ("add push trigger")
+    rustc resolved via bare `rustup-init -y --profile minimal` ("stable" channel at run time) -> happened to be 1.98.0 (88d9e12ae 2026-08-18), same as E15c
+    conclusion: success. aggregate: "jobs collected: 20 / 20", "mismatches: 0", "PASS: 20/20 jobs match pre-registered digest ba88708b... with 0 FMA instructions"
+    (CI wall-clock duration not reported — Rule A)
+
+--- Run 2 (pinned toolchain): reference-repository CI run 33190058353 (private CI, not reproducible externally)
+    commit c2660d760ec34c4c58ea178451d8ac16c52ab07c ("pin rustc via rust-toolchain.toml (1.98.0)")
+    rust-toolchain.toml: channel = "1.98.0", targets = [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu], profile = "minimal"
+    rustup-init invoked with --default-toolchain none; pinned 1.98.0 auto-installed via rust-toolchain.toml on first cargo/rustc invocation in-repo
+    conclusion: success. aggregate: "jobs collected: 20 / 20", "mismatches: 0"
+
+--- Aggregate table (Run 2, pinned toolchain) ---
+| job | arch | opt | cpu | cis2_ref_digest | inv_freq_digest | text_size | disasm_sha256 | fma_count | match |
+| aarch64-opt0-generic | aarch64 | 0 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 4259908 | 8431df1c30d2b4cf... | 0 | yes |
+| aarch64-opt0-native | aarch64 | 0 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 4436020 | 1a3eee3619c4e919... | 0 | yes |
+| aarch64-opt1-generic | aarch64 | 1 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2068516 | 734aaf7b217eac76... | 0 | yes |
+| aarch64-opt1-native | aarch64 | 1 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2125780 | 2ed30de49b8892cd... | 0 | yes |
+| aarch64-opt2-generic | aarch64 | 2 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1945924 | 4203f72912f465dd... | 0 | yes |
+| aarch64-opt2-native | aarch64 | 2 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1998932 | 68ce8c41682c26e2... | 0 | yes |
+| aarch64-opt3-generic | aarch64 | 3 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2021172 | ded8014bd9671624... | 0 | yes |
+| aarch64-opt3-native | aarch64 | 3 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2075636 | 2ccfddc538d6195b... | 0 | yes |
+| aarch64-opts-generic | aarch64 | s | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1696580 | c77c1f5a60472679... | 0 | yes |
+| aarch64-opts-native | aarch64 | s | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1682996 | 224c75fa3c323d91... | 0 | yes |
+| x86_64-opt0-generic | x86_64 | 0 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 5535785 | a94025ff72008847... | 0 | yes |
+| x86_64-opt0-native | x86_64 | 0 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 5369683 | fa226bf682a1ffaa... | 0 | yes |
+| x86_64-opt1-generic | x86_64 | 1 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2447401 | a04849ce34460abc... | 0 | yes |
+| x86_64-opt1-native | x86_64 | 1 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2439875 | 5e1aa3c39a066d35... | 0 | yes |
+| x86_64-opt2-generic | x86_64 | 2 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2274777 | f01d3a4374714121... | 0 | yes |
+| x86_64-opt2-native | x86_64 | 2 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2304355 | b55a7a69b5880889... | 0 | yes |
+| x86_64-opt3-generic | x86_64 | 3 | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2336553 | e5bf771c570cb4f6... | 0 | yes |
+| x86_64-opt3-native | x86_64 | 3 | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 2371091 | 48ebb09e0d4f73fc... | 0 | yes |
+| x86_64-opts-generic | x86_64 | s | generic | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1838361 | 3a54719d34e609d8... | 0 | yes |
+| x86_64-opts-native | x86_64 | s | native | ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f | da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12 | 1824803 | 5a0369912d68d064... | 0 | yes |
+
+--- Job list (Run 2, pinned toolchain) ---
+fetch-weights success
+build (ubuntu-24.04-arm, 0, generic) success
+build (ubuntu-latest, 1, generic) success
+build (ubuntu-latest, 1, native) success
+build (ubuntu-24.04-arm, 0, native) success
+build (ubuntu-latest, 2, native) success
+build (ubuntu-latest, 0, native) success
+build (ubuntu-latest, s, generic) success
+build (ubuntu-latest, 3, generic) success
+build (ubuntu-latest, s, native) success
+build (ubuntu-latest, 0, generic) success
+build (ubuntu-latest, 3, native) success
+build (ubuntu-24.04-arm, 3, native) success
+build (ubuntu-24.04-arm, 2, native) success
+build (ubuntu-24.04-arm, s, generic) success
+build (ubuntu-24.04-arm, 2, generic) success
+build (ubuntu-latest, 2, generic) success
+build (ubuntu-24.04-arm, 1, native) success
+build (ubuntu-24.04-arm, 3, generic) success
+build (ubuntu-24.04-arm, s, native) success
+build (ubuntu-24.04-arm, 1, generic) success
+aggregate success
+
+--- Notes ---
+- text_size and disasm_sha256 columns differ across opt-level within each arch (e.g. x86_64 opt0=5535785/5369683 bytes vs opt3=2336553/2371091 bytes vs opts=1838361/1824803 bytes), confirming the machine code genuinely differs across opt-levels while the CIS2_REF digest and inv_freq digest stay bit-identical.
+- FMA count is 0 in all 20 jobs across both ISAs at all opt-levels/target-cpu settings (grep covers vfmadd*/vfnmadd*/vfmsub*/vfnmsub*/fmadd/fmsub/fnmadd/fnmsub/fmla/fmls); this is expected since CIS-2 sec3.2 forbids `.mul_add(` in source (no fused multiply-add construct exists to compile down regardless of opt-level).
+- Weight download hit HuggingFace exactly once per run (fetch-weights job), cached via actions/cache keyed on the resolved HF revision sha and distributed to the 20 build jobs via actions/upload-artifact + actions/download-artifact.
+- Rule A: no timing numbers reported.

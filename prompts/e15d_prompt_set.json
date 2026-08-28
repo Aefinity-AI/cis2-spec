@@ -1,0 +1,7 @@
+[
+  "Once upon a time",
+  "The quick brown fox jumps over the lazy dog and then",
+  "In a shocking turn of events, scientists announced today that",
+  "def fibonacci(n):\n    if n <= 1:\n        return n\n    else:",
+  "The history of computing spans many decades of steady progress, beginning with mechanical calculators and evolving through vacuum tubes, transistors, integrated circuits, and eventually the modern microprocessor. Early machines were room-sized and required teams of engineers to operate, while today a single chip can perform billions of operations every second. Over time, programming languages also evolved from raw machine code to assembly, then to high level languages that let people express complex ideas in readable text. Compilers and interpreters bridge the gap between human intention and the precise instructions a processor actually executes. Meanwhile, storage technology moved from punch cards and magnetic tape to hard drives, flash memory, and distributed cloud storage systems that can hold exabytes of data across many physical locations. Networking advanced in parallel, connecting isolated machines into local area networks and eventually into a single global internet that ties together billions of devices. Throughout all of this change, one constant has been the pursuit of determinism and reproducibility: engineers have always wanted the same program, given the same input, to produce the same output, regardless of which specific machine happens to run it."
+]

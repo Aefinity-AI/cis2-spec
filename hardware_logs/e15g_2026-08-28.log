@@ -1,0 +1,40 @@
+E15g clean-room attempt #2 (cis2-verify2, spec-text-only) — CI run log
+Date: 2026-08-28
+Branch: cm/e15g-cleanroom-v2
+Workflow: .github/workflows/e15g-cleanroom-v2.yml
+Run: reference-repository CI run 33192338105 (private CI, not reproducible externally)
+Trigger: push (registered automatically by branch push)
+Attempts used: 1 of 3 allotted (no fixes needed)
+
+== ubuntu-latest (x86_64) ==
+no-FMA gate (grep .mul_add() in src/): PASS (0 hits)
+no-FMA gate (objdump vfmadd/vfnmadd/vfmsub/vfnmsub/fmadd/fmsub): PASS (0 hits)
+CIS2_VERIFY2 digest=ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f prompt_toks=4 gen_toks=16 dtype=fp32
+argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+table_digest=0bf9257bc56c4588cb4003e1a105b60169e152222ec734811d0a58e66e1cdeca
+inv_freq table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+generated_token_ids=[28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+Result vs spec target: MATCH (digest), MATCH (argmax_digest), MATCH (table_digest), MATCH (inv_freq_table_digest)
+
+== ubuntu-24.04-arm (aarch64) ==
+no-FMA gate (grep .mul_add() in src/): PASS (0 hits)
+no-FMA gate (objdump vfmadd/vfnmadd/vfmsub/vfnmsub/fmadd/fmsub -> aarch64 fmadd/fmla forms): PASS (0 hits)
+CIS2_VERIFY2 digest=ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f prompt_toks=4 gen_toks=16 dtype=fp32
+argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+table_digest=0bf9257bc56c4588cb4003e1a105b60169e152222ec734811d0a58e66e1cdeca
+inv_freq table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+generated_token_ids=[28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+Result vs spec target: MATCH (digest), MATCH (argmax_digest), MATCH (table_digest), MATCH (inv_freq_table_digest)
+
+Both matrix legs: cargo test --release passed (rsqrt(64.0) exact-bits
+check, dot_seq order-sensitivity regression, bf16 widening exactness).
+
+Local pre-push verification (this dev box, x86_64, no local model run,
+cargo check + cargo test --release only, per RAM constraint):
+$ cargo check   -> clean, no warnings
+$ cargo test --release -> 3/3 unit tests pass
+$ objdump -d target/release/cis2-verify2 | grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub' -> 0 hits
+
+Overall: CIS-2 v0.1 spec text alone was sufficient to reproduce all
+pinned digests bit-for-bit on both ISAs, first attempt, 0/3 fix
+attempts used. No SPEC_GAPS_v0.1.md filed (no insufficiency found).

@@ -1406,13 +1406,14 @@ values changed underneath it.
 
 **Note (added v0.2.1, 2026-08-28):** Every `src/main.rs:…`, `src/math.rs:…`,
 and `docs/E15d_bc_RESULT.md`/`docs/E15h_REFACTOR_v0.2_RESULT.md`-style
-citation in this appendix refers to files in the private reference
-implementation, which is **not included in this repository** (see the
-top-level README's "Scope" section). These citations exist solely so a
-reviewer with access to that private repository can audit that this
-normative text did not silently diverge from what the reference actually
-computes; they are not required, and cannot be resolved, by a from-spec-
-text-only clean-room implementer working only from this public repository.
+citation in this appendix refers to files in `src/`, the reference
+implementation, which **is included in this repository** (see the
+top-level README's "Repository layout" section). These citations let a
+reviewer audit that this normative text did not silently diverge from what
+the reference actually computes; they are not required, and are not
+needed, by a from-spec-text-only clean-room implementer — `verify2/` and
+`verify3/` in this same repository were both written without reading
+`src/` (see their `CLEANROOM_LOG.md` files).
 
 Every normative choice above is taken from this repo's `src/` at the
 commit checked out on branch `cm/e15i-spec-v0.2-doc` (based on

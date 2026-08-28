@@ -1,0 +1,48 @@
+loading + widening weights (bf16 -> fp32, exact bit-shift, §3.5)...
+weights loaded.
+prompt token ids: [6403, 1980, 253, 655]
+[run1] step 0: token_id=28
+[run1] step 1: token_id=665
+[run1] step 2: token_id=436
+[run1] step 3: token_id=253
+[run1] step 4: token_id=1838
+[run1] step 5: token_id=8180
+[run1] step 6: token_id=3365
+[run1] step 7: token_id=14176
+[run1] step 8: token_id=30
+[run1] step 9: token_id=2306
+[run1] step 10: token_id=4161
+[run1] step 11: token_id=281
+[run1] step 12: token_id=253
+[run1] step 13: token_id=2066
+[run1] step 14: token_id=2291
+[run1] step 15: token_id=351
+[run2] step 0: token_id=28
+[run2] step 1: token_id=665
+[run2] step 2: token_id=436
+[run2] step 3: token_id=253
+[run2] step 4: token_id=1838
+[run2] step 5: token_id=8180
+[run2] step 6: token_id=3365
+[run2] step 7: token_id=14176
+[run2] step 8: token_id=30
+[run2] step 9: token_id=2306
+[run2] step 10: token_id=4161
+[run2] step 11: token_id=281
+[run2] step 12: token_id=253
+[run2] step 13: token_id=2066
+[run2] step 14: token_id=2291
+[run2] step 15: token_id=351
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=0bf9257bc56c4588cb4003e1a105b60169e152222ec734811d0a58e66e1cdeca
+prompt_tokens=[6403, 1980, 253, 655]
+run1_tokens=[6403, 1980, 253, 655, 28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+run2_tokens=[6403, 1980, 253, 655, 28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+run1_witness_digest=830d972dbfb0b5598015f33571d08623d2b05d8e239b8d0288562d9ac9786907
+run2_witness_digest=830d972dbfb0b5598015f33571d08623d2b05d8e239b8d0288562d9ac9786907
+run1_argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+run2_argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+runs_identical=true
+CIS2_REF digest=830d972dbfb0b5598015f33571d08623d2b05d8e239b8d0288562d9ac9786907 prompt_toks=4 gen_toks=16 dtype=fp32

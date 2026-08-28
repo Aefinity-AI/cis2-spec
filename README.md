@@ -24,9 +24,9 @@ time"`, 16 greedy-decoded tokens, on both x86_64 and aarch64 (`verify3/`
 additionally under both gcc and clang). This is the pinned §13.1 test
 vector in `docs/CIS2_SPEC_v0.2.md` and `EXPECTED_DIGESTS.md`. The 20-cell
 compiler/ISA invariance matrix, the Qwen2.5-0.5B/1.5B results, and the
-128-/512-token decode horizons were obtained with the (unreleased) private
-Rust reference implementation, not with the clean-rooms in this
-repository; they are listed as **informative** evidence in
+128-/512-token decode horizons were obtained with `src/`, the Rust
+reference implementation included in this repository, not with the
+clean-rooms; they are listed as **informative** evidence in
 `EXPECTED_DIGESTS.md`, not as claims about `verify2/`/`verify3/`.
 
 This is a narrower and harder claim than integer/bitwise determinism:
@@ -39,15 +39,22 @@ implementation can reproduce them.
 
 ## Scope
 
-This repository contains the **specification** and **independent
-clean-room verifiers**. It does not contain the reference implementation
-the spec was originally audited against — that implementation exists to
-let the spec's authors cite exact source locations for their own
-sanity-checking (see the spec's Appendix A), but reproducing it is
-explicitly *not* required or expected: `verify2/` (Rust) and `verify3/`
-(C) were each written from the specification text alone, without access
-to any reference source, and are the artifacts this repository asks
-readers to trust and extend.
+This repository contains the **specification**, the **reference
+implementation** (`src/`) the spec was audited against, and **two
+independent clean-room verifiers**. `src/` lets readers cite exact source
+locations for their own sanity-checking (see the spec's Appendix A) and
+lets anyone reproduce the informative 20-cell compiler/ISA matrix and
+second-model-family results in `EXPECTED_DIGESTS.md`. Reproducing `src/`
+is not required to trust the spec, though: `verify2/` (Rust) and
+`verify3/` (C) were each written from the specification text alone,
+without access to `src/` or to each other, and are the artifacts this
+repository asks readers to trust and extend independently of the
+reference. Not included: `docs/paper/` (the in-progress paper draft) and
+the private repository's own CI workflow definitions (their published
+run results and logs are included under `hardware_logs/` and
+`docs/logs/`, but the `.yml` files themselves were internal-repo-specific
+and are not reproduced here — `.github/workflows/verify.yml` in this
+repository is the public equivalent).
 
 ## Reproduce in 5 commands
 
@@ -164,11 +171,33 @@ Apache-2.0. See `LICENSE` and `NOTICE`.
 docs/CIS2_SPEC_v0.2.md   the normative specification
 CHANGELOG.md             v0.1 -> v0.2 -> v0.2.1 changes
 EXPECTED_DIGESTS.md       pinned + informative digest values
-verify2/                  clean-room verifier #1 (Rust)
-verify3/                  clean-room verifier #2 (C11)
+src/                      reference implementation (Rust), the spec's own
+                          audit trail (Appendix A cites src/*.rs:line)
+verify2/                  clean-room verifier #1 (Rust), written from the
+                          spec text alone, no access to src/
+verify3/                  clean-room verifier #2 (C11), written from the
+                          spec text alone, no access to src/ or verify2/
+docs/                     spec, changelog, and E15* evidence/result notes
+docs/logs/, hardware_logs/  raw CI/local-run logs backing those notes
 weights/                  fetch manifest only; no weight files committed
 scripts/fetch_weights.sh  sha256-verified weight fetch
 scripts/self_check.sh     local build + digest reproduction check
-.github/workflows/verify.yml  CI: builds both verifiers on x86_64 + aarch64,
-                               gcc + clang, fails on any digest mismatch
+   (verify3/); see below for the src/ reference's own run command
+.github/workflows/verify.yml  CI: builds src/ + both clean-rooms on
+                               x86_64 + aarch64 (+ gcc/clang for verify3),
+                               fails on any digest mismatch
 ```
+
+## Build and run the reference implementation (`src/`)
+
+```sh
+scripts/fetch_weights.sh weights   # if not already fetched
+cargo build --release -j2
+nice ./target/release/cis2_ref     # weights/, prompt "Once upon a time", 16 tokens
+```
+
+Expected: a `CIS2_REF digest=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da`
+line, matching `EXPECTED_DIGESTS.md` and the `verify2`/`verify3` clean-room
+result above. No timing numbers are printed or recorded by this
+repository (Rule A); `nice` is used only to be a considerate neighbor on
+shared machines, not to produce a timing measurement.

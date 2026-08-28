@@ -1,0 +1,39 @@
+E15j clean-room C11 (verify3/) — 2026-08-28
+branch: cm/e15j-cleanroom-c
+workflow: .github/workflows/e15j-cleanroom-c.yml
+
+Dispatch 1: run 33197529043 (workflow_dispatch) / 33197526034 (push) — FAILED
+  cause: infra bug, not spec conformance. Run step used working-directory
+  verify3/ but weights were fetched to repo-root weights/; relative path
+  "weights/model.safetensors" resolved to verify3/weights/model.safetensors
+  (nonexistent). Fixed in commit 4c499b1 (path changed to ../weights/...).
+
+Dispatch 2: run 33197817365 (push, after path fix) — FAILED (digest mismatch)
+  4 jobs: {x86_64,aarch64} x {gcc,clang}, all completed successfully (CI wall-clock time not reported — Rule A).
+  All 4 jobs: FMA gate PASS (0 matches), artifact_hashes=PASS,
+  determinism=PASS (two-run same-process check), and IDENTICAL output
+  across all 4 jobs:
+    table_digest           = 465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3  [MATCH v0.2]
+    inv_freq_table_digest  = da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12  [MATCH v0.2]
+    argmax_digest          = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff  [MATCH v0.2]
+    generated_token_ids    = 28,665,436,253,1838,8180,3365,14176,30,2306,4161,281,253,2066,2291,351  [MATCH v0.2, all 16]
+    CIS2_REF (witness)     = a532d4a4a88a15221ea6b6e211daa36aecf6fb64fefa5f85f065252008927d65  [MISMATCH, expected a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da]
+
+  Cross-ISA/cross-compiler note: the WRONG witness digest is itself
+  byte-identical across all 4 (ISA x compiler) cells — this rules out
+  compiler/ISA nondeterminism as the cause; it is a deterministic,
+  reproducible logic divergence in this clean-room implementation (or an
+  as-yet-unidentified subtlety), not flakiness.
+
+  Local pre-CI unit tests (verify3/selftest.c, no weights needed) already
+  passed: FTZ/DAZ self-test, rsqrt(64.0)==0.125 exact, dot_seq order
+  regression, table_digest exact match, inv_freq_table_digest exact match,
+  sha256("abc") KAT, tiny BPE merge sanity check. Ad-hoc local checks
+  (not committed, /tmp scratch) additionally confirmed exp_pinned bit-exact
+  vs glibc expf at x in {-89..89} and ln_pinned(100000.0) bit-exact to the
+  v0.1 literal 0x413834F1.
+
+Result: PARTIAL conformance. See docs/E15j_CLEANROOM_C_RESULT.md.
+0/3 allotted spec-conformance fix attempts spent (root cause not
+localized without an oracle; reported as-is per task's fix-attempt/time
+budget rather than guessing blindly).

@@ -1,0 +1,33 @@
+E15e clean-room cis2-verify raw run outputs, 2026-08-28.
+
+=== Local (this box, penguin, x86_64) ===
+$ nice -n 10 ./target/release/cis2-verify
+prompt_ids=[6403, 1980, 253, 655]
+CIS2_VERIFY digest=241a73387b22b4f81cd96094efeb6603c3f88a0d10c9fca9a7a1feff5fd7d7bf prompt_toks=4 gen_toks=16 dtype=fp32
+inv_freq table_digest=6d20bb9d2a7ec35a70fcc399fed93e17664fa74f95942d9ec77f17ae7a882668
+generated_token_ids=[28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+model_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1 config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843 tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+
+=== GitHub Actions ubuntu-latest (x86_64), run 33190989443 ===
+CIS2_VERIFY digest=241a73387b22b4f81cd96094efeb6603c3f88a0d10c9fca9a7a1feff5fd7d7bf prompt_toks=4 gen_toks=16 dtype=fp32
+inv_freq table_digest=6d20bb9d2a7ec35a70fcc399fed93e17664fa74f95942d9ec77f17ae7a882668
+generated_token_ids=[28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+
+=== GitHub Actions ubuntu-24.04-arm (aarch64), run 33190989443 ===
+CIS2_VERIFY digest=241a73387b22b4f81cd96094efeb6603c3f88a0d10c9fca9a7a1feff5fd7d7bf prompt_toks=4 gen_toks=16 dtype=fp32
+inv_freq table_digest=6d20bb9d2a7ec35a70fcc399fed93e17664fa74f95942d9ec77f17ae7a882668
+generated_token_ids=[28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+
+CI run: reference-repository CI run 33190989443 (private CI, not reproducible externally)
+(workflow_dispatch leg; the push-triggered leg 33190984342 on the same
+commit produced identical output on both ISAs.)
+
+=== Comparison against E15c's preregistered target ===
+target CIS2_REF digest      = ba88708bf4159a4057d4eef727820ebc5ce1744ae334bfe0cc0776e03509dd0f
+this clean-room's digest    = 241a73387b22b4f81cd96094efeb6603c3f88a0d10c9fca9a7a1feff5fd7d7bf  -> MISMATCH
+target inv_freq table_digest = da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+this clean-room's digest     = 6d20bb9d2a7ec35a70fcc399fed93e17664fa74f95942d9ec77f17ae7a882668  -> MISMATCH
+target argmax_digest        = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+this clean-room's argmax_digest (independently reconstructed: sha256 of
+u32 LE prompt+generated token ids) = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff -> MATCH
+generated token id sequence: identical, bit-for-bit, to E15b/E15c's reported sequence.

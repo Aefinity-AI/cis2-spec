@@ -3,14 +3,16 @@
 **Note (added v0.2.1, 2026-08-28):** several files this log names below —
 `docs/E15d_v0.2_DIGESTS.md` (read, item 2), and `src/`, `verify/`,
 `verify2/`, `tests/`, `docs/CIS2_SPEC_v0.1.md`, `docs/E15b_*.md`,
-`docs/E15e_*.md`, `docs/E15g_*.md`, `docs/E15h_*.md`, `docs/paper/*`
-(named as NOT read, item 3), plus the `e15c-cross-isa.yml` CI workflow,
-the root `Cargo.toml`, and `SPEC_GAPS_v0.1.md` referenced elsewhere in
-this repository's history — live in the private reference repository and
-are **not part of this public release**. They are named here only
-because they were the actual read/forbidden set this clean-room pass was
-run against at the time; this log is left otherwise unedited below as the
-original evidence record of what was and was not read.
+`docs/E15e_*.md`, `docs/E15g_*.md`, `docs/E15h_*.md` (named as NOT read,
+item 3), plus the `e15c-cross-isa.yml` CI workflow and `SPEC_GAPS_v0.1.md`
+referenced elsewhere in this repository's history — **are** part of this
+repository (`src/` is the reference implementation, included here) with
+the sole exception of `docs/paper/*` and the private `e15c-cross-isa.yml`
+workflow itself, which remain absent from this public release. Everything
+else is named here only because it was the actual read/forbidden set this
+clean-room pass was run against at the time; this log is left otherwise
+unedited below as the original evidence record of what was and was not
+read.
 
 Files read by this clean-room implementer, in order, with justification.
 Per task rules: ONLY `docs/CIS2_SPEC_v0.2.md` and `docs/E15d_v0.2_DIGESTS.md`
