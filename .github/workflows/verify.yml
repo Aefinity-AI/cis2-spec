@@ -1,0 +1,141 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+env:
+  # docs/CIS2_SPEC_v0.2.md §13.1, EXPECTED_DIGESTS.md
+  EXPECTED_WITNESS: a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da
+  EXPECTED_ARGMAX: 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+  EXPECTED_TABLE: 465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3
+  EXPECTED_INVFREQ: da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+  WEIGHTS_SHA256: 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+
+jobs:
+  # --- verify2: Rust clean-room ---
+  verify2:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: uname (assert matches expected arch)
+        run: |
+          U=$(uname -m)
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
+          else
+            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+          fi
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Build verify2 (release)
+        working-directory: verify2
+        run: cargo build --release -j2
+
+      - name: FMA gate (objdump, zero fused multiply-add on decode path)
+        run: |
+          objdump -d verify2/target/release/cis2-verify2 > /tmp/disasm.txt
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm.txt; then
+            echo "FMA-family instruction found in disassembly — spec §1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Run verify2 and check digests
+        run: |
+          set -euo pipefail
+          OUT=$(./verify2/target/release/cis2-verify2 | tee /tmp/verify2_output.txt)
+          witness=$(echo "$OUT" | grep -oP '(?<=CIS2_VERIFY2 digest=)[0-9a-f]+' | head -1 || true)
+          echo "witness: got=$witness expected=$EXPECTED_WITNESS"
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
+          echo "PASS: verify2 (${{ matrix.arch_label }}) matches CIS2_REF"
+
+  # --- verify3: C clean-room, gcc and clang ---
+  verify3:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+            cc: gcc
+          - os: ubuntu-24.04
+            arch_label: x86_64
+            cc: clang
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+            cc: gcc
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+            cc: clang
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc clang binutils curl
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Build verify3 (${{ matrix.cc }}, ${{ matrix.arch_label }})
+        working-directory: verify3
+        run: make CC=${{ matrix.cc }}
+
+      - name: FMA gate (objdump, zero fused multiply-add on decode path)
+        working-directory: verify3
+        run: |
+          objdump -d cis2_verify3 > /tmp/disasm.txt
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm.txt; then
+            echo "FMA-family instruction found in disassembly — spec §1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Run cis2_verify3
+        working-directory: verify3
+        run: ./cis2_verify3 ../weights/model.safetensors ../weights/config.json ../weights/tokenizer.json | tee /tmp/verify3_output.txt
+
+      - name: Compare digests against v0.2 pinned test vector (spec §13.1)
+        run: |
+          out=/tmp/verify3_output.txt
+          witness=$(grep -oP '(?<=^CIS2_VERIFY3 digest=)[0-9a-f]+' "$out")
+          argmax=$(grep -oP '(?<=^CIS2_VERIFY3 argmax_digest=)[0-9a-f]+' "$out")
+          table=$(grep -oP '(?<=^CIS2_VERIFY3 table_digest=)[0-9a-f]+' "$out")
+          invfreq=$(grep -oP '(?<=^CIS2_VERIFY3 inv_freq_table_digest=)[0-9a-f]+' "$out")
+
+          echo "witness: got=$witness expected=$EXPECTED_WITNESS"
+          echo "argmax:  got=$argmax expected=$EXPECTED_ARGMAX"
+          echo "table:   got=$table expected=$EXPECTED_TABLE"
+          echo "invfreq: got=$invfreq expected=$EXPECTED_INVFREQ"
+
+          fail=0
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest (CIS2_REF)"; fail=1; }
+          [ "$argmax" = "$EXPECTED_ARGMAX" ] || { echo "MISMATCH: argmax digest"; fail=1; }
+          [ "$table" = "$EXPECTED_TABLE" ] || { echo "MISMATCH: table digest"; fail=1; }
+          [ "$invfreq" = "$EXPECTED_INVFREQ" ] || { echo "MISMATCH: inv_freq_table digest"; fail=1; }
+          exit $fail

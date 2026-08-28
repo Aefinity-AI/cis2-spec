@@ -1,0 +1,10 @@
+CIS-2 specification and clean-room verifiers
+Copyright 2026 Aefinity AI Inc.
+
+This product includes software developed by Aefinity AI Inc.
+
+Third-party components:
+
+- verify3/sha256.c, verify3/sha256.h: adapted from a public-domain SHA-256
+  implementation (Brad Conte, "crypto-algorithms"; no rights reserved).
+  See verify3/CLEANROOM_LOG.md for detail.

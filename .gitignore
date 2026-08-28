@@ -1,0 +1,6 @@
+weights/*.safetensors
+weights/*.json
+!weights/config.json.example
+weights_*/
+target/
+*.o

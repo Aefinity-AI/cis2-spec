@@ -1,0 +1,142 @@
+# CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
+
+**Claim:** given a normative specification (`docs/CIS2_SPEC_v0.2.md`) for
+an fp32 transformer forward pass — pinned floating-point environment,
+pinned reduction order, pinned transcendental polynomials, pinned digest
+format — independently-written implementations reproduce **bit-identical**
+full-logit output digests:
+
+- across instruction set architectures (x86_64 and aarch64),
+- across compilers and optimization levels (gcc, clang, rustc; `-O0`
+  through `-O3`/`-Os`),
+- across languages (Rust and C, written by separate clean-room passes that
+  never read each other's source or the reference implementation),
+- across model families and decode horizons (see `EXPECTED_DIGESTS.md`),
+
+for a pinned (model, prompt, decode-length) test vector, matching a
+PyTorch/`transformers` oracle within floating-point tolerance.
+
+This is a narrower and harder claim than integer/bitwise determinism:
+floating-point addition is not associative, so this does not claim "any
+reduction order is safe." It claims that *one* pinned reduction order,
+*one* pinned transcendental route, and *one* pinned digest encoding are
+collectively sufficient for bit-identity — and states each of them
+explicitly enough that a reader who has never seen a reference
+implementation can reproduce them.
+
+## Scope
+
+This repository contains the **specification** and **independent
+clean-room verifiers**. It does not contain the reference implementation
+the spec was originally audited against — that implementation exists to
+let the spec's authors cite exact source locations for their own
+sanity-checking (see the spec's Appendix A), but reproducing it is
+explicitly *not* required or expected: `verify2/` (Rust) and `verify3/`
+(C) were each written from the specification text alone, without access
+to any reference source, and are the artifacts this repository asks
+readers to trust and extend.
+
+## Reproduce in 5 commands
+
+```sh
+git clone <this-repo-url> cis2-spec && cd cis2-spec
+scripts/fetch_weights.sh weights          # fetches + sha256-verifies HuggingFaceTB/SmolLM2-135M
+make -C verify3                            # builds the C clean-room (verify3/)
+./verify3/cis2_verify3 weights/model.safetensors weights/config.json weights/tokenizer.json
+scripts/self_check.sh                      # does all of the above and diffs against EXPECTED_DIGESTS.md
+```
+
+Expected result: `CIS2_VERIFY3 digest=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da`,
+matching `EXPECTED_DIGESTS.md`. `verify2/` (Rust) reproduces the same
+digest; see `.github/workflows/verify.yml` for the exact build/run
+sequence on both x86_64 and aarch64 CI runners.
+
+No timing numbers (tokens/sec, wall-clock, etc.) are published anywhere in
+this repository. The reference and both clean-room verifiers are scalar,
+unoptimized-for-speed implementations whose only goal is bit-exact,
+auditable determinism, not throughput.
+
+## Threat model summary
+
+What this claim rules out:
+
+- A verifier silently using a different reduction order, transcendental
+  approximation, or rounding mode that happens to produce the same
+  *tokens* but different *logit bits* — the witness digest (`CIS2_REF`,
+  spec §12.1) folds in the full fp32 logit vector for every decode step,
+  not just the argmax winners, so it cannot be gamed by token-level luck.
+- Silent divergence introduced by a specific ISA (denormal/FTZ-DAZ
+  handling differs between x86 MXCSR and ARM FPCR by default; the spec
+  pins both), a specific compiler's instruction selection (FMA fusion is
+  explicitly disallowed and disassembly-checked), or a specific
+  optimization level.
+
+What this claim does **not** rule out (see spec §14 "Known gaps" for the
+full, honest list):
+
+- General correctness of the pinned transcendental polynomials outside
+  the input ranges actually exercised by the tested decodes.
+- Cross-framework agreement with PyTorch as a *conformance* requirement —
+  that is evidence collected alongside the spec, not part of what
+  "conforming" means.
+- Any claim about sampling, batching, quantization, or non-greedy decode —
+  out of scope by construction (spec §0).
+- A `CIS2_REF` mismatch, by itself, localizing *which* of the five seeded
+  inputs diverged (spec §14.3) — a verifier debugging a mismatch should
+  compare `table_digest`, `inv_freq_table_digest`, and the three artifact
+  hashes individually, not just the final witness digest.
+
+## How to submit your own clean-room implementation
+
+1. Read `docs/CIS2_SPEC_v0.2.md` only. Do not read `verify2/` or
+   `verify3/`'s source before or during your implementation — treat them
+   the same way this repository's own authors treat the (private,
+   unpublished) reference implementation: off-limits until your
+   implementation is complete.
+2. Keep a `CLEANROOM_LOG.md` in your implementation's directory listing,
+   in order, every file you read and why (see `verify2/CLEANROOM_LOG.md`
+   and `verify3/CLEANROOM_LOG.md` for the expected format and level of
+   detail).
+3. Your implementation MUST, per spec §15:
+   - reproduce every value in §13.1 bit-for-bit on x86-64;
+   - reproduce every value in §13.1 bit-for-bit on aarch64, unmodified
+     source;
+   - contain zero FMA-family instructions on the decode path in its
+     release binary (disassembly-verified, e.g. with `objdump -d`);
+   - pass its own adversarial denormal self-test (spec §1.3);
+   - pass the same-process two-run determinism check (spec §12.4).
+4. If your implementation's `CIS2_REF` does not match
+   `EXPECTED_DIGESTS.md`, first check whether `table_digest`,
+   `inv_freq_table_digest`, and `argmax_digest`/`generated_token_ids`
+   individually match — a full match on those but not on `CIS2_REF` is
+   most likely a witness-chain item-order or byte-encoding bug (see spec
+   §12.1's item order, corrected in v0.2 after exactly this failure mode
+   was caught by an earlier clean-room pass), not a numeric error in your
+   forward pass.
+5. Open an issue or pull request with your implementation, its
+   `CLEANROOM_LOG.md`, and its CI run reproducing (or failing to
+   reproduce) `EXPECTED_DIGESTS.md`. Mismatches are useful — they are how
+   this spec's own item-order bug was found (see `CHANGELOG.md`).
+
+## Paper
+
+arXiv link: pending — updated on publication. See `CITATION.cff`.
+
+## License
+
+Apache-2.0. See `LICENSE` and `NOTICE`.
+
+## Repository layout
+
+```
+docs/CIS2_SPEC_v0.2.md   the normative specification
+CHANGELOG.md             v0.1 -> v0.2 -> v0.2.1 changes
+EXPECTED_DIGESTS.md       pinned + informative digest values
+verify2/                  clean-room verifier #1 (Rust)
+verify3/                  clean-room verifier #2 (C11)
+weights/                  fetch manifest only; no weight files committed
+scripts/fetch_weights.sh  sha256-verified weight fetch
+scripts/self_check.sh     local build + digest reproduction check
+.github/workflows/verify.yml  CI: builds both verifiers on x86_64 + aarch64,
+                               gcc + clang, fails on any digest mismatch
+```

@@ -1,0 +1,6 @@
+# Pinned artifact hashes for the SmolLM2-135M CIS-2 v0.2 test vector.
+# See docs/CIS2_SPEC_v0.2.md §2.1 and scripts/fetch_weights.sh.
+# Weight files themselves are NOT stored in this repository.
+80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1  model.safetensors
+1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843  config.json
+9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c  tokenizer.json
