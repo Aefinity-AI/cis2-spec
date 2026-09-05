@@ -55,6 +55,12 @@ static inline float cis2_f32_from_bits(uint32_t b) {
     __builtin_memcpy(&x, &b, sizeof(x));
     return x;
 }
+/* spec v0.3 §6.3: f64-staged pi reduction needs an f64 bit-pattern helper. */
+static inline double cis2_f64_from_bits(uint64_t b) {
+    double x;
+    __builtin_memcpy(&x, &b, sizeof(x));
+    return x;
+}
 
 #define CIS2_EPS_F32_BITS 0x3727C5ACu
 

@@ -59,3 +59,34 @@ implementation is stated explicitly in `docs/CIS2_SPEC_v0.1.md` §1–§13
 byte encodings). The spec's own §14 items (theta-generality, table digests
 not bound into the receipt) are pre-declared informative gaps, not new
 findings from this attempt.
+
+## E15m update (spec v0.3, §6.3 f64-staged pi reduction)
+
+Read `docs/CIS2_SPEC_v0.3.md` §6.3/§6.6 text only (not `src/math.rs`) and
+replaced `reduce_2pi`'s two-f32-constant reduction with the f64-staged
+reduction (exact widen, f64 div/round/mul/sub, correctly-rounded narrow
+back to f32) and `table_digest()`'s corresponding constant list (one
+8-byte `TWO_PI_F64` in place of the two 4-byte halves). `src/math.rs`
+(this crate's, not the reference's) was NOT diffed against the reference's
+`src/math.rs` before or after this change. Ran locally (x86_64): digest
+`90f7484e4cb523e40cd44d79491d3d7aba124e65205db80bc0ba1ab30a8f9890`,
+`table_digest=986abc500e1122ada32a885bc722b313326a68d6af4e974cf3ee5034b9e7f900`,
+`argmax_digest`/`generated_token_ids` unchanged — matches the reference
+(`cis2_ref`) and `verify3` bit-for-bit (see `docs/E15m_RESULT.md`).
+
+## E15m update #2 (spec v0.3b, §6.3 octant reduction + minimax polynomials)
+
+Coordinator directive after v0.3's gate (2) partial-pass (see
+docs/E15m_RESULT.md): read the updated CIS2_SPEC_v0.3.md §6.3/§6.6 text
+only (not `src/math.rs`) and replaced the f64-staged-but-still-Taylor-poly
+`reduce_2pi`/`SIN_COEF`/`COS_COEF` with an octant reduction
+(`reduce_pi_2`, r in [-pi/4,pi/4] + quadrant index, still f64-staged, same
+determinism argument) and SEPARATE degree-7/8 minimax polynomials
+(`sin_poly`/`cos_poly`, Cephes sinf/cosf coefficients) selected/signed by
+quadrant. `table_digest()` updated to hash `PI_2_F64` + the 6 new
+coefficients in place of the old `TWO_PI_F64`/`SIN_COEF`/`COS_COEF`. Ran
+locally (x86_64): digest
+`d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`,
+`table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d`,
+`argmax_digest`/`generated_token_ids` unchanged — matches the reference
+(`cis2_ref`) and `verify3` bit-for-bit.

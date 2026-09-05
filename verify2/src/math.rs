@@ -104,50 +104,88 @@ pub fn exp_pinned(x: f32) -> f32 {
     ldexp_exact(result, k_int)
 }
 
-// §6.3 sin/cos pinned two-part-pi reduction + Taylor coefficients.
-const TWO_PI_HI: u32 = 0x40C90FDA;
-const TWO_PI_LO: u32 = 0x347FF14D;
+// §6.3 sin/cos pinned octant reduction (f64-staged, spec v0.3b) + SEPARATE
+// minimax polynomials. Read from CIS2_SPEC_v0.3.md §6.3 -- NOT copied from
+// src/math.rs -- per this crate's clean-room contract (CLEANROOM_LOG.md).
+const PI_2_F64_BITS: u64 = 0x3FF921FB54442D18; // PI_2_F64 = pi/2, spec v0.3b §6.3
 
-const SIN_COEF: [u32; 11] = [
-    0x3F800000, 0xBE2AAAAB, 0x3C088888, 0xB9500D01, 0x3638EF1E, 0xB2D7322C,
-    0x2F30922E, 0xAB573FA0, 0x274A963A, 0xA317A4DA, 0x1EB8DC77,
-];
-const COS_COEF: [u32; 11] = [
-    0x3F800000, 0xBF000000, 0x3D2AAAAC, 0xBAB60B62, 0x37D00D02, 0xB493F27E,
-    0x310F76C9, 0xAD49CBAA, 0x29573F9E, 0xA53413C5, 0x20F2A15F,
-];
+const SIN_C0_BITS: u32 = 0xBE2AAAA3;
+const SIN_C1_BITS: u32 = 0x3C08839E;
+const SIN_C2_BITS: u32 = 0xB94CA1F9;
+const COS_C0_BITS: u32 = 0x3D2AAAA5;
+const COS_C1_BITS: u32 = 0xBAB6061A;
+const COS_C2_BITS: u32 = 0x37CCF5CE;
 
-/// §6.3 range reduction to r in [-pi, pi], two-part-pi split.
-fn reduce_2pi(x: f32) -> f32 {
-    let two_pi_hi = f32::from_bits(TWO_PI_HI);
-    let two_pi_lo = f32::from_bits(TWO_PI_LO);
-    let k: f32 = (x / two_pi_hi).round();
-    let khi: f32 = k * two_pi_hi;
-    let r0: f32 = x - khi;
-    let klo: f32 = k * two_pi_lo;
-    r0 - klo
+/// §6.3 (v0.3b) range reduction to r in [-pi/4, pi/4] + quadrant index k
+/// mod 4, f64-staged: exact widening cast, f64 div+round+mul+sub (all
+/// IEEE-754-mandatory correctly rounded or a deterministic bit-pattern
+/// function), single correctly rounded narrowing cast back to f32. No FMA.
+fn reduce_pi_2(x: f32) -> (f32, i64) {
+    let pi_2_f64 = f64::from_bits(PI_2_F64_BITS);
+    let xd: f64 = x as f64;
+    let k_f64: f64 = (xd / pi_2_f64).round();
+    let khi: f64 = k_f64 * pi_2_f64;
+    let r64: f64 = xd - khi;
+    (r64 as f32, k_f64 as i64)
 }
 
-/// §6.3 cos(x), pinned Taylor series after 2*pi range reduction.
+/// §6.3 (v0.3b) sin(r) minimax polynomial for r in [-pi/4, pi/4], strict
+/// left-to-right, no FMA.
+fn sin_poly(r: f32) -> f32 {
+    let r2 = r * r;
+    let mut inner = f32::from_bits(SIN_C2_BITS);
+    inner = inner * r2 + f32::from_bits(SIN_C1_BITS);
+    inner = inner * r2 + f32::from_bits(SIN_C0_BITS);
+    let r3 = r2 * r;
+    let term = inner * r3;
+    r + term
+}
+
+/// §6.3 (v0.3b) cos(r) minimax polynomial for r in [-pi/4, pi/4], strict
+/// left-to-right, no FMA.
+fn cos_poly(r: f32) -> f32 {
+    let r2 = r * r;
+    let mut inner = f32::from_bits(COS_C2_BITS);
+    inner = inner * r2 + f32::from_bits(COS_C1_BITS);
+    inner = inner * r2 + f32::from_bits(COS_C0_BITS);
+    let r4 = r2 * r2;
+    let term = inner * r4;
+    let half_r2 = 0.5_f32 * r2;
+    let step1 = 1.0_f32 - half_r2;
+    step1 + term
+}
+
+#[inline]
+fn quadrant(k: i64) -> i64 {
+    ((k % 4) + 4) % 4
+}
+
+/// §6.3 (v0.3b) cos(x), octant reduction + minimax polynomial + quadrant
+/// sign/swap.
 pub fn cos_pinned(x: f32) -> f32 {
-    let r = reduce_2pi(x);
-    let r2: f32 = r * r;
-    let mut poly: f32 = f32::from_bits(COS_COEF[10]);
-    for i in (0..=9).rev() {
-        poly = poly * r2 + f32::from_bits(COS_COEF[i]);
+    let (r, k) = reduce_pi_2(x);
+    let sr = sin_poly(r);
+    let cr = cos_poly(r);
+    match quadrant(k) {
+        0 => cr,
+        1 => -sr,
+        2 => -cr,
+        _ => sr,
     }
-    poly
 }
 
-/// §6.3 sin(x), pinned Taylor series after 2*pi range reduction.
+/// §6.3 (v0.3b) sin(x), octant reduction + minimax polynomial + quadrant
+/// sign/swap.
 pub fn sin_pinned(x: f32) -> f32 {
-    let r = reduce_2pi(x);
-    let r2: f32 = r * r;
-    let mut poly: f32 = f32::from_bits(SIN_COEF[10]);
-    for i in (0..=9).rev() {
-        poly = poly * r2 + f32::from_bits(SIN_COEF[i]);
+    let (r, k) = reduce_pi_2(x);
+    let sr = sin_poly(r);
+    let cr = cos_poly(r);
+    match quadrant(k) {
+        0 => sr,
+        1 => cr,
+        2 => -sr,
+        _ => -cr,
     }
-    poly * r
 }
 
 // §7.1 (v0.2) pinned ln() — Cephes-pattern logf: exact bit-manipulation
@@ -229,13 +267,12 @@ pub fn table_digest() -> [u8; 32] {
     for w in EXP_P {
         h.update(f32::from_bits(w).to_le_bytes());
     }
-    for w in [TWO_PI_HI, TWO_PI_LO] {
+    // v0.3: one 8-byte f64 constant replaces v0.2's two 4-byte f32 halves.
+    h.update(f64::from_bits(PI_2_F64_BITS).to_le_bytes());
+    for w in [SIN_C0_BITS, SIN_C1_BITS, SIN_C2_BITS] {
         h.update(f32::from_bits(w).to_le_bytes());
     }
-    for w in SIN_COEF {
-        h.update(f32::from_bits(w).to_le_bytes());
-    }
-    for w in COS_COEF {
+    for w in [COS_C0_BITS, COS_C1_BITS, COS_C2_BITS] {
         h.update(f32::from_bits(w).to_le_bytes());
     }
     h.update(f32::from_bits(LOG_SQRTHF).to_le_bytes());

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Local reproduction check: builds verify3/ (C clean-room) with the system
 # compiler, runs it against the pinned SmolLM2-135M test vector, and
-# compares every digest against EXPECTED_DIGESTS.md / docs/CIS2_SPEC_v0.2.md
+# compares every digest against EXPECTED_DIGESTS.md / docs/CIS2_SPEC_v0.3b.md
 # §13.1. No timing numbers are printed or recorded.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CC="${CC:-gcc}"
 
-echo "== CIS-2 v0.2 self-check (verify3/, CC=$CC) =="
+echo "== CIS-2 v0.3b self-check (verify3/, CC=$CC) =="
 
 echo "-- fetching weights --"
 "$ROOT_DIR/scripts/fetch_weights.sh" "$ROOT_DIR/weights"
@@ -49,9 +49,9 @@ argmax=$(extract_field argmax_digest)
 table=$(extract_field table_digest)
 invfreq=$(extract_field inv_freq_table_digest)
 
-exp_witness=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da
+exp_witness=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
 exp_argmax=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
-exp_table=465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3
+exp_table=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
 exp_invfreq=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
 
 echo
@@ -68,7 +68,7 @@ fail=0
 
 if [ "$fail" -eq 0 ]; then
   echo
-  echo "PASS: all digests match the pinned CIS-2 v0.2 test vector."
+  echo "PASS: all digests match the pinned CIS-2 v0.3b test vector."
 else
   echo
   echo "FAIL: one or more digests did not match. See MISMATCH lines above." >&2

@@ -2,7 +2,7 @@
 //!
 //! Every function in this module is part of the CIS-2 v0.1 reference
 //! contract (see docs/E15b_REFERENCE_RESULT.md and the E14a design memo,
-//! a design memo from a separate internal operator-notes repository, not published here).
+//! `claudius-maximus/state/reports/2026-08-28-E14a-cis2-fp-design.md`).
 //! Rules enforced here, mechanically:
 //!
 //! - §3.1 reduction order: STRICT LEFT-TO-RIGHT SEQUENTIAL accumulation.
@@ -157,73 +157,113 @@ fn ldexp_exact(x: f32, k: i32) -> f32 {
     f32::from_bits(new_bits)
 }
 
-// sin/cos(x): pinned Taylor series after a two-part-pi range reduction to
-// [-pi, pi]. Term magnitude at the last included degree is already below
-// f32 epsilon for |r| <= pi (see docs/E15b_REFERENCE_RESULT.md derivation),
-// so no further quadrant folding is needed for correctness at f32 ULP.
-const TWO_PI_HI: f32 = 6.283_185_f32;
-const TWO_PI_LO: f32 = 2.383_651e-7_f32; // 2*pi - TWO_PI_HI, exact-in-f64 split
+// sin/cos(x): pinned octant range reduction (f64-staged, Cody-Waite
+// pattern) + SEPARATE pinned minimax polynomials for sin(r)/cos(r) on
+// r in [-pi/4, pi/4] (CIS-2 spec v0.3b, §6.3 -- supersedes v0.3's
+// "f64-staged reduction + unchanged degree-10 Taylor polynomial" attempt,
+// which closed the H2 reduction-accuracy finding but left the fixed Taylor
+// polynomial's own truncation error dominant near |r| ~ pi and near
+// sin/cos zero crossings, up to several hundred ULP even after the
+// reduction fix -- see docs/E15m_RESULT.md's v0.3 section). Reducing to a
+// quarter-period octant (|r| <= pi/4 instead of |r| <= pi) lets a much
+// lower-degree minimax polynomial (Cephes sinf/cosf's degree-7/8, chosen
+// by minimax fit rather than Taylor truncation) hit correctly-rounded-ish
+// accuracy across the whole reduced domain -- closing the polynomial-
+// truncation gap v0.3 left open.
+//
+// Reduction: f64-staged, same determinism argument as v0.3's TWO_PI_F64
+// reduction (exact f32->f64 widen, IEEE-754-mandatory correctly-rounded
+// f64 div/mul/sub, f64::round() ties-away-from-zero deterministic
+// bit-pattern function, single correctly-rounded f64->f32 narrow) --
+// still no FMA, still bounded by |x| < max_position_embeddings = 8192 so
+// f64 headroom is ample (docs/E15m_PREREG.md's Payne-Hanek-not-needed
+// argument applies unchanged, just mod pi/2 instead of mod 2*pi).
+const PI_2_F64: f64 = 1.570_796_326_794_896_619_231_321_691_639_8_f64; // pi/2
 
-/// Reduce x to r in [-pi, pi], strict sequential, no fma.
-fn reduce_2pi(x: f32) -> f32 {
-    let k = (x / TWO_PI_HI).round();
-    let khi = k * TWO_PI_HI;
-    let r0 = x - khi;
-    let klo = k * TWO_PI_LO;
-    r0 - klo
+/// Reduce x to r in [-pi/4, pi/4] plus a quadrant index k mod 4 (spec
+/// v0.3b §6.3), f64-staged, no fma. k is exact (small integer, computed in
+/// f64, always exactly representable, cast to i64 losslessly).
+fn reduce_pi_2(x: f32) -> (f32, i64) {
+    let xd = x as f64; // exact widening, no rounding
+    let k_f64 = (xd / PI_2_F64).round(); // f64 div (correctly rounded) + round
+    let khi = k_f64 * PI_2_F64; // f64 mul (correctly rounded)
+    let r64 = xd - khi; // f64 sub (correctly rounded)
+    let r = r64 as f32; // single correctly-rounded f64->f32 narrowing
+    (r, k_f64 as i64)
 }
 
-// 1/(2n+1)! coefficients for sin, n = 0..=10 (degree up to r^21).
-const SIN_COEF: [f32; 11] = [
-    1.0,
-    -1.666_666_7e-1,
-    8.333_333e-3,
-    -1.984_127e-4,
-    2.755_732e-6,
-    -2.505_211e-8,
-    1.605_904e-10,
-    -7.647_164e-13,
-    2.811_457e-15,
-    -8.220_635e-18,
-    1.957_294e-20,
-];
-// 1/(2n)! coefficients for cos, n = 0..=10 (degree up to r^20).
-const COS_COEF: [f32; 11] = [
-    1.0,
-    -5.0e-1,
-    4.166_667e-2,
-    -1.388_889e-3,
-    2.480_159e-5,
-    -2.755_732e-7,
-    2.087_676e-9,
-    -1.147_075e-11,
-    4.779_477e-14,
-    -1.561_921e-16,
-    4.110_318e-19,
-];
+// Cephes sinf/cosf minimax polynomial coefficients (pinned f32 bit
+// patterns, spec v0.3b §6.3): degree-7 minimax for sin(r) on [-pi/4,pi/4]
+// (r + r^3*(SIN_C0 + r^2*(SIN_C1 + r^2*SIN_C2))), degree-8 minimax for
+// cos(r) (1 - r^2/2 + r^4*(COS_C0 + r^2*(COS_C1 + r^2*COS_C2))).
+const SIN_C0: f32 = -1.666_665_461_1e-1; // r^3 coefficient
+const SIN_C1: f32 = 8.332_160_873_6e-3; // r^5 coefficient
+const SIN_C2: f32 = -1.951_529_589_1e-4; // r^7 coefficient
 
-/// §3.3(b) — pinned sin(x), f32. Strict sequential Horner in r^2, no FMA.
+const COS_C0: f32 = 4.166_664_568_298_827e-2; // r^4 coefficient
+const COS_C1: f32 = -1.388_731_625_493_765e-3; // r^6 coefficient
+const COS_C2: f32 = 2.443_315_711_809_948e-5; // r^8 coefficient
+
+/// sin(r) for r in [-pi/4, pi/4], strict left-to-right, no FMA.
+fn sin_poly(r: f32) -> f32 {
+    let r2 = r * r;
+    let mut inner = SIN_C2;
+    let m0 = inner * r2;
+    inner = m0 + SIN_C1;
+    let m1 = inner * r2;
+    inner = m1 + SIN_C0;
+    let r3 = r2 * r;
+    let term = inner * r3;
+    r + term
+}
+
+/// cos(r) for r in [-pi/4, pi/4], strict left-to-right, no FMA.
+fn cos_poly(r: f32) -> f32 {
+    let r2 = r * r;
+    let mut inner = COS_C2;
+    let m0 = inner * r2;
+    inner = m0 + COS_C1;
+    let m1 = inner * r2;
+    inner = m1 + COS_C0;
+    let r4 = r2 * r2;
+    let term = inner * r4;
+    let half_r2 = 0.5_f32 * r2;
+    let step1 = 1.0_f32 - half_r2;
+    step1 + term
+}
+
+/// Reduce k mod 4 into [0, 4), for arbitrary-sign i64 k (spec v0.3b §6.3).
+#[inline]
+fn quadrant(k: i64) -> i64 {
+    ((k % 4) + 4) % 4
+}
+
+/// §3.3(b) — pinned sin(x), f32, spec v0.3b octant reduction + minimax
+/// polynomial + quadrant sign/swap. No FMA.
 pub fn sin_pinned(x: f32) -> f32 {
-    let r = reduce_2pi(x);
-    let r2 = r * r;
-    let mut poly = SIN_COEF[10];
-    for i in (0..10).rev() {
-        let m = poly * r2;
-        poly = m + SIN_COEF[i];
+    let (r, k) = reduce_pi_2(x);
+    let sr = sin_poly(r);
+    let cr = cos_poly(r);
+    match quadrant(k) {
+        0 => sr,
+        1 => cr,
+        2 => -sr,
+        _ => -cr, // quadrant 3
     }
-    poly * r
 }
 
-/// §3.3(b) — pinned cos(x), f32. Strict sequential Horner in r^2, no FMA.
+/// §3.3(b) — pinned cos(x), f32, spec v0.3b octant reduction + minimax
+/// polynomial + quadrant sign/swap. No FMA.
 pub fn cos_pinned(x: f32) -> f32 {
-    let r = reduce_2pi(x);
-    let r2 = r * r;
-    let mut poly = COS_COEF[10];
-    for i in (0..10).rev() {
-        let m = poly * r2;
-        poly = m + COS_COEF[i];
+    let (r, k) = reduce_pi_2(x);
+    let sr = sin_poly(r);
+    let cr = cos_poly(r);
+    match quadrant(k) {
+        0 => cr,
+        1 => -sr,
+        2 => -cr,
+        _ => sr, // quadrant 3
     }
-    poly
 }
 
 // ---------------------------------------------------------------------
@@ -348,13 +388,16 @@ pub fn table_digest() -> [u8; 32] {
     for &c in &EXP_P {
         h.update(c.to_le_bytes());
     }
-    for &c in &[TWO_PI_HI, TWO_PI_LO] {
+    // v0.3b: one 8-byte f64 octant-reduction constant (PI_2_F64) replacing
+    // v0.3's TWO_PI_F64 (and v0.2's two f32 TWO_PI_HI/TWO_PI_LO halves),
+    // then the two SEPARATE degree-7/8 minimax polynomials' coefficients
+    // (SIN_C0..2, COS_C0..2) replacing v0.2/v0.3's degree-10 Taylor tables
+    // -- see §6.3/§6.6.
+    h.update(PI_2_F64.to_le_bytes());
+    for &c in &[SIN_C0, SIN_C1, SIN_C2] {
         h.update(c.to_le_bytes());
     }
-    for &c in &SIN_COEF {
-        h.update(c.to_le_bytes());
-    }
-    for &c in &COS_COEF {
+    for &c in &[COS_C0, COS_C1, COS_C2] {
         h.update(c.to_le_bytes());
     }
     h.update(LOG_SQRTHF.to_le_bytes());

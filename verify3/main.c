@@ -24,13 +24,13 @@ static const uint32_t PINNED_GENERATED[16] = {
     28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351
 };
 static const char *PINNED_TABLE_DIGEST_HEX =
-    "465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3";
+    "23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d";
 static const char *PINNED_INV_FREQ_DIGEST_HEX =
     "da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12";
 static const char *PINNED_ARGMAX_DIGEST_HEX =
     "0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff";
 static const char *PINNED_WITNESS_DIGEST_HEX =
-    "a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da";
+    "d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df";
 
 static void hex_encode(const uint8_t *bytes, size_t n, char *out /* 2n+1 */)
 {

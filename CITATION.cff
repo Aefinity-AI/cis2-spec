@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this specification or its verifiers, please cite it as below."
 title: "CIS-2: Canonical Floating-Point Semantics for fp32 Transformer Inference"
-version: "0.2.1"
-date-released: "2026-08-28"
+version: "0.3b"
+date-released: "2026-08-29"
 authors:
   - name: "Aefinity AI Inc."
   - family-names: "Thompson"

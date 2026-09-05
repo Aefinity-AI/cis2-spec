@@ -123,55 +123,91 @@ float cis2_exp_pinned(float x)
     return ldexp_exact(result, (int)k);
 }
 
-/* ---- §6.3 sin/cos ---- */
-#define TWO_PI_HI_BITS 0x40C90FDAu
-#define TWO_PI_LO_BITS 0x347FF14Du
+/* ---- §6.3 sin/cos (spec v0.3b: octant reduction + minimax polynomials) --
+ * Read from CIS2_SPEC_v0.3.md §6.3 -- NOT copied from src/math.rs -- per
+ * this crate's clean-room contract (CLEANROOM_LOG.md). */
+#define PI_2_F64_BITS 0x3FF921FB54442D18ull /* pi/2 */
 
-static const uint32_t SIN_COEF_BITS[11] = {
-    0x3F800000u, 0xBE2AAAABu, 0x3C088888u, 0xB9500D01u,
-    0x3638EF1Eu, 0xB2D7322Cu, 0x2F30922Eu, 0xAB573FA0u,
-    0x274A963Au, 0xA317A4DAu, 0x1EB8DC77u
-};
-static const uint32_t COS_COEF_BITS[11] = {
-    0x3F800000u, 0xBF000000u, 0x3D2AAAACu, 0xBAB60B62u,
-    0x37D00D02u, 0xB493F27Eu, 0x310F76C9u, 0xAD49CBAAu,
-    0x29573F9Eu, 0xA53413C5u, 0x20F2A15Fu
-};
+#define SIN_C0_BITS 0xBE2AAAA3u
+#define SIN_C1_BITS 0x3C08839Eu
+#define SIN_C2_BITS 0xB94CA1F9u
+#define COS_C0_BITS 0x3D2AAAA5u
+#define COS_C1_BITS 0xBAB6061Au
+#define COS_C2_BITS 0x37CCF5CEu
 
-static void two_pi_reduce(float x, float *r_out)
+/* Spec v0.3b §6.3: exact widening cast, f64 div+round+mul+sub (all
+ * IEEE-754-mandatory correctly rounded, or round()'s deterministic
+ * bit-pattern semantics), single correctly rounded narrowing cast back to
+ * f32. No FMA. Returns r in [-pi/4, pi/4] and quadrant index k mod 4. */
+static void reduce_pi_2(float x, float *r_out, long long *k_out)
 {
-    float TWO_PI_HI = cis2_f32_from_bits(TWO_PI_HI_BITS);
-    float TWO_PI_LO = cis2_f32_from_bits(TWO_PI_LO_BITS);
-    float k = roundf(x / TWO_PI_HI);
-    float khi = k * TWO_PI_HI;
-    float r0 = x - khi;
-    float klo = k * TWO_PI_LO;
-    float r = r0 - klo;
-    *r_out = r;
+    double pi_2_f64 = cis2_f64_from_bits(PI_2_F64_BITS);
+    double xd = (double)x;
+    double k_f64 = round(xd / pi_2_f64);
+    double khi = k_f64 * pi_2_f64;
+    double r64 = xd - khi;
+    *r_out = (float)r64;
+    *k_out = (long long)k_f64;
+}
+
+static float sin_poly(float r)
+{
+    float r2 = r * r;
+    float inner = cis2_f32_from_bits(SIN_C2_BITS);
+    inner = inner * r2 + cis2_f32_from_bits(SIN_C1_BITS);
+    inner = inner * r2 + cis2_f32_from_bits(SIN_C0_BITS);
+    float r3 = r2 * r;
+    float term = inner * r3;
+    return r + term;
+}
+
+static float cos_poly(float r)
+{
+    float r2 = r * r;
+    float inner = cis2_f32_from_bits(COS_C2_BITS);
+    inner = inner * r2 + cis2_f32_from_bits(COS_C1_BITS);
+    inner = inner * r2 + cis2_f32_from_bits(COS_C0_BITS);
+    float r4 = r2 * r2;
+    float term = inner * r4;
+    float half_r2 = 0.5f * r2;
+    float step1 = 1.0f - half_r2;
+    return step1 + term;
+}
+
+static long long quadrant(long long k)
+{
+    long long q = k % 4;
+    return (q + 4) % 4;
 }
 
 float cis2_cos_pinned(float x)
 {
     float r;
-    two_pi_reduce(x, &r);
-    float r2 = r * r;
-    float poly = cis2_f32_from_bits(COS_COEF_BITS[10]);
-    for (int i = 9; i >= 0; i--) {
-        poly = poly * r2 + cis2_f32_from_bits(COS_COEF_BITS[i]);
+    long long k;
+    reduce_pi_2(x, &r, &k);
+    float sr = sin_poly(r);
+    float cr = cos_poly(r);
+    switch (quadrant(k)) {
+        case 0: return cr;
+        case 1: return -sr;
+        case 2: return -cr;
+        default: return sr;
     }
-    return poly;
 }
 
 float cis2_sin_pinned(float x)
 {
     float r;
-    two_pi_reduce(x, &r);
-    float r2 = r * r;
-    float poly = cis2_f32_from_bits(SIN_COEF_BITS[10]);
-    for (int i = 9; i >= 0; i--) {
-        poly = poly * r2 + cis2_f32_from_bits(SIN_COEF_BITS[i]);
+    long long k;
+    reduce_pi_2(x, &r, &k);
+    float sr = sin_poly(r);
+    float cr = cos_poly(r);
+    switch (quadrant(k)) {
+        case 0: return sr;
+        case 1: return cr;
+        case 2: return -sr;
+        default: return -cr;
     }
-    return poly * r;
 }
 
 /* ---- §6.4 SiLU ---- */
@@ -300,10 +336,21 @@ void cis2_feed_table_digest(cis2_sha256_ctx *ctx)
     feed_f32_le(ctx, EXP_C1_BITS);
     feed_f32_le(ctx, EXP_C2_BITS);
     for (int i = 0; i < 6; i++) feed_f32_le(ctx, EXP_P_BITS[i]);
-    feed_f32_le(ctx, TWO_PI_HI_BITS);
-    feed_f32_le(ctx, TWO_PI_LO_BITS);
-    for (int i = 0; i < 11; i++) feed_f32_le(ctx, SIN_COEF_BITS[i]);
-    for (int i = 0; i < 11; i++) feed_f32_le(ctx, COS_COEF_BITS[i]);
+    /* v0.3b: one 8-byte f64 octant-reduction constant (PI_2_F64), then the
+     * two SEPARATE degree-7/8 minimax polynomials' coefficients, replacing
+     * v0.2/v0.3's degree-10 Taylor tables. */
+    {
+        uint64_t bits = PI_2_F64_BITS;
+        uint8_t b[8];
+        for (int i = 0; i < 8; i++) b[i] = (uint8_t)((bits >> (8 * i)) & 0xFFu);
+        cis2_sha256_update(ctx, b, 8);
+    }
+    feed_f32_le(ctx, SIN_C0_BITS);
+    feed_f32_le(ctx, SIN_C1_BITS);
+    feed_f32_le(ctx, SIN_C2_BITS);
+    feed_f32_le(ctx, COS_C0_BITS);
+    feed_f32_le(ctx, COS_C1_BITS);
+    feed_f32_le(ctx, COS_C2_BITS);
     feed_f32_le(ctx, LOG_SQRTHF_BITS);
     feed_f32_le(ctx, LOG_Q1_BITS);
     feed_f32_le(ctx, LOG_Q2_BITS);
