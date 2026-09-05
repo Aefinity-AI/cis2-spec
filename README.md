@@ -1,6 +1,6 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
-**Claim:** given a normative specification (`docs/CIS2_SPEC_v0.2.md`) for
+**Claim:** given a normative specification (`docs/CIS2_SPEC_v0.3b.md`) for
 an fp32 transformer forward pass — pinned floating-point environment,
 pinned reduction order, pinned transcendental polynomials, pinned digest
 format — independently-written implementations reproduce **bit-identical**
@@ -22,7 +22,7 @@ implementations shipped here — reproduce the primary bit-identical
 `CIS2_REF` digest for `HuggingFaceTB/SmolLM2-135M`, prompt `"Once upon a
 time"`, 16 greedy-decoded tokens, on both x86_64 and aarch64 (`verify3/`
 additionally under both gcc and clang). This is the pinned §13.1 test
-vector in `docs/CIS2_SPEC_v0.2.md` and `EXPECTED_DIGESTS.md`. The 20-cell
+vector in `docs/CIS2_SPEC_v0.3b.md` and `EXPECTED_DIGESTS.md`. The 20-cell
 compiler/ISA invariance matrix, the Qwen2.5-0.5B/1.5B results, and the
 128-/512-token decode horizons were obtained with `src/`, the Rust
 reference implementation included in this repository, not with the
@@ -66,7 +66,7 @@ make -C verify3                            # builds the C clean-room (verify3/)
 scripts/self_check.sh                      # does all of the above and diffs against EXPECTED_DIGESTS.md
 ```
 
-Expected result: `CIS2_VERIFY3 digest=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da`,
+Expected result: `CIS2_VERIFY3 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`,
 matching `EXPECTED_DIGESTS.md`. `verify2/` (Rust) reproduces the same
 digest; see `.github/workflows/verify.yml` for the exact build/run
 sequence on both x86_64 and aarch64 CI runners.
@@ -85,7 +85,7 @@ fixed-format output) when it is not — so it also runs on macOS/BSD grep.
 
 Both clean-room verifiers in this repository — `verify2/` (Rust) and
 `verify3/` (C) — were written by isolated AI coding agents (Claude, via
-Claude Code), each operating from `docs/CIS2_SPEC_v0.2.md` alone, with no
+Claude Code), each operating from `docs/CIS2_SPEC_v0.3b.md` alone, with no
 access to the private reference implementation and no access to each
 other's work. Both agents were operated by the same sole author/operator
 (Aefinity AI Inc.) on the same day; the independence claim rests on the
@@ -127,7 +127,7 @@ full, honest list):
 
 ## How to submit your own clean-room implementation
 
-1. Read `docs/CIS2_SPEC_v0.2.md` only. Do not read `verify2/` or
+1. Read `docs/CIS2_SPEC_v0.3b.md` only. Do not read `verify2/` or
    `verify3/`'s source before or during your implementation — treat them
    the same way this repository's own authors treat the (private,
    unpublished) reference implementation: off-limits until your
@@ -168,8 +168,9 @@ Apache-2.0. See `LICENSE` and `NOTICE`.
 ## Repository layout
 
 ```
-docs/CIS2_SPEC_v0.2.md   the normative specification
-CHANGELOG.md             v0.1 -> v0.2 -> v0.2.1 changes
+docs/CIS2_SPEC_v0.3b.md   the normative specification (current)
+docs/CIS2_SPEC_v0.2.md   superseded, kept for history
+CHANGELOG.md             v0.1 -> v0.2 -> v0.2.1 -> v0.3 -> v0.3b changes
 EXPECTED_DIGESTS.md       pinned + informative digest values
 src/                      reference implementation (Rust), the spec's own
                           audit trail (Appendix A cites src/*.rs:line)
@@ -196,7 +197,7 @@ cargo build --release -j2
 nice ./target/release/cis2_ref     # weights/, prompt "Once upon a time", 16 tokens
 ```
 
-Expected: a `CIS2_REF digest=a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da`
+Expected: a `CIS2_REF digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`
 line, matching `EXPECTED_DIGESTS.md` and the `verify2`/`verify3` clean-room
 result above. No timing numbers are printed or recorded by this
 repository (Rule A); `nice` is used only to be a considerate neighbor on

@@ -1,11 +1,34 @@
 # Expected digests
 
 All digests below are SHA-256, lowercase hex. These are the pinned values
-a conforming clean-room implementation of `docs/CIS2_SPEC_v0.2.md` MUST
-reproduce bit-for-bit. No timing numbers are recorded anywhere in this
-repository by policy.
+a conforming clean-room implementation of `docs/CIS2_SPEC_v0.3b.md` (current)
+MUST reproduce bit-for-bit. No timing numbers are recorded anywhere in this
+repository by policy. Historical v0.2 digests are kept below for reference.
 
-## Primary normative test vector (§13.1): SmolLM2-135M, `gen_toks=16`
+## Primary normative test vector (§13.1, spec v0.3b): SmolLM2-135M, `gen_toks=16`
+
+Model: `HuggingFaceTB/SmolLM2-135M`, prompt `"Once upon a time"`, 16
+greedy-decoded tokens, fp32 compute. Only `table_digest` and `CIS2_REF`
+changed from v0.2 (RoPE range-reduction fix, see CHANGELOG.md v0.3/v0.3b);
+`inv_freq_table_digest`, `argmax_digest`, and `generated_token_ids` are
+unchanged from v0.1/v0.2.
+
+```
+weights_sha256          = 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+config_sha256            = 1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+tokenizer_sha256          = 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+table_digest              = 23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest     = da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+argmax_digest             = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+generated_token_ids       = 28,665,436,253,1838,8180,3365,14176,30,2306,4161,281,253,2066,2291,351
+
+CIS2_REF (witness digest) = d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
+```
+
+This is the value `scripts/self_check.sh` builds `verify3/` and compares
+against.
+
+## Historical: spec v0.2 primary test vector (superseded)
 
 Model: `HuggingFaceTB/SmolLM2-135M`, prompt `"Once upon a time"`, 16
 greedy-decoded tokens, fp32 compute.
@@ -22,8 +45,12 @@ generated_token_ids     = 28,665,436,253,1838,8180,3365,14176,30,2306,4161,281,2
 CIS2_REF (witness digest) = a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da
 ```
 
-This is the value `scripts/self_check.sh` builds `verify3/` and compares
-against.
+Superseded by the v0.3b vector above; `scripts/self_check.sh` now targets
+v0.3b's `CIS2_REF`.
+
+**Note:** the informative 128-token, Qwen2.5-0.5B, and scale/horizon
+vectors below were generated and confirmed against spec v0.2 only; they
+have not been re-run against v0.3b as part of this port.
 
 ## Informative: 128-token prompt set (SmolLM2-135M, spec v0.2)
 

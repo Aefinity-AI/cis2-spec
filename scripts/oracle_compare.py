@@ -5,17 +5,24 @@ reference, for comparison against src/main.rs's CIS2_REF output.
 
 Not part of the CIS-2 normative reference itself -- this is an external
 correctness check only. See docs/E15b_m1p5_CORRECTNESS.md.
+
+E15m update: parameterized N_GEN via CIS2_ORACLE_N_GEN (was a hardcoded
+16), switched to KV-cache incremental decode (was full-reforward every
+step -- O(N_GEN^2), impractical at N_GEN=2048), and added the
+CIS2_ORACLE_DUMP_LASTSTEP final-step logit dump, mirroring the pattern
+already used by scripts/oracle_compare_qwen.py for longer-horizon checks.
 """
+import os
 import sys
-import json
 import struct
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-WEIGHTS_DIR = "weights"
+WEIGHTS_DIR = sys.argv[2] if len(sys.argv) > 2 else \
+    "weights"
 PROMPT = "Once upon a time"
-N_GEN = 16
+N_GEN = int(os.environ.get("CIS2_ORACLE_N_GEN", "16"))
 
 def main():
     torch.manual_seed(0)
@@ -42,10 +49,21 @@ def main():
     generated = list(prompt_ids)
     step0_logits = None
 
+    # KV-cache incremental decode (E15m): avoids O(N_GEN^2) re-forward,
+    # needed for N_GEN=2048; matches the Rust reference's own KV cache.
+    past_key_values = None
     with torch.no_grad():
         for step in range(N_GEN):
-            out = model(input_ids=input_ids)
-            logits = out.logits[0, -1, :]  # last position, full vocab
+            if past_key_values is None:
+                out = model(input_ids=input_ids, use_cache=True)
+            else:
+                out = model(
+                    input_ids=input_ids[:, -1:],
+                    past_key_values=past_key_values,
+                    use_cache=True,
+                )
+            past_key_values = out.past_key_values
+            logits = out.logits[0, -1, :]
             if step == 0:
                 step0_logits = logits.clone()
             next_id = int(torch.argmax(logits).item())
@@ -69,6 +87,21 @@ def main():
         for v in arr:
             f.write(struct.pack("<f", float(v)))
     print(f"wrote step-0 logits ({len(arr)} f32 values) to {out_path}", file=sys.stderr)
+
+    # E15m: final-step logit dump (mirrors CIS2_DUMP_LASTSTEP_LOGITS on the
+    # Rust side), for longer-horizon oracle checks (128/512/2048).
+    laststep_path = os.environ.get("CIS2_ORACLE_DUMP_LASTSTEP")
+    if laststep_path:
+        with torch.no_grad():
+            out = model(input_ids=input_ids)
+            last_logits = out.logits[0, -1, :].to(torch.float32).numpy()
+        with open(laststep_path, "wb") as f:
+            for v in last_logits:
+                f.write(struct.pack("<f", float(v)))
+        print(
+            f"wrote final-step logits ({len(last_logits)} f32 values) to {laststep_path}",
+            file=sys.stderr,
+        )
 
 
 if __name__ == "__main__":
