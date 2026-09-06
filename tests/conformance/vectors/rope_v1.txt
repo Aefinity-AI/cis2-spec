@@ -1,0 +1,16 @@
+# CIS-2 conformance vector: rope_v1
+# op=rope_table, spec ref: docs/CIS2_SPEC_v0.2.md §7 (RoPE)
+#
+# Fields are `key=value`. head_dim and positions are plain decimal
+# integers (no ambiguity: head_dim is a small config constant, and
+# `positions` values are sequence positions, cast to f32 *exactly* per
+# §7.3 -- both are exact integers well within f32's exact-integer range,
+# so there is no float-parsing-rounding ambiguity to route around here,
+# unlike genuinely fractional float inputs). rope_theta_bits is the single
+# f32 bit pattern of rope_theta (comma-separated 0x-prefixed 32-bit hex
+# convention, per tests/conformance/README.md, applied to a length-1 list).
+op=rope_table
+spec_ref=docs/CIS2_SPEC_v0.2.md#7-rope-normative
+head_dim=8
+rope_theta_bits=0x461C4000
+positions=0,3

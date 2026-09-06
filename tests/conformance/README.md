@@ -8,8 +8,8 @@ in `EXPECTED_DIGESTS.md` (which requires the SmolLM2-135M weights and a
 full forward pass): each vector here exercises exactly one primitive with
 a small, hand-sized input.
 
-**Status: first slice.** Only the RMSNorm vector (§8) exists so far. See
-"What's missing" at the bottom.
+**Status: second slice.** RMSNorm (§8) and RoPE table (§7) vectors exist so
+far. See "What's missing" at the bottom.
 
 ## Protocol
 
@@ -90,12 +90,66 @@ from the reference implementation; the test now exists as a standing
 self-check that the fixture stays correct across any future edit to
 `src/math.rs`.
 
+### `rope_v1` (§7 RoPE table: `inv_freq` + per-position cos/sin)
+
+- Spec reference: `docs/CIS2_SPEC_v0.2.md` §7 (RoPE), specifically §7.1
+  (`inv_freq` construction via the general, theta-general
+  `ln_pinned(rope_theta)` / `exp_pinned` route — not v0.1's hardcoded
+  literal), §7.2 (`inv_freq_table_digest`), and §7.3 (per-position
+  cos/sin table). §7.4 (rotate-half application to a query/key head) is
+  NOT covered by this vector — it is pure elementwise arithmetic given a
+  cos/sin table and is deferred to a future attention-block vector (see
+  "What's missing").
+- `head_dim=8` (so `half = head_dim/2 = 4`; deliberately small and
+  hand-checkable, same rationale as `rmsnorm_v1`'s `n=8` — the real model
+  uses `head_dim=64`, but the construction is length-independent).
+- `rope_theta=10000.0` (`0x461C4000`) — deliberately **not** one of the
+  two model-pinned values (`100000.0` SmolLM2, `1000000.0` Qwen2.5-0.5B)
+  cited in spec §7's "which `rope_theta` values are conformant" note, to
+  exercise the theta-general `ln_pinned` path at an arbitrary value rather
+  than only the two values the spec's own worked examples use.
+- `positions=0,3` — two hand-sized sequence positions (§7.3's `pos`,
+  cast to f32 exactly), to exercise both the degenerate `pos=0` case
+  (`angle=0` for every `i`, so `cos_v` is all `1.0` and `sin_v` is all
+  `0.0` bit-exactly — a useful sanity check that range reduction doesn't
+  perturb the zero case) and a nonzero case.
+- `out_bits` layout (20 values, index order): `inv_freq[0..4)`, then
+  `cos_v[0..4)`/`sin_v[0..4)` at `pos=0`, then `cos_v[0..4)`/`sin_v[0..4)`
+  at `pos=3` — see the header comment in `rope_v1.expected` for the exact
+  slice boundaries.
+- Two digests are pinned: `out_sha256` (this suite's general convention,
+  full output, same as `rmsnorm_v1`) and `inv_freq_table_digest` (raw
+  SHA-256 over only the `inv_freq` values, index order — the same
+  construction as spec §7.2 and `src/main.rs`'s own
+  `inv_freq_table_digest` variable, so this vector can also be checked
+  directly against that specific spec definition).
+
+**How this vector was derived**: `tests/conformance_rope.rs` includes
+`src/math.rs` by path (`ln_pinned`, `exp_pinned`, `cos_pinned`,
+`sin_pinned` — the same functions `src/main.rs` calls for the full-model
+inv_freq/cos/sin construction) and reimplements §7.1/§7.2/§7.3 verbatim,
+then asserts both the per-element bit patterns and both digests match
+`vectors/rope_v1.expected`. Run it with:
+
+```
+cargo test --test conformance_rope
+```
+
+This was run once while authoring the vector to derive `rope_v1.expected`
+from the reference implementation; the test now exists as a standing
+self-check that the fixture stays correct across any future edit to
+`src/math.rs`. (An `#[ignore]`d `print_bits_for_generation` test in the
+same file is not part of the pinned suite; it exists only to
+regenerate the fixture if the reference math ever changes — run with
+`cargo test --test conformance_rope print_bits -- --ignored --nocapture`.)
+
 ## What's missing (next pass, E21 continues)
 
-This is a first slice of a larger task. Not yet done:
+This is a second slice of a larger task. Not yet done:
 
-- RoPE table vector (§7's `inv_freq` construction + rotation, general
-  `rope_theta`).
+- RoPE §7.4 rotation vector (apply a pinned cos/sin table to a hand-sized
+  query/key head slice — pure elementwise arithmetic, not covered by
+  `rope_v1` above).
 - `exp_pinned`/softmax table vector (§3.3(b), §10).
 - One full attention block vector (§9: GQA score/softmax/V-mix on a
   hand-sized `n_heads`/`head_dim`, not the full 576-wide model).

@@ -1,0 +1,23 @@
+# Pinned expected output for rope_v1.txt, computed by running the
+# reference implementation's RoPE table construction
+# (src/math.rs::ln_pinned/exp_pinned/cos_pinned/sin_pinned, same functions
+# src/main.rs uses for inv_freq / inv_freq_table_digest / the §7.3
+# cos/sin loop) via `cargo test --test conformance_rope` (see
+# tests/conformance_rope.rs and tests/conformance/README.md "How this
+# vector was derived").
+#
+# out_bits layout (20 values, index order):
+#   [0..4)   inv_freq[0..half)                       (§7.1, half=4)
+#   [4..8)   cos_v[0..half) at pos=0                  (§7.3)
+#   [8..12)  sin_v[0..half) at pos=0                  (§7.3)
+#   [12..16) cos_v[0..half) at pos=3                  (§7.3)
+#   [16..20) sin_v[0..half) at pos=3                  (§7.3)
+out_bits=0x3F800000,0x3DCCCCCC,0x3C23D70A,0x3A83126E,0x3F800000,0x3F800000,0x3F800000,0x3F800000,0x00000000,0x00000000,0x00000000,0x00000000,0xBF7D7022,0x3F7490EF,0x3F7FE283,0x3F7FFFB5,0x3E1081B4,0x3E974E6C,0x3CF5B920,0x3B449B92
+out_sha256=42182d26d0adcc08d7c752c20422cafb38cbf4cde49f72ac319eb9c0953cc5cb
+# §7.2-specific digest: raw-bytes SHA-256 over only the inv_freq[0..half)
+# values (LE bytes, index order) -- the same construction as the spec's
+# own `inv_freq_table_digest` (§7.2) and `src/main.rs`'s
+# `inv_freq_table_digest` variable, so this vector can be checked directly
+# against that definition, not just this suite's general out_sha256
+# convention.
+inv_freq_table_digest=dfed0e89b6a1a7fcc1eca52713c491c0d0be5472e34c2c4682bda2c8266e0077
