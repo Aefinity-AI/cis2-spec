@@ -1,0 +1,19 @@
+# CIS-2 conformance vector: exp_pinned_v1
+# op=exp_pinned, spec ref: docs/CIS2_SPEC_v0.2.md §6.2 (pinned exp(x)
+# polynomial, route (b) fallback described in src/math.rs::exp_pinned).
+#
+# Fields are `key=value`. x_bits is a comma-separated list of
+# `0x`-prefixed 32-bit hex strings, each the raw IEEE-754 binary32 bit
+# pattern of one input element, in index order (index 0 first).
+#
+# n=8, deliberately small and hand-sized (same rationale as rmsnorm_v1's
+# n=8 / rope_v1's head_dim=8), spanning §6.2's documented accuracy domain
+# `x in [-40,40]` (softmax post-max-sub args <= 0, SiLU gate args, RoPE
+# inv_freq exponents): the two domain endpoints (-40, 40), a couple of
+# mid-range values on each side (-10, -1, 10), the two special values
+# 0.0 and 1.0 (exp(0)=1 exactly is a useful bit-exact sanity check), and
+# 0.5 to exercise a non-integer, non-zero small positive value.
+op=exp_pinned
+spec_ref=docs/CIS2_SPEC_v0.2.md#62-pinned-transcendentals
+n=8
+x_bits=0xC2200000,0xC1200000,0xBF800000,0x00000000,0x3F000000,0x3F800000,0x41200000,0x42200000

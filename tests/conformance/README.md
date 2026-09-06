@@ -1,4 +1,4 @@
-# CIS-2 third-party conformance suite (E21, slice 1: RMSNorm only)
+# CIS-2 third-party conformance suite (E21, slice 3: RMSNorm, RoPE table, exp_pinned)
 
 This directory lets someone with an independent CIS-2 implementation
 check individual normative primitives against pinned vectors, without
@@ -8,8 +8,9 @@ in `EXPECTED_DIGESTS.md` (which requires the SmolLM2-135M weights and a
 full forward pass): each vector here exercises exactly one primitive with
 a small, hand-sized input.
 
-**Status: second slice.** RMSNorm (§8) and RoPE table (§7) vectors exist so
-far. See "What's missing" at the bottom.
+**Status: third slice.** RMSNorm (§8), RoPE table (§7), and exp_pinned
+(§6.2 pinned exp() polynomial) vectors exist so far. See "What's missing"
+at the bottom.
 
 ## Protocol
 
@@ -143,14 +144,57 @@ same file is not part of the pinned suite; it exists only to
 regenerate the fixture if the reference math ever changes — run with
 `cargo test --test conformance_rope print_bits -- --ignored --nocapture`.)
 
+### `exp_pinned_v1` (§6.2 pinned exp(x) polynomial)
+
+- Spec reference: `docs/CIS2_SPEC_v0.2.md` §6.2 (the pinned exp(x) route
+  (b) fallback described normatively in `src/math.rs::exp_pinned`'s module
+  doc comment) — the same function used by §7.1's RoPE `inv_freq`
+  construction (already exercised indirectly by `rope_v1` above), §9's
+  softmax, and SiLU's gate.
+- `n=8` (deliberately small and hand-sized, same rationale as
+  `rmsnorm_v1`'s `n=8` / `rope_v1`'s `head_dim=8`).
+- Inputs span §6.2's documented accuracy domain `x in [-40,40]` (softmax
+  post-max-sub args <= 0, SiLU gate args, RoPE inv_freq exponents): the two
+  domain endpoints (`-40.0`, `40.0`), mid-range values on each side
+  (`-10.0`, `-1.0`, `10.0`), the two special values `0.0` and `1.0`
+  (`exp(0)=1` exactly is a useful bit-exact sanity check that range
+  reduction doesn't perturb the zero case), and `0.5` for a non-integer,
+  non-zero small positive value.
+- `out_bits` layout: 8 values, index order matching `x_bits`.
+- Only the general `out_sha256` convention is pinned here (no
+  table-specific digest, unlike `rope_v1`'s `inv_freq_table_digest`) —
+  `src/math.rs::table_digest()` already covers the exp/sin/cos/ln
+  coefficient tables as a whole (see `EXPECTED_DIGESTS.md`); this vector
+  is about the *function's output* on specific inputs, not the
+  coefficients themselves.
+
+**How this vector was derived**: `tests/conformance_exp_pinned.rs`
+includes `src/math.rs` by path (`exp_pinned` — the same function
+`src/main.rs`/`src/math.rs::silu_pinned`/`src/math.rs::softmax_seq` call)
+and evaluates it directly on each `x_bits` input, computes the SHA-256
+digest per the convention above, and asserts both the bit patterns and
+the digest match `vectors/exp_pinned_v1.expected`. Run it with:
+
+```
+cargo test --test conformance_exp_pinned
+```
+
+This was run once while authoring the vector (see `LOG.md`/commit
+message for the exact `cargo test` output) to derive
+`exp_pinned_v1.expected` from the reference implementation; the test now
+exists as a standing self-check that the fixture stays correct across any
+future edit to `src/math.rs`. (An `#[ignore]`d `print_bits_for_generation`
+test in the same file is not part of the pinned suite; it exists only to
+regenerate the fixture if the reference math ever changes — run with
+`cargo test --test conformance_exp_pinned print_bits -- --ignored --nocapture`.)
+
 ## What's missing (next pass, E21 continues)
 
-This is a second slice of a larger task. Not yet done:
+This is a third slice of a larger task. Not yet done:
 
 - RoPE §7.4 rotation vector (apply a pinned cos/sin table to a hand-sized
   query/key head slice — pure elementwise arithmetic, not covered by
   `rope_v1` above).
-- `exp_pinned`/softmax table vector (§3.3(b), §10).
 - One full attention block vector (§9: GQA score/softmax/V-mix on a
   hand-sized `n_heads`/`head_dim`, not the full 576-wide model).
 - One `matvec` vector (§5.2).
