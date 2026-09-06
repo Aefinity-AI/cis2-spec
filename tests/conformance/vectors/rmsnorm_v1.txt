@@ -1,0 +1,13 @@
+# CIS-2 conformance vector: rmsnorm_v1
+# op=rmsnorm, spec ref: docs/CIS2_SPEC_v0.2.md §8
+#
+# Fields are `key=value`. Vector fields (x_bits, gamma_bits) are
+# comma-separated lists of `0x`-prefixed 32-bit hex, each the raw IEEE-754
+# binary32 bit pattern of one element, in index order (index 0 first).
+# eps_bits is the single f32 bit pattern for CIS-2 EPS_F32 (§2.3).
+op=rmsnorm
+spec_ref=docs/CIS2_SPEC_v0.2.md#8-rmsnorm-normative
+n=8
+eps_bits=0x3727C5AC
+x_bits=0x3F800000,0xC0000000,0x40400000,0x3F000000,0xBF000000,0x40800000,0xBFC00000,0x40100000
+gamma_bits=0x3F000000,0x3FC00000,0x3F800000,0x40000000,0x3E800000,0x3F800000,0x40400000,0x3F400000
