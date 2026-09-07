@@ -1,0 +1,11 @@
+# Pinned expected output for attention_block_v1.txt, computed by running
+# the reference implementation's §9.2/§9.3/§9.4 attention pipeline
+# (src/math.rs::dot_seq/rsqrt_cr/softmax_seq, the same functions
+# src/main.rs's per-layer attention loop calls) via
+# `cargo test --test conformance_attention_block` (see
+# tests/conformance_attention_block.rs and
+# tests/conformance/README.md "How this vector was derived").
+#
+# out_bits layout (8 values, index order): out_head[0..head_dim).
+out_bits=0x3EE07710,0x3F0FC478,0x3F5F2076,0xBEB2D98A,0x3E429008,0x3F4F5BFE,0x3D7C477E,0x3F5F2076
+out_sha256=65aecf9371ddb897b2075931594b6ff7bce93f33546089f0d733f1698a7ebfd9

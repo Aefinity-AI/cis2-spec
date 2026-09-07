@@ -6,6 +6,10 @@ edition = "2024"
 # CIS-2 fp32 reference implementation (E15b, milestone 1).
 # See docs/E15b_REFERENCE_RESULT.md for background.
 
+[[bin]]
+name = "cis2-conformance"
+path = "src/bin/cis2_conformance.rs"
+
 [dependencies]
 safetensors = "0.8"
 tokenizers = { version = "0.23", default-features = false, features = ["onig"] }
