@@ -71,6 +71,50 @@ jobs:
           [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
           echo "PASS: reference (${{ matrix.arch_label }}) matches CIS2_REF"
 
+  # --- conformance: E21 cis2-conformance suite (tests/conformance/PROTOCOL.md)
+  # run dual-ISA against the in-repo reference candidate
+  # (src/bin/cis2_conformance_reference_candidate.rs). Each ISA job
+  # independently asserts all pinned vectors pass; the vectors are pinned
+  # digests (tests/conformance/vectors/*.expected) so identical PASS on
+  # both ISAs is the cross-ISA agreement check (no wall-clock/timing
+  # comparison — correctness gate only).
+  conformance:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: uname (assert matches expected arch)
+        run: |
+          U=$(uname -m)
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
+          else
+            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+          fi
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      - name: Build cis2-conformance and reference candidate (release)
+        run: cargo build --release -j2 --bin cis2-conformance --bin cis2_conformance_reference_candidate
+
+      - name: Run cis2-conformance suite against reference candidate
+        run: |
+          set -euo pipefail
+          ./target/release/cis2-conformance ./target/release/cis2_conformance_reference_candidate | tee /tmp/conformance_output.txt
+          grep -qE '^all [0-9]+ vector\(s\) passed$' /tmp/conformance_output.txt || { echo "MISMATCH: not all conformance vectors passed (${{ matrix.arch_label }})"; exit 1; }
+          echo "PASS: conformance suite (${{ matrix.arch_label }}) — all vectors passed"
+
   # --- verify2: Rust clean-room ---
   verify2:
     strategy:
