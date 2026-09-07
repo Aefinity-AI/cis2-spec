@@ -66,3 +66,36 @@ written from scratch for this task, handles objects/arrays/strings
 (with `\"`, `\\`, `\/`, `\n` etc. and `\uXXXX` escapes)/numbers/
 true/false/null, sufficient to parse both `model.safetensors`' JSON
 header and `tokenizer.json`.
+
+## E15m update (spec v0.3, §6.3 f64-staged pi reduction)
+
+Read `docs/CIS2_SPEC_v0.3.md` §6.3/§6.6 text only and rewrote
+`two_pi_reduce()` in `verify3/mathpin.c` to stage the range reduction
+through `double` (f64) per the spec text: exact widening cast, `round()`
+of the f64 quotient, f64 multiply/subtract, single narrowing cast back to
+`float`. Added `cis2_f64_from_bits()` to `mathpin.h` (same pattern as the
+existing `cis2_f32_from_bits()`/`cis2_f32_bits()` helpers, `memcpy`-based
+bit reinterpretation, no library call). Updated `cis2_feed_table_digest()`
+to hash the 8 LE bytes of the new `TWO_PI_F64` constant in place of the
+two old 4-byte halves. Updated `main.c`'s pinned expected-digest literals
+(`PINNED_TABLE_DIGEST_HEX`, `PINNED_WITNESS_DIGEST_HEX`) to the new spec
+v0.3 values. Built with the existing `-ffp-contract=off -fno-fast-math
+-mno-fma` flags (unchanged Makefile) -- no new compiler flags needed for
+the f64 stage. Ran locally (x86_64): `conformance=PASS`, digest
+`90f7484e4cb523e40cd44d79491d3d7aba124e65205db80bc0ba1ab30a8f9890`,
+matches `cis2_ref` and `verify2` bit-for-bit.
+
+## E15m update #2 (spec v0.3b, §6.3 octant reduction + minimax polynomials)
+
+Coordinator directive after v0.3's gate (2) partial-pass (see
+docs/E15m_RESULT.md): read the updated CIS2_SPEC_v0.3.md §6.3/§6.6 text
+only and replaced `two_pi_reduce()`/`SIN_COEF_BITS`/`COS_COEF_BITS` with
+`reduce_pi_2()` (r in [-pi/4,pi/4] + `long long` quadrant index k, still
+f64-staged) and separate `sin_poly()`/`cos_poly()` minimax polynomials
+(Cephes sinf/cosf coefficients, pinned as `#define` hex literals), selected
+and signed via a `quadrant()`/`switch` per the spec's quadrant identity
+table. Updated `cis2_feed_table_digest()` and `main.c`'s pinned
+`PINNED_TABLE_DIGEST_HEX`/`PINNED_WITNESS_DIGEST_HEX` literals to the new
+v0.3b values. Ran locally (x86_64): `conformance=PASS`, digest
+`d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`,
+matches `cis2_ref` and `verify2` bit-for-bit.

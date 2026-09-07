@@ -48,6 +48,62 @@ map, GPT-2 ByteLevel pre-tokenizer regex plus digit pre-split, rank-ordered
 merge algorithm, special-token handling, and a worked example). No §13
 test-vector value changed.
 
+## v0.3 (2026-08-29, PARTIAL -- superseded by v0.3b)
+
+Attempted to close CIS-2's one remaining stated technical limitation
+(v0.2 section 6.7): `sin_pinned`/`cos_pinned`'s range reduction is
+staged through f64 instead of two f32 half-constants, fixing
+catastrophic-cancellation accuracy loss that grew with RoPE position (up
+to 1104 ULP by position 19 in v0.2; ~0.58 relative, unusable, toward
+position 8192).
+
+**What changed:** section 6.3 (reduction only, not the degree-10 Taylor
+polynomials); section 6.6 (`table_digest` now hashes one 8-byte
+`TWO_PI_F64` constant in place of v0.2's two 4-byte halves).
+
+**Net effect on test vectors:** `CIS2_REF` changed (`a0c563ef80...` ->
+`90f7484e4c...`); `table_digest` changed (`465d358ccd...` ->
+`986abc500e...`); `inv_freq_table_digest`, `argmax_digest`,
+`generated_token_ids` unchanged from v0.2.
+
+**PARTIAL result:** the reduction itself became accurate, but the fixed
+degree-10 Taylor polynomial's own truncation error (worst near `|r| ~
+pi` and at sin/cos zero crossings) remained dominant -- up to 2813 ULP,
+missing the pre-registered <=2 ULP accuracy bar. Superseded by v0.3b.
+
+## v0.3b (2026-08-29)
+
+Closes CIS-2's one remaining stated technical limitation, meeting the
+accuracy bar v0.3 missed. Refines the mechanism: section 6.3 now reduces
+to an octant (`r` in `[-pi/4, pi/4]`, quadrant index `k mod 4`, still
+f64-staged, same Cody-Waite pattern as v0.3 but mod `pi/2` instead of mod
+`2*pi`), then evaluates `sin(r)`/`cos(r)` with separate degree-7/8
+Cephes `sinf`/`cosf` minimax polynomials (not Taylor truncations),
+selected and signed by quadrant.
+
+**What changed:** section 6.3 (reduction period and polynomial, both);
+section 6.6 (`table_digest` now hashes one 8-byte `PI_2_F64` constant
+plus 6 pinned f32 minimax coefficients in place of v0.3's `TWO_PI_F64`
+plus two 11-entry Taylor tables).
+
+**What did not change:** `inv_freq_table_digest`, `argmax_digest`,
+`generated_token_ids` -- unchanged from v0.1/v0.2/v0.3.
+
+**Net effect on test vectors:** `CIS2_REF` changed (v0.3's
+`90f7484e4c...` -> `d82743059d...`); `table_digest` changed (v0.3's
+`986abc500e...` -> `23c7bfaf5c...`).
+
+An accuracy harness (mpmath oracle, RoPE position domain up to
+`max_position_embeddings=8192`) confirms max 1.5 ULP for both sin and
+cos, meeting the pre-registered <=2 ULP bar. `verify2` (Rust) and
+`verify3` (C) clean-rooms were both updated a second time from the
+v0.3b spec text only (not from the reference implementation) and
+reproduce `d82743059d...` bit-for-bit locally on x86_64; see each
+crate's `CLEANROOM_LOG.md`. See `docs/CIS2_SPEC_v0.3b.md` (supersedes
+`docs/CIS2_SPEC_v0.2.md` as the current normative document, which is
+kept for history) and `docs/E15m_RESULT.md`/`docs/E15m_PREREG.md` for
+full detail.
+
 ## v0.1 (2026-08-28)
 
 First draft. Established the normative scope: fp32 transformer decode of

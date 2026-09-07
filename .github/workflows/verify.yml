@@ -7,16 +7,16 @@ on:
   workflow_dispatch: {}
 
 env:
-  # docs/CIS2_SPEC_v0.2.md §13.1, EXPECTED_DIGESTS.md
-  EXPECTED_WITNESS: a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e944221393e85d6261da
+  # docs/CIS2_SPEC_v0.3b.md §13.1, EXPECTED_DIGESTS.md
+  EXPECTED_WITNESS: d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
   EXPECTED_ARGMAX: 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
-  EXPECTED_TABLE: 465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3
+  EXPECTED_TABLE: 23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
   EXPECTED_INVFREQ: da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
   WEIGHTS_SHA256: 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
 
 jobs:
   # --- reference: src/, the Rust reference implementation the spec was
-  # audited against (docs/CIS2_SPEC_v0.2.md Appendix A). Not a clean-room:
+  # audited against (docs/CIS2_SPEC_v0.3b.md Appendix A). Not a clean-room:
   # this is the implementation the spec text describes.
   reference:
     strategy:
