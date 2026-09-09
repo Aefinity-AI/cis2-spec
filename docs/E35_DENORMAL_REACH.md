@@ -1,10 +1,23 @@
 # E35 — Does a real decode ever produce a denormal? Measuring §1.3's reach, not its guard
 
-**Status: closed by measurement. Zero of 21,248,280 `exp_pinned` evaluations across six
-prompts land in the window where §1.3's FTZ/DAZ pin is digest-relevant, and the nearest
-approach is 26.79 away in ln-space. E22 follow-up item 1 — "a denormal-bearing decode
-vector" — is not constructible from these prompts on this checkpoint. §1.3 stays covered
-where it already is covered: at op level.**
+**Status: closed by measurement, and then reopened and closed the other way. Zero of
+21,248,280 `exp_pinned` evaluations across six prompts land in the window where §1.3's
+FTZ/DAZ pin is digest-relevant, and the nearest approach is 26.79 away in ln-space. That
+result is correct as measured and every number below stands.**
+
+**CORRECTION 2026-09-09 (erratum E-10).** The sentence that used to end this header —
+"E22 follow-up item 1 … is not constructible from these prompts on this checkpoint" — was
+carried outward as if it settled the question. It does not.
+[E38](E38_REACH_SWEEP.md) ran the same instrument on 20 cells across **both** §0 models,
+adding non-ASCII prompts and decode lengths to 256 tokens, and **constructed one**:
+Qwen2.5-0.5B, `"Once upon a time"`, 256 generated tokens, softmax argument reaching
+**−88.369385**, with **2** of that cell's 22,626,240 arguments inside
+`[-88.0, -87.33654)`. The margin this document called large is a property of *these six
+prompts on this one checkpoint*, not of the models — §6 below said as much
+("a checkpoint with a much wider logit spread would need re-measuring; the instrument now
+exists to do that in one run"), and that is precisely what happened. What E38 then found
+is that the denormal does **not** move the digest, so §1.3 still has no end-to-end
+necessity witness — see E38 §4 and E22's updated M01 row.
 
 ## 1. What E22 left open, and why the existing counter could not close it
 
@@ -114,6 +127,13 @@ Establishes:
   right one, and `fpenv`'s `pinned_denormal_goldens` and `clearing_the_pin_changes_the_answers`
   already provide exactly that — the second demonstrates that clearing the pin moves every FTZ
   case and no inert one.
+  **Superseded by E38:** *this* checkpoint is not going to supply one; the other §0 checkpoint
+  does, at 256 generated tokens. The generalisation from "these six prompts" to "ordinary
+  prompts" was the error, and it is the same shape as erratum E-9's — a maximum measured over
+  chosen inputs, quoted as a bound over inputs nobody chose. Decode-level coverage turned out
+  to be the right instrument after all, once pointed at a long enough decode on a second model.
+  (E38 also found that the FTZ half of the op-level self-test cited here could not fail:
+  erratum E-11.)
 
 Does not establish:
 
