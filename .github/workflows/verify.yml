@@ -355,61 +355,65 @@ jobs:
           [ "$invfreq" = "$EXPECTED_INVFREQ" ] || { echo "MISMATCH: inv_freq_table digest"; fail=1; }
           exit $fail
 
-  # --- intermediates: §13.5 / E29 at CI granularity. Every other job here
-  # compares digests of the *output*. This one compares all 51,750,154 bytes
-  # of every intermediate activation — 7,467 tensors — against a pinned
-  # digest, on both ISAs and on real silicon rather than under emulation.
-  # A reassociation that the optimizer performed on one target and not the
-  # other would move these bytes long before it moved a logit enough to
-  # change a token (E29 §5: one flipped weight bit moved 570 tensors and
-  # zero argmax decisions).
+  # --- intermediates: §13.5 / E29 at CI granularity, over §13.4's full matrix.
+  # Every other job here compares digests of the *output*. This one compares
+  # all 51,750,154 bytes of every intermediate activation — 7,467 tensors —
+  # against a pinned digest, across all 20 cells of §13.4's compiler matrix:
+  # {x86_64, aarch64} × {opt-level 0,1,2,3,s} × {target-cpu generic, native},
+  # on real silicon of both ISAs rather than under emulation.
+  #
+  # The granularity is the point. E29 §5 measured that one flipped weight
+  # mantissa bit moves 570 of 7,467 tensors and *zero* argmax decisions, so a
+  # divergence this job catches is one an output-digest job would not.
   intermediates:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-24.04
-            arch_label: x86_64
-            rustflags: ""
-          - os: ubuntu-24.04
-            arch_label: x86_64
-            rustflags: "-C target-cpu=native"
-          - os: ubuntu-24.04-arm
-            arch_label: aarch64
-            rustflags: ""
-          - os: ubuntu-24.04-arm
-            arch_label: aarch64
-            rustflags: "-C target-cpu=native"
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        optlevel: ["0", "1", "2", "3", "s"]
+        targetcpu: [generic, native]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: uname (assert matches expected arch)
+      - name: Record architecture
+        id: arch
         run: |
           U=$(uname -m)
-          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
-            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
-          else
-            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
-          fi
+          echo "label=$U" >> "$GITHUB_OUTPUT"
+          case "${{ matrix.os }}" in
+            *-arm) [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; } ;;
+            *)     [ "$U" = "x86_64" ]  || { echo "expected x86_64, got $U"; exit 1; } ;;
+          esac
 
       - name: Install Rust (pinned via rust-toolchain.toml)
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: "1.98.0"
 
+      # Keyed on the pinned artifact digest, so 20 cells fetch the 500 MB
+      # checkpoint once rather than twenty times.
+      - name: Cache pinned weights
+        id: wcache
+        uses: actions/cache@v4
+        with:
+          path: weights
+          key: weights-${{ env.WEIGHTS_SHA256 }}
+
       - name: Fetch pinned weights (SmolLM2-135M)
+        if: steps.wcache.outputs.cache-hit != 'true'
         run: |
           chmod +x scripts/fetch_weights.sh
           ./scripts/fetch_weights.sh weights
 
-      - name: Build layer_dump (release${{ matrix.rustflags && ', ' }}${{ matrix.rustflags }})
+      - name: Build layer_dump (opt-level ${{ matrix.optlevel }}, target-cpu ${{ matrix.targetcpu }})
         working-directory: cis2-verify
         env:
-          RUSTFLAGS: ${{ matrix.rustflags }}
+          CARGO_PROFILE_RELEASE_OPT_LEVEL: ${{ matrix.optlevel }}
+          RUSTFLAGS: ${{ matrix.targetcpu == 'native' && '-C target-cpu=native' || '' }}
         run: cargo build --release -j2 --features layerdump --example layer_dump
 
-      # Records what the compiler actually emitted, so a green run says which
+      # Records what the compiler actually emitted, so a green cell says which
       # code generation the identity survived rather than only that it did.
       - name: Report emitted vector width and assert zero FMA
         run: |
@@ -417,10 +421,10 @@ jobs:
           B=cis2-verify/target/release/examples/layer_dump
           objdump -d "$B" > /tmp/disasm_ld.txt
           echo "binary sha256: $(sha256sum "$B" | cut -d' ' -f1)"
-          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
-            echo "%ymm instructions: $(grep -c '%ymm' /tmp/disasm_ld.txt || true)"
+          if [ "${{ steps.arch.outputs.label }}" = "x86_64" ]; then
+            echo "vector instructions (%ymm): $(grep -c '%ymm' /tmp/disasm_ld.txt || true)"
           else
-            echo "NEON vector instructions: $(grep -cE 'v[0-9]+\.(4s|2d|8h|16b)' /tmp/disasm_ld.txt || true)"
+            echo "vector instructions (NEON): $(grep -cE 'v[0-9]+\.(4s|2d|8h|16b)' /tmp/disasm_ld.txt || true)"
           fi
           if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_ld.txt; then
             echo "FMA-family instruction found in disassembly - spec 1.4 violation"
@@ -438,4 +442,4 @@ jobs:
           [ "$got" = "$EXPECTED_DUMP" ] || { echo "MISMATCH: intermediate activation dump"; exit 1; }
           witness=$(grep -oP '(?<=^LAYERDUMP witness-digest )[0-9a-f]+' /tmp/ld_out.txt | head -1 || true)
           [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
-          echo "PASS: intermediates (${{ matrix.arch_label }}${{ matrix.rustflags && ' ' }}${{ matrix.rustflags }}) - all 7,467 tensors bit-identical"
+          echo "PASS: intermediates (${{ steps.arch.outputs.label }}, opt-level ${{ matrix.optlevel }}, target-cpu ${{ matrix.targetcpu }}) - all 7,467 tensors bit-identical"
