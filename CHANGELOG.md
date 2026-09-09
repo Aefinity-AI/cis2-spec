@@ -171,9 +171,13 @@ both functions are exactly monotone over the whole finite domain;
 `docs/E27_EXP_LN_RANGE.md`.
 
 **What changes.** Nothing normative. **Section 6.2's clip stays as written and
-is now stated to be normative**: no conforming decode reaches the affected
-band (section 10's softmax argument is always `<= 0`), and widening the guard
-would move every pinned digest for no reachable benefit. Section 14.1 is
+is now stated to be normative.** Section 10's softmax cannot reach the
+affected band (its argument is always `<= 0`), but section 6.4's SiLU can, for
+an FFN intermediate in `[-88.7228317, -88.0000076]`; there `silu_pinned`
+returns `-0.0` in place of a normal f32 of magnitude ~5.328e-37. Every
+conforming implementation produces the same `-0.0`, so bit-exact agreement ---
+the property CIS-2 claims --- is unaffected; widening the guard would be more
+faithful to `exp` and would move every pinned digest. Section 14.1 is
 rewritten to state the exhaustive result, to record the clip and the
 `silu_pinned` discontinuity at `x = -88` as deliberate divergences that MUST
 be reproduced, and to record that section 1.3's DAZ makes `ln_pinned` return

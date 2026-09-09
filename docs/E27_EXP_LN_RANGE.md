@@ -60,16 +60,30 @@ Measured, and confirmed independently by binary search in Python:
 | last | `0x42B17217` = 88.72283172607422 |
 | `exp` at the last | ≈ 3.4028e38, i.e. just under `f32::MAX` |
 
-This is a real defect in the spec's arithmetic, not a documentation gap. It
-is also, in this spec's setting, **unreachable in a conforming decode**: the
-softmax at `ops.rs:126` evaluates `exp_pinned(v - max_v)` where `max_v` is the
-maximum over the same vector, so the argument is always `≤ 0`; and the SiLU
-path's `exp_pinned(-x)` would need an FFN intermediate below −88 to enter the
-band from the other side, where the *low* guard applies instead. So the
-correct disposition is: **pin the behaviour, document it as a deliberate
-divergence from `exp`, and do not change it** — changing it would move every
-published digest for no reachable benefit. E27 pins it with op-level goldens
-at both edges (`0x42B00000`, `0x42B00001`, `0x42B17217`).
+This is a real defect in the spec's arithmetic, not a documentation gap.
+
+**Is it reachable?** Only one of the two call sites is structurally safe, and
+the first version of this document got that wrong.
+
+- **Softmax cannot reach it.** `ops.rs:126` evaluates `exp_pinned(v - max_v)`
+  where `max_v` is the maximum over the same vector, so the argument is always
+  `≤ 0`. The high guard is unreachable from here by construction.
+- **SiLU can reach it.** §6.4 evaluates `exp_pinned(-x)`. An FFN intermediate
+  `x ∈ [-88.7228317, -88.0000076]` makes `-x` land inside the clip band, `exp`
+  returns `+Infinity`, `denom = 1.0 + Infinity = Infinity`, and
+  `silu_pinned(x) = x / Infinity = -0.0`. That is a 0.72-wide window on the
+  real line — unlikely for a trained model's FFN pre-activations, but *not
+  structurally excluded*, and "unlikely" is not "unreachable".
+
+The disposition is unchanged, but the reason is narrower than "nobody gets
+there": **pin the behaviour, state it as normative, and do not change it.**
+Every conforming implementation performs the same clip and returns the same
+`-0.0`, so bit-exact agreement — the property CIS-2 actually claims — is not
+affected at all. What is affected is agreement with mathematical `silu`, and
+that is what §14.1 now records. Widening the guard to `ln(f32::MAX)` would be
+more faithful to `exp` and would move every published digest. E27 pins the
+current behaviour with op-level goldens at both edges (`0x42B00000`,
+`0x42B00001`, `0x42B17217`).
 
 **The low guard is harmless, and the sweep proves it.** §6.2 step 3 returns
 `0.0` for `x < -88.0`. `exp(-88) = 6.05e-39`, which is below
@@ -213,9 +227,18 @@ One ULP of *input* takes the output from −5.33e-37 to −0.0. Both figures
 confirmed independently in Python (bit distance from zero of `0x83354D82` is
 53,824,898 — exact match with the sweep).
 
-This is well below `f32::MIN_POSITIVE`, so §1.3's FTZ would flush it in any
-downstream arithmetic regardless; it is a documentation obligation, not a
-numerical hazard. It is pinned by goldens at both sides of the boundary.
+**This value is not flushed.** `5.328e-37` is about 45× `f32::MIN_POSITIVE`
+(`1.175e-38`) — it is a perfectly ordinary normal f32, exponent field 6, and
+§1.3's FTZ never touches it. An earlier draft of this document claimed the
+opposite; that was wrong, and it mattered, because it was the argument for
+calling the discontinuity harmless.
+
+The honest statement is different and still reassuring: the error is
+numerically negligible (5.3e-37 in one FFN intermediate, against activations
+of order 1) and, more to the point, it is *identical in every conforming
+implementation*, so it costs nothing in the only currency CIS-2 trades in —
+bit-exact cross-implementation agreement. It is pinned by goldens at both
+sides of the boundary.
 
 ---
 
@@ -274,17 +297,24 @@ to 9 of 26.
 > (a) §6.2 step 2 clips at `x > 88.0`, but `ln(f32::MAX) = 88.7228390520684`.
 > Exactly **94,743** arguments in `[0x42B00001, 0x42B17217]` =
 > [88.0000076, 88.7228317] therefore return `+Infinity` where the true value
-> is finite and representable. No conforming decode reaches them: §10's
-> softmax evaluates `exp_pinned(v − max_v)` with `max_v` the vector maximum,
-> so the argument is always `≤ 0`. This clip is **normative and MUST be
-> reproduced**; a clean-room implementation that returns the finite value
-> will not reproduce the pinned digests.
+> is finite and representable. §10's softmax cannot reach this band — it
+> evaluates `exp_pinned(v − max_v)` with `max_v` the maximum over the same
+> vector, so its argument is always `≤ 0` — but §6.4's SiLU can: an FFN
+> intermediate `x ∈ [-88.7228317, -88.0000076]` makes `exp_pinned(-x)` land
+> inside it. This clip is **normative and MUST be reproduced**; a clean-room
+> implementation that returns the finite value will not reproduce the pinned
+> digests.
 >
-> (b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value this destroys is
-> subnormal and would be flushed by §1.3 in any case; measured count of
-> arguments where the guard returned zero and the oracle was nonzero: **0**.
-> Its one visible consequence is a discontinuity in §6.4: `silu_pinned(-88.0)`
-> is `0x83354DDC` (≈ −5.328e-37) while `silu_pinned(-88.0000076)` is `-0.0`.
+> (b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value *this* guard
+> destroys is subnormal and would be flushed by §1.3 in any case; the measured
+> count of arguments where it returned zero and the oracle was nonzero is
+> **0**. The visible discontinuity in §6.4 comes from (a), not from this
+> guard: `silu_pinned(-88.0)` is `0x83354DDC` (≈ −5.328e-37) while
+> `silu_pinned(-88.0000076)` is `-0.0`, because `exp_pinned(88.0000076)` is
+> clipped to `+Infinity`. Note that `5.328e-37` is a **normal** f32 (about 45×
+> `f32::MIN_POSITIVE`), so §1.3's FTZ does not flush it. The error is
+> numerically negligible and, being produced identically by every conforming
+> implementation, does not affect bit-exact agreement.
 >
 > Under §1.3's DAZ, `ln_pinned` returns `-Infinity` for all 16,777,214
 > subnormal inputs of both signs, because the `x == 0.0` guard is an SSE
@@ -320,9 +350,14 @@ to 9 of 26.
   is only argued (all operations are IEEE-pinned scalar SSE, no FMA — see
   `cis2-verify/tools/check_no_fma.sh`), not measured.
 - **Not a statement about §6.2 being *right*.** §1's finding is that it is
-  wrong, in a way that is unreachable here and now pinned. A future spec
-  version that widens the guard to `ln(f32::MAX)` would be more correct and
-  would break every published digest.
+  wrong, in a way that is now pinned and normative. A future spec version that
+  widens the guard to `ln(f32::MAX)` would be more faithful to `exp` and would
+  break every published digest.
+- **Not a proof that the clip band is never entered.** It is unreachable
+  through softmax and reachable in principle through SiLU (§1). No decode of
+  either §0 model has been instrumented to check whether an FFN intermediate
+  ever lands in `[-88.7228317, -88.0000076]`; that measurement has not been
+  made and is not claimed here.
 - **Not a claim about `silu_pinned` composition.** Two ULP is measured on the
   function in isolation, not on its accumulation through an FFN.
 
