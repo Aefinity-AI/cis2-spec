@@ -123,3 +123,92 @@ pub fn pin_and_selftest() -> Result<(), FpEnvError> {
 pub fn is_pinned() -> bool {
     arch::read_control() & arch::REQUIRED == arch::REQUIRED
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every operand goes through `black_box` in both directions. Without
+    /// that, LLVM folds `f32::from_bits(K1) * f32::from_bits(K2)` at compile
+    /// time under the *host compiler's* rounding rules, which do not honour a
+    /// runtime MXCSR/FPCR pin — the test then reports the compiler's answer
+    /// and passes whether or not the pin works. This was observed: the first
+    /// draft of these goldens printed unflushed subnormals on a demonstrably
+    /// pinned process.
+    fn mul(ab: u32, bb: u32) -> u32 {
+        let a = black_box(f32::from_bits(black_box(ab)));
+        let b = black_box(f32::from_bits(black_box(bb)));
+        black_box(a * b).to_bits()
+    }
+    fn add(ab: u32, bb: u32) -> u32 {
+        let a = black_box(f32::from_bits(black_box(ab)));
+        let b = black_box(f32::from_bits(black_box(bb)));
+        black_box(a + b).to_bits()
+    }
+
+    /// (a, b, op, pinned result) — the bits a conforming implementation MUST
+    /// produce under 1.3, on x86-64 and on aarch64 alike.
+    const FTZ: &[(u32, u32, char, u32)] = &[
+        // Products whose exact value is subnormal: FTZ must flush them.
+        (0x2000_0000, 0x1F80_0000, '*', 0x0000_0000), // 2^-63 * 2^-64  = 2^-127
+        (0x3380_0000, 0x0C00_0000, '*', 0x0000_0000), // 2^-24 * 2^-103 = 2^-127
+        // Cancellation of two normals into the subnormal range.
+        (0x0080_0001, 0x8080_0000, '+', 0x0000_0000), // 2^-126(1+2^-23) - 2^-126
+        // Subnormal INPUTS: DAZ/FZ must read them as zero.
+        (0x0000_0001, 0x0000_0000, '+', 0x0000_0000), // 2^-149 + 0
+        (0x0000_0001, 0x3F80_0000, '*', 0x0000_0000), // 2^-149 * 1
+        (0x0000_0001, 0x7F00_0000, '*', 0x0000_0000), // 2^-149 * 2^127
+    ];
+
+    /// Cases that come out identical pinned or not, kept so the discrimination
+    /// test below cannot accidentally be satisfied by them.
+    const INERT: &[(u32, u32, char, u32)] = &[
+        (0x0C80_0000, 0x2000_0000, '*', 0x0000_0000), // 2^-165: below subnormal range
+        (0x0000_0001, 0x8000_0001, '+', 0x0000_0000), // exact cancellation
+    ];
+
+    fn eval(a: u32, b: u32, op: char) -> u32 {
+        if op == '*' { mul(a, b) } else { add(a, b) }
+    }
+
+    #[test]
+    fn pinned_denormal_goldens() {
+        pin_and_selftest().expect("1.3 pin");
+        assert!(is_pinned());
+        for &(a, b, op, want) in FTZ.iter().chain(INERT) {
+            assert_eq!(
+                eval(a, b, op), want,
+                "0x{a:08X} {op} 0x{b:08X} under {}", control_name()
+            );
+        }
+    }
+
+    /// The goldens are only worth publishing if an implementation that ignores
+    /// 1.3 gets different bits. Clearing the pin must move every FTZ case and
+    /// no INERT case. Runs in the harness's own thread, and the control word is
+    /// per-thread on both supported ISAs, so this cannot leak into other tests.
+    #[test]
+    fn clearing_the_pin_changes_the_answers() {
+        pin_and_selftest().expect("1.3 pin");
+        let saved = arch::read_control();
+        arch::write_control(saved & !arch::REQUIRED);
+        assert!(!is_pinned(), "could not clear the pin, so this proves nothing");
+
+        let unpinned: Vec<u32> = FTZ.iter().map(|&(a, b, op, _)| eval(a, b, op)).collect();
+        let inert: Vec<u32> = INERT.iter().map(|&(a, b, op, _)| eval(a, b, op)).collect();
+
+        arch::write_control(saved);
+        assert!(is_pinned(), "failed to restore the pin");
+
+        for (i, &(a, b, op, want)) in FTZ.iter().enumerate() {
+            assert_ne!(
+                unpinned[i], want,
+                "0x{a:08X} {op} 0x{b:08X} gives the same bits pinned and unpinned, \
+                 so it does not test 1.3 at all"
+            );
+        }
+        for (i, &(_, _, _, want)) in INERT.iter().enumerate() {
+            assert_eq!(inert[i], want, "inert case moved; the table is mislabelled");
+        }
+    }
+}
