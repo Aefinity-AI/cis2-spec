@@ -79,6 +79,32 @@ across:
    hardware `sqrtf` instruction;
 3. Python exact rational arithmetic, rounding once to f32.
 
+### 1.3 Measured: §13.1 cannot exercise §1.3 either
+
+§1.3 pins FTZ and DAZ and requires an adversarial self-test of the pin. The
+self-test is a local check. The question for a *conformance suite* is whether
+reproducing `CIS2_REF` proves anything about the pin. It does not.
+
+Two measurements, both on the published §13.1 vector and the pinned
+SmolLM2-135M checkpoint:
+
+1. The checkpoint contains **0 subnormal bf16 values** out of 134,515,008
+   across 272 tensors (and 0 exact zeros). DAZ can never fire on a weight.
+2. An instrumented build of `cis2-verify` counted every multiply and add on
+   the decode path over the full pinned run: **5,120,807,040 multiplies and
+   5,118,239,304 adds, with zero flush events** in mul, add, div or exp. The
+   smallest nonzero product was `|2.0876757e-14|` (bits `0x28BC0A86`) — about
+   twenty-four orders of magnitude above the subnormal floor `0x00800000`. The
+   instrumented build still emitted
+   `d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`, so the
+   probe did not perturb the arithmetic it was measuring.
+
+So an implementation that ignores §1.3 entirely reproduces the §13.1 digest.
+The clause is not *unguarded* — §15 item 4 requires the self-test — but a
+third party who reproduces `CIS2_REF` has demonstrated nothing about FTZ or
+DAZ, and a suite whose only check for a clause is at an input where the clause
+cannot fail is not a check.
+
 ## 2. Proposed normative text
 
 ### 2.1 Amend §6.1
@@ -121,12 +147,37 @@ conformance check.", add:
 > returns 4. A vector with no exact tie cannot distinguish the two rules,
 > which is why this golden is separate from §13.1.
 
+>
+> **13.5.3 Denormal handling (§1.3).** Under the §1.3 pin, each of these
+> operations MUST produce exactly `0x00000000`:
+>
+> | a | op | b | required result | what it tests |
+> |---|---|---|---|---|
+> | `0x20000000` | `*` | `0x1F800000` | `0x00000000` | product 2^-127 flushed (FTZ) |
+> | `0x33800000` | `*` | `0x0C000000` | `0x00000000` | product 2^-127 flushed (FTZ) |
+> | `0x00800001` | `+` | `0x80800000` | `0x00000000` | normal - normal cancels into 2^-149 (FTZ) |
+> | `0x00000001` | `+` | `0x00000000` | `0x00000000` | subnormal input read as zero (DAZ/FZ) |
+> | `0x00000001` | `*` | `0x3F800000` | `0x00000000` | subnormal input read as zero (DAZ/FZ) |
+> | `0x00000001` | `*` | `0x7F000000` | `0x00000000` | subnormal input read as zero (DAZ/FZ) |
+>
+> An implementation that never pins, or that pins FTZ without DAZ, returns
+> `0x00400000`, `0x00400000`, `0x00000001`, `0x00000001`, `0x00000001` and
+> `0x34800000` for these six rows respectively. The last row is the loudest:
+> without DAZ a full *normal* number, 2^-22, appears out of a value the pinned
+> environment reads as zero.
+>
+> Operands MUST NOT be compile-time constants visible to the optimiser. A
+> constant-folded `a * b` is evaluated by the compiler under its own rules,
+> which do not honour a runtime control-register pin, and such a test reports
+> the compiler's answer whether or not the pin works.
+
 ### 2.3 Amend §15
 
 Add:
 
 > 6. It reproduces every value in §13.5.1 bit-for-bit.
 > 7. It returns §13.5.2's required index.
+> 8. It reproduces every value in §13.5.3 bit-for-bit.
 
 and replace the closing paragraph's "not done in this version" with a note
 that `rsqrt` and argmax are now covered, and that
@@ -135,7 +186,9 @@ unwritten.
 
 ## 3. What this does and does not cover
 
-**Covered.** The two clauses E22 showed are unreachable from §13.1.
+**Covered.** The two clauses E22 showed are unreachable from §13.1, plus
+the spec's §1.3, which section 1.3 of this document shows is equally
+unreachable.
 
 **Not covered — still open.**
 
@@ -143,10 +196,11 @@ unwritten.
   op-level goldens. §13.1 *does* exercise all of them, so they are not in the
   same category as `rsqrt`/argmax — a wrong `exp` moves `CIS2_REF`. They are
   wanted for diagnosis (which op broke), not for coverage.
-- The denormal-bearing decode vector (E22 follow-up item 1) is a separate
-  gap: §13.1's SAME digest under M01 shows no denormal *changed a result*,
-  not that none arose. §15 item 4 requires §1.3's self-test independently, so
-  the clause is not unguarded — only invisible to the digest.
+- A denormal-bearing *decode* vector remains unwritten. §13.5.3 covers the
+  arithmetic clause at op level; it does not produce a full-run digest that
+  moves when §1.3 is ignored. Writing one means shipping a second checkpoint
+  whose activations reach the subnormal range, which is a larger change than
+  this proposal.
 
 ## 4. Compatibility, and the decision this needs
 
@@ -170,6 +224,14 @@ single check for a clause is at the one input where the clause cannot fail.
 
 ## 5. Provenance
 
+- §13.5.3 goldens and the pinned/unpinned discrimination test:
+  `cis2-verify/src/fpenv.rs`, `mod tests` (commit `3afbf66`, branch
+  `cm/cis2-verify-standalone`). Run on x86_64 in both debug and release.
+  The aarch64 leg is asserted by the `cis2-verify` CI job on `ubuntu-24.04-arm`.
+- The two §1.3 measurements were taken with an instrumented copy of
+  `cis2-verify` that is deliberately NOT in this repo (scratch only): it adds
+  counters to `dot_seq`, `sum_seq`, `rmsnorm` and `softmax_seq`, which would
+  otherwise be dead weight in a clean-room verifier.
 - Divergence table and goldens: `cis2-verify/src/mathpin.rs`,
   `mod op_level_goldens` (branch `cm/cis2-verify-standalone`).
 - Why the clauses are unreachable: `docs/E22_NECESSITY_MATRIX.md`, rows M15
