@@ -46,6 +46,57 @@ well as on the conforming one.
 The corrected text is applied in place in `docs/CIS2_SPEC_v0.3b.md` with an
 E-1 marker. Section 8 itself is unchanged; only the limitations note was wrong.
 
+### E-2 (2026-09-09) --- section 14.4 was five orders of magnitude too pessimistic about the trig range
+
+**What v0.3b said**, carried unchanged from v0.1:
+
+> 14.4. **Trig polynomial accuracy is only validated for `|x| <= 14`** (unit
+> tests sweep `x = i * 0.7` for `i` in `-20..=20`). [...] the two-part-pi
+> reduction (section 6.3) has not been stress-tested at larger magnitudes
+> where it could lose more precision. A clean-room implementer targeting a
+> longer sequence than this spec's 20 positions should not assume this
+> polynomial's accuracy holds unchanged.
+
+**Why it is misleading.** Every sentence is accurate about what had been
+measured. But it is the only thing the specification says about the range of
+section 6.3, so a clean-room implementer reading it must conclude the pinned
+reduction is unproven outside a 20-position decode -- which is the clause that
+would stop anyone using CIS-2 at a real context length. Section 7.1 makes
+`inv_freq[0]` exactly `1.0` and every later entry smaller, so the largest RoPE
+angle a decode evaluates *is* its sequence length: the range question and the
+context-length question are the same question.
+
+**What was measured** (docs/E26_TRIG_RANGE.md). Every f32 bit pattern `x` with
+`0 <= x < 2^31` -- 1,325,400,064 arguments, subnormals included -- evaluated
+under the section 1.3 pinned environment against an f64 accuracy oracle:
+
+* worst absolute error **9.4218e-8** for `|x| < 2^20` (0.790 ULP at 1.0),
+  flat across nine orders of magnitude of argument;
+* worst absolute error **2.0925e-7** for `|x| < 2^31` (1.756 ULP at 1.0);
+* worst *relative* (ULP) error 2617, always near a zero of the function,
+  where the absolute error is four to five orders of magnitude *smaller*
+  than the flat figure -- 1.8596e-11 at the 2617-ULP point;
+* `sin_pinned` exactly odd and `cos_pinned` exactly even in value over every
+  f32 with `2^-126 <= |x| < 2^31`, with two documented exceptions that touch
+  only the sign of a zero result and no reachable RoPE angle;
+* direct enumeration of the RoPE angle multiset for both section 0 models at
+  `L = 131,072`: worst absolute error 9.3815e-8, the same figure.
+
+A first attempt that *sampled* 4096 arguments per binade reported max 1 ULP
+through `2^16` and was thrown away: sampling never landed near a zero, so it
+got the shape of the error wrong. For a single-argument f32 function the
+domain is finite and enumerable, and nothing that licenses a MUST should be
+established by sampling.
+
+**Replacement text.** See section 14.4 as it now stands in
+docs/CIS2_SPEC_v0.3b.md, which carries this erratum inline. Section 6.3 is
+unchanged; only the limitations note was. Tier-1 op-level goldens at the
+worst-case arguments were added in `cis2-verify/src/mathpin.rs`,
+`mod large_angle`, together with a mutation control showing that an
+f32-staged reduction fails them -- and also moves the section 12.1 witness
+digest while leaving the argmax digest and the generated token ids untouched,
+the third independent violation to show that pattern.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section

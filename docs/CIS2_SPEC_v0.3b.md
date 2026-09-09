@@ -68,9 +68,10 @@ SmolLM2-135M tuple's digests are normative test vectors here. It does **not**
 claim:
 
 - General correctness of the pinned transcendental polynomials (`exp`,
-  `sin`, `cos`, `ln`) outside the input ranges actually exercised by the
-  decodes checked so far (§14.4, carried from v0.1, and §14.1 new-in-v0.2 for
-  `ln_pinned`'s domain).
+  `ln`) outside the input ranges actually exercised by the decodes checked
+  so far (§14.1 new-in-v0.2 for `ln_pinned`'s domain). `sin` and `cos` are
+  the exception: §14.4 (erratum E-2) now records an exhaustive accuracy
+  measurement over every f32 argument below `2^31`.
 - Cross-framework agreement (vs. PyTorch/`transformers`) as a conformance
   requirement — oracle comparisons (§13.3, `docs/E15b_m1p5_CORRECTNESS.md`,
   `docs/E15d_bc_RESULT.md`) are evidence of correctness, not a conformance
@@ -837,8 +838,10 @@ evidence, `docs/E15d_bc_RESULT.md`); **both are conformant** under this
 tolerance. This spec does **not** claim `ln_pinned` is correctly rounded or
 bit-exact against any oracle for arbitrary `x` outside the tested set above
 — a clean-room implementer targeting a `rope_theta` not in that set should
-not assume accuracy without its own validation (carried-forward caution,
-same spirit as v0.1 §14.4 for `sin`/`cos`).
+not assume accuracy without its own validation (carried-forward caution;
+the corresponding caution for `sin`/`cos` was v0.1 §14.4, and has since been
+discharged by exhaustive measurement -- see §14.4 erratum E-2. No equivalent
+sweep has been run for `ln_pinned`, so this caution stands).
 
 #### 6.5.1 `frexp_exact(x)` — exact mantissa/exponent split
 
@@ -1353,17 +1356,43 @@ a verifier wanting to localize a mismatch should still compare
 five are still printed, §12.3), not rely on `CIS2_REF` alone to diagnose
 *why* it differs.
 
-14.4. **Trig polynomial accuracy is only validated for `|x| ≲ 14`** (unit
-tests sweep `x = i * 0.7` for `i` in `-20..=20`). RoPE angles in this
-spec's fixed 20-position decode stay small (`pos < 20`, `inv_freq ≤ 1.0`
-for `rope_theta=100000`; for `rope_theta=1000000`, `inv_freq` values are
-smaller still, since `inv_freq[i] = theta^(-2i/64)` shrinks faster for
-larger theta at fixed `i`, so angles stay in-range there too), so this is
-adequate for §13's test vectors, but the two-part-π reduction (§6.3) has
-not been stress-tested at larger magnitudes where it could lose more
-precision. A clean-room implementer targeting a longer sequence than this
-spec's 20 positions should not assume this polynomial's accuracy holds
-unchanged. **Unchanged from v0.1 (was §14.4 there too).**
+14.4. **Trig polynomial accuracy is measured, exhaustively, to `|x| <
+2^31`.** §6.3's Cody-Waite reduction has been evaluated at *every* f32 bit
+pattern `x` with `0 <= x < 2^31` -- 1,325,400,064 arguments, subnormals
+included -- against an f64 accuracy oracle under the §1.3 pinned
+environment. The worst absolute error is **9.4218e-8 for `|x| < 2^20`** and
+**2.0925e-7 for `|x| < 2^31`**: 0.790 and 1.756 ULP at 1.0 respectively.
+Relative (ULP) error is much larger near the zeros of `sin` and `cos` --
+2617 ULP at worst -- but there the absolute error is *smaller*, by four to
+five orders of magnitude, because the f32 grid is finer near zero; ULP is
+not a meaningful figure of merit for these functions and absolute error is.
+
+Because §7.1 makes `inv_freq[0]` exactly `1.0` and every later entry
+smaller, the largest RoPE angle a decode evaluates is its sequence length.
+The `|x| < 2^20` figure therefore covers **every RoPE angle any context up
+to 1,048,576 positions can produce**, for any `rope_theta`. Direct
+enumeration of the angle multiset for both §0 models at `L = 131,072`
+agrees: max absolute error 9.3815e-8.
+
+`sin_pinned` is exactly odd and `cos_pinned` exactly even *in value* over
+every f32 with `2^-126 <= |x| < 2^31`. Two exceptions are documented, and
+neither affects any reachable RoPE angle: on the zero/subnormal class
+§1.3's DAZ makes `sin_pinned` return `+0.0` for both signs, and at three
+arguments above `2^29` (620046660, 1175634300, 1240093300) the reduced
+argument underflows and only the sign of a zero result fails to mirror.
+
+Tier-1 op-level goldens pinning this behaviour at the worst-case arguments
+are in `cis2-verify/src/mathpin.rs`, `mod large_angle`.
+
+**ERRATUM E-2 (2026-09-09).** Through v0.3b as published, this clause read
+"Trig polynomial accuracy is only validated for `|x| ≲ 14` ... A clean-room
+implementer targeting a longer sequence than this spec's 20 positions
+should not assume this polynomial's accuracy holds unchanged," carried
+unchanged from v0.1. That was accurate about what had been measured and
+badly misleading about what is true: the reduction does not degrade at all
+across nine orders of magnitude of argument. §6.3 is unchanged; only this
+limitations note was. See CHANGELOG.md, "Errata against v0.3b", and
+docs/E26_TRIG_RANGE.md.
 
 14.5. **RMSNorm multiply order (§8) is pinned, and its bit-level necessity
 is measured.** `(x[i]*inv)*weight[i]` and `x[i]*(inv*weight[i])` are not
