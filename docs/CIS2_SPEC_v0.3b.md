@@ -1347,18 +1347,24 @@ Two deliberate divergences from mathematical `exp`, both pinned:
 (a) §6.2 step 2 clips at `x > 88.0`, but `ln(f32::MAX) = 88.7228390520684`.
 Exactly **94,743** arguments in `[0x42B00001, 0x42B17217]` =
 [88.0000076, 88.7228317] therefore return `+Infinity` where the true value is
-finite and representable. No conforming decode reaches them: §10's softmax
+finite and representable. §10's softmax cannot reach this band --- it
 evaluates `exp_pinned(v - max_v)` with `max_v` the maximum over the same
-vector, so the argument is always `≤ 0`. This clip is **normative and MUST be
-reproduced**; a clean-room implementation that returns the finite value will
-not reproduce the pinned digests.
+vector, so its argument is always `≤ 0` --- but §6.4's SiLU can: an FFN
+intermediate `x ∈ [-88.7228317, -88.0000076]` makes `exp_pinned(-x)` land
+inside it. This clip is **normative and MUST be reproduced**; a clean-room
+implementation that returns the finite value will not reproduce the pinned
+digests.
 
-(b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value this destroys is
-subnormal and would be flushed by §1.3 in any case; the measured count of
-arguments where the guard returned zero and the oracle was nonzero is **0**.
-Its one visible consequence is a discontinuity in §6.4:
+(b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value *this* guard
+destroys is subnormal and would be flushed by §1.3 in any case; the measured
+count of arguments where it returned zero and the oracle was nonzero is **0**.
+The visible discontinuity in §6.4 comes from (a), not from this guard:
 `silu_pinned(-88.0)` is `0x83354DDC` (≈ -5.328e-37) while
-`silu_pinned(-88.0000076)` is `-0.0`.
+`silu_pinned(-88.0000076)` is `-0.0`, because `exp_pinned(88.0000076)` is
+clipped to `+Infinity`. Note that `5.328e-37` is a **normal** f32 (about 45×
+`f32::MIN_POSITIVE`), so §1.3's FTZ does not flush it. The error is
+numerically negligible and, being produced identically by every conforming
+implementation, does not affect bit-exact agreement.
 
 Under §1.3's DAZ, `ln_pinned` returns `-Infinity` for all 16,777,214
 subnormal inputs of both signs, because §6.5's `x == 0.0` guard is an SSE
