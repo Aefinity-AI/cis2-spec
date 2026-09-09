@@ -406,8 +406,33 @@ binary measured in this work --- and computes the same bits. Under fat LTO
 `matvec`, `dot_seq` and `rmsnorm` no longer exist as symbols, and the
 whole-binary FP mix is still 102 `vaddss` against 21 `vaddps`: scalar chains
 where section 5 pins an order, packed arithmetic where it does not, with
-every boundary the optimizer could have crossed removed. **PGO remains
-untested.**
+every boundary the optimizer could have crossed removed.
+
+**Extended again (E33).** PGO was the last flag on that list, and it is the
+one that supplies the optimizer with the input the other cells could not: a
+measurement of where the time goes. The merged profile names
+`ops::matvec` --- the function section 3 shows to be scalar and section 5
+shows to pin the reduction order --- as 10,220,470,272 of 11,868,112,190
+counted events, 86 % of the program's activity and two orders of magnitude
+above the next entry. Eight further cells: instrumented `profile-generate`
+builds at both `target-cpu` settings, `profile-use` at both, and both
+combined with thin and fat LTO. All eight reproduce the same dump and the
+same witness digest with zero FMA, including the cells whose profile was
+trained on a *different* prompt (`1234567890 + 9876543210 =`) than the one
+being verified. Two controls rule out a silently dropped flag: rustc fails
+the build on a nonexistent `-C profile-use` path, and at
+`opt-level=3, target-cpu=native` the non-PGO, `once`-trained and
+`cross`-trained binaries are three distinct binaries emitting 529, 398 and
+364 AVX2 instructions respectively --- and computing identical bits. Under
+fat LTO with a cross-trained profile the FP mix is *exactly* E32's ---
+102 `vaddss` against 21 `vaddps` --- so PGO moved layout and inlining and
+did not move the scalar/packed split by one instruction.
+
+Every codegen flag section 13.5 nominates is now measured:
+`opt-level`, `target-cpu`, `lto`, `codegen-units`, `profile-use`. Of those,
+`opt-level` and `target-cpu` are gated continuously in CI; the LTO and PGO
+cells are re-runnable measurements (`scripts/e32_lto_sweep.sh`,
+`scripts/e33_pgo_sweep.sh`), not standing checks.
 
 Method, per-cell tables and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
 sections 2c and 2d. Re-derivable with `scripts/e32_lto_sweep.sh`.

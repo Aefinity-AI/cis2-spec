@@ -1419,7 +1419,14 @@ models; and of the remaining codegen flags, `lto=fat`, `lto=thin` and
 `codegen-units=1` have since been measured over eight further cells (same
 dump, same digests, zero FMA — thin LTO with `target-cpu=native` emits 1,539
 AVX2 instructions, 3.9× the plain native build, and computes the same bits),
-while **PGO remains untested**.
+and profile-guided optimization over eight further cells (E33: instrumented
+`profile-generate` builds, `profile-use` at both `target-cpu` settings, and
+the same combined with thin and fat LTO — same dump, same digests, zero FMA,
+including cells whose profile was trained on a *different* prompt than the
+one verified, and where the profile names `ops::matvec` as 86 % of all
+counted activity). Every codegen flag named here is now measured; any flag
+outside `{opt-level, target-cpu, lto, codegen-units, profile-use}` remains
+untested, and only `opt-level` and `target-cpu` are continuously gated.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 
