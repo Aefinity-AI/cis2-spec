@@ -174,6 +174,79 @@ band and **0** below `-88.0`.
 
 ---
 
+### 2c. The aarch64 half, on real silicon, and as a standing gate (E31)
+
+§2a's ten cells were x86_64 only. That was the last scope limit in §6 that
+needed no new decision — only a machine — so it was closed rather than
+argued, and closed in the place that keeps it closed: **all 20 cells of
+§13.4's matrix now run in CI at intermediate granularity**,
+`{x86_64, aarch64} × {opt-level 0,1,2,3,s} × {target-cpu generic, native}`,
+on GitHub-hosted runners of both ISAs.
+
+Twenty distinct binaries. One dump.
+
+| opt | target-cpu | x86_64 binary (16) | `%ymm` | aarch64 binary (16) | NEON |
+|---|---|---|---|---|---|
+| 0 | generic | `a776cbb8e0af8e49` | 0 | `5e4f66d4e72c4b7f` | 875 |
+| 0 | native | `ca81c9ae12183a1d` | 147 | `b9016dac1bb57d20` | 875 |
+| 1 | generic | `86b0d799b046f6c4` | 0 | `ccaf4da301a8d940` | 902 |
+| 1 | native | `f2fda3541e8edcd6` | 344 | `8c958caa4d98dcc5` | 894 |
+| 2 | generic | `54c8d2d08accd729` | 0 | `4a342fa92c9d2960` | 927 |
+| 2 | native | `849558a265db8031` | 404 | `d94e09cce1652fd3` | 890 |
+| 3 | generic | `4abab7f0e580eb19` | 0 | `b7057178a24ea474` | 936 |
+| 3 | native | `7db4ed2ca4880713` | 524 | `10f8dd3d5284e8a9` | 898 |
+| s | generic | `d2e4507ff93c6497` | 0 | `c0d2e3d95b8564e8` | 889 |
+| s | native | `46a580aee17f0b60` | 284 | `b40fb0b50c7e089f` | 885 |
+
+Every one of the twenty cells produced
+`5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` —
+all 51,750,154 bytes, all 7,467 tensors — and reproduced the §13.1 witness
+digest, with **zero** FMA-family instructions in every cell's disassembly.
+
+Two things in that table are worth reading carefully, and neither is a
+semantic claim:
+
+- **aarch64 vectorizes at every optimization level, including `-O0`, and
+  without `target-cpu`.** NEON is architecturally baseline in AArch64, so
+  there is no `generic`/`native` cliff of the kind x86_64 shows (0 `%ymm`
+  at every generic cell, because SSE2 is *its* baseline and the counter only
+  looks for AVX). The identity therefore is not resting on aarch64 having
+  quietly stayed scalar — it emits 875–936 vector instructions throughout
+  and still lands on the same bytes.
+- **On aarch64 `native` often emits *fewer* vector instructions than
+  `generic`** (927 → 890 at opt-level 2). That is a scheduling and
+  instruction-selection difference on a known microarchitecture, not a
+  reduction in vectorization, and it is reported here only because the count
+  is what was measured. The count is host-dependent; the dump is not.
+
+The x86_64 `native` counts also differ slightly from §2a's — 404 and 524 and
+284 here against 397 and 529 and 286 on `penguin` — because `target-cpu=native`
+resolves to a different part on the CI runner. Same source, different feature
+set, different instruction selection, same 51,750,154 bytes. That divergence
+in the *counts* alongside identity in the *bytes* is the cleanest single
+illustration of what §1.5 buys.
+
+**Independently, under emulation.** Before the CI matrix existed, the same
+aarch64 binary was cross-compiled on `penguin`
+(`aarch64-unknown-linux-gnu`, linker `aarch64-linux-gnu-gcc`) and run under
+`qemu-aarch64` user-mode emulation: same dump digest, same witness and argmax
+digests, zero FMA. That run is *not* the evidence above — emulated softfloat
+is exactly the wrong thing to trust for a bit-exactness claim — but it is a
+useful independent execution environment, and one control from it is worth
+keeping: the crate's 47 library tests and 6 end-to-end tests pass under
+`qemu-aarch64`, including the six pinned FTZ/DAZ denormal goldens in
+`src/fpenv.rs` that each go through `black_box` in both directions. §1.3's
+FPCR FZ pin is therefore exercised on the aarch64 path rather than assumed.
+
+**This is now a gate, not a measurement.** The `intermediates` job in
+`.github/workflows/verify.yml` fails the build if any cell's dump digest
+moves. §13.4 gates two digests; this gates 51,750,154 bytes. The difference
+matters for the reason §5 measured: one flipped weight mantissa bit moves 570
+tensors and **zero** argmax decisions, so a divergence this job catches is one
+an output-digest job would let through.
+
+---
+
 ## 3. Why it holds: what the optimizer actually did
 
 This is the part that generalizes beyond these two machines.
@@ -302,22 +375,24 @@ not a tautology.
 
 ## 6. What this does **not** establish
 
-- **Not a second compiler.** Both machines ran the same
-  `rustc 1.98.0 (88d9e12ae 2026-08-18)` and hence the same LLVM. This is
-  two *code generation targets*, not two independent compilers. §13.4's
-  matrix is the wider axis; the four-implementation convergence recorded in
-  §0 is the independent-implementation axis.
+- **Not a second compiler.** Every cell — local and CI — ran
+  `rustc 1.98.0 (88d9e12ae 2026-08-18)` and hence the same LLVM. §2c widens
+  the *ISA* and *code generation* axes, not the compiler axis. The independent-compiler axis lives elsewhere: `verify3/`'s
+  four CI cells (`{x86_64, aarch64} × {gcc, clang}`, §13.3) build a
+  clean-room C implementation with two compilers that are not LLVM-Rust,
+  and the four-implementation convergence recorded in §0 is the
+  independent-implementation axis. Neither of those compares intermediates.
 - **Not exhaustive over inputs**, though no longer a single input: §2b ran
   six prompt/length configurations, each on three binaries across two
   microarchitectures, and each configuration's four runs agree at every
   intermediate. Six prompts on two models is still not a claim about all
   inputs; the longest context measured is 64 generated tokens, and every
   prompt is ASCII (§3.1.4 is an open decision, §14.8).
-- **Not exhaustive over optimizer settings**, though less narrow than it
-  was: §2a re-ran all ten `{opt-level 0,1,2,3,s} × {generic, native}` cells
-  of §13.4's matrix at intermediate granularity on x86_64. The aarch64 half
-  of §13.4's matrix has not been re-run this way, and no non-default
-  codegen flags beyond `target-cpu` were varied.
+- **Not exhaustive over optimizer settings.** All twenty cells of §13.4's
+  matrix — both ISAs × five opt-levels × `{generic, native}` — now run at
+  intermediate granularity (§2a locally, §2c in CI on real runners of both
+  ISAs), but no non-default codegen flags beyond `target-cpu` were varied,
+  and LTO, PGO and `codegen-units=1` were not exercised.
 - **The `ud2` test covers one instruction**, and so one vector loop, not all
   397 `%ymm` instructions.
 - **The negative control is one bit at one offset.** It calibrates
@@ -340,6 +415,8 @@ not a tautology.
 | Artifacts | SmolLM2 `model.safetensors` `80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1`; Qwen `88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342`; verified identical on both hosts before any run |
 | Binaries | baseline `c095d7f9…` (bit-identical on both hosts), penguin native `eaf8129c…`, box2 native `85df5f53…`; 0 FMA instructions in all three. §2a adds seven more penguin binaries across `opt-level 0,1,3,s`, also 0 FMA |
 | Opt-level sweep | `~/e29-sweep.sh`, log `~/e29-optlevel-sweep.log`, 10 cells, all reproducing dump `5386d3b0…` and the pinned digests |
+| CI matrix (§2c) | `.github/workflows/verify.yml` job `intermediates`, run `34372521833` on `cm/cis2-verify-standalone`, 20/20 cells success; runners `ubuntu-24.04` (x86_64) and `ubuntu-24.04-arm` (aarch64), real hardware, `rustc 1.98.0`; every cell asserts the dump digest and the §13.1 witness digest and greps its own disassembly for FMA |
+| qemu cross-check (§2c) | `aarch64-unknown-linux-gnu` cross-build on `penguin`, run under `qemu-aarch64` user-mode with `-L /usr/aarch64-linux-gnu`; same dump digest; 47 lib + 6 end-to-end tests pass under the same emulator, including the `src/fpenv.rs` FTZ/DAZ denormal goldens |
 | Prompt sweep (§2b) | `scripts/e30_prompt_sweep.sh` (penguin) and `scripts/e30_prompt_sweep_box2.sh` (box2) over `scripts/e30_prompts.txt`; logs `~/e30-sweep.log`, `cm-box2:~/e30-box2.log`; 6 configurations × 4 runs, 6 dump digests, every configuration's four runs identical |
 | Dumps | SmolLM2 `5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` (4/4 runs), Qwen `5ccf65207a6638d7c2aa6111e0b08e867686b0efe5c07e4e9b2e6c6d048d550e` (4/4 runs) |
 | Digests reproduced by every run | SmolLM2 `witness d8274305…`, `argmax 0b9c8f3a…`; Qwen `witness c9dff099…`, `argmax 9619177f…` |

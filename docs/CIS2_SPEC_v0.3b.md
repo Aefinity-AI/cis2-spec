@@ -1399,13 +1399,24 @@ The six configurations produce six *different* dumps, totalling 558,394,570
 bytes of intermediate activations, and within each configuration all four
 runs agree on every byte.
 
-Scope limits, stated so this is not over-read: both hosts ran the same
-`rustc`/LLVM, so this is two code generation targets and not two
-independent compilers (§13.4 is the wider compiler axis, and §0's
-four-implementation convergence is the independent-implementation axis);
-six ASCII prompts, at most 64 generated tokens, on two models; and the
-ten-cell sweep above is x86_64 only, so the aarch64 half of §13.4's matrix
-has not been re-run at intermediate granularity.
+The remaining half of §13.4's matrix has since been closed, and closed as a
+standing gate rather than a measurement: the `intermediates` job in
+`.github/workflows/verify.yml` runs **all twenty cells** —
+`{x86_64, aarch64} × {opt-level 0,1,2,3,s} × {target-cpu generic, native}` —
+on GitHub-hosted runners of both ISAs, and fails the build if any cell's
+dump digest moves. Twenty distinct binaries, one dump. On aarch64 the
+identity does not rest on the code having stayed scalar: NEON is
+architecturally baseline there, and every cell, `-O0` included, emits
+875–936 vector instructions. Zero FMA-family instructions in all twenty.
+
+Scope limits, stated so this is not over-read: every cell ran the same
+`rustc`/LLVM, so this widens the ISA and code-generation axes and not the
+compiler axis (`verify3`'s four `{x86_64, aarch64} × {gcc, clang}` cells are
+the independent-compiler axis, and §0's four-implementation convergence is
+the independent-implementation axis, though neither compares
+intermediates); six ASCII prompts, at most 64 generated tokens, on two
+models; and no codegen flag beyond `target-cpu` and `opt-level` was varied
+— LTO, PGO and `codegen-units=1` are untested.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 
