@@ -1,0 +1,91 @@
+# What "independent" means for this crate, and what it does not
+
+`cis2-verify` reproduces every pinned digest of CIS-2 v0.3b from the specification text. This document
+states exactly what that does and does not establish, because the value of the result is entirely in
+the precision of the claim.
+
+## What is true, and mechanically checkable
+
+**No shared source.** This crate shares no source file, no module, and no function with `cis2_ref`
+(the reference implementation at the repository root) or with `verify2`/`verify3`. It is a separate
+Cargo package with its own `[workspace]` table, so the build system enforces the separation rather
+than leaving it to discipline.
+
+**No shared dependencies.** `[dependencies]` is empty. The reference uses `safetensors`, `tokenizers`,
+`sha2` and `serde_json`; this crate re-derives all four capabilities:
+
+| Capability | Reference | Here |
+|---|---|---|
+| SHA-256 | `sha2` crate | `src/sha256.rs`, from FIPS 180-4 |
+| JSON | `serde_json` | `src/json.rs` |
+| safetensors container | `safetensors` crate | `src/safetensors.rs` |
+| byte-level BPE | `tokenizers` crate (with `onig`) | `src/tokenizer.rs`, from spec 3.1, including a hand-written matcher for the GPT-2 pre-tokenizer regex |
+| Unicode letter/number/space classes | `onig` | `src/unicode.rs`, generated range tables |
+| `sqrt`, `exp`, `ln` | libm / reference tables | `src/softfp.rs`, `src/mathpin.rs` |
+
+A shared dependency would be a shared implementation. Two programs that both call `sha2` agree about
+SHA-256 because they are the same code, not because they read the same document.
+
+**No FMA, checked in the emitted machine code.** `tools/check_no_fma.sh` disassembles the built binary
+and fails on any FMA mnemonic. It reports PASS with 0 hits on this crate, and it has a negative
+control: it correctly FAILs on a C binary built with `-mfma -ffp-contract=fast`. A check that cannot
+fail proves nothing, so the negative control is part of the claim.
+
+**The agreement is exact, and sensitive.** All four pinned digests and all sixteen token ids match.
+A single flipped low mantissa bit in one bf16 weight moves the witness digest, and `verify` rejects a
+receipt whose artifact hashes disagree with what is on disk.
+
+## What is NOT claimed
+
+**This is not a clean-room implementation in the legal sense.** A clean room requires that the
+implementer never had access to the original. That is not the situation here: this crate was written
+inside the same project as the reference, by an author with prior exposure to it. Calling it a
+clean-room reimplementation would be an overclaim, and the estate's whole argument depends on not
+making overclaims.
+
+What this crate demonstrates is narrower and still worth having: **that the specification text is
+detailed enough to build a working, bit-exact implementation from, using none of the reference's
+code or dependencies.** It is evidence of specification sufficiency. It is not evidence of
+implementer independence.
+
+**The independent-implementer evidence is elsewhere, and it is the stronger asset.** The claim that
+*strangers* implemented this document down to identical bits rests on the earlier third-party
+implementations and the x86 / ARM / NVIDIA P100 reproductions — not on this crate. When the two are
+cited together, they should be cited for different things:
+
+- third-party implementations → *strangers can do it* (independence)
+- this crate → *the document alone is sufficient, with no shared machinery* (sufficiency)
+
+Conflating them would weaken both.
+
+## What the specification did not pin down
+
+Places where the spec was ambiguous enough that this implementation had to refuse rather than guess.
+Each is a hard error with a section citation, and each is a candidate erratum:
+
+- **Tied embeddings vs. a present `lm_head.weight`.** §11.1 does not say which wins if a checkpoint
+  sets `tie_word_embeddings = true` *and* ships an `lm_head.weight` tensor. This crate refuses to
+  load such a checkpoint rather than pick one.
+- **Numeric literal precision in `config.json`.** The pinned config writes `initializer_range` with 17
+  significant digits, more than a single correctly-rounded decimal→binary conversion covers. The
+  parser leaves such a literal unconverted; asking for its value fails loudly, while a field nobody
+  reads passes through. The spec does not state a precision limit for config numerics.
+- **`rope_theta` written as a bare integer** (`100000`, not `100000.0`). Handled, but the spec does not
+  say whether an integer spelling is permitted for a float-valued field.
+
+## Reproducing
+
+```
+cargo test --release          # 34 tests
+cargo build --release
+tools/check_no_fma.sh
+./target/release/cis2-verify selftest
+./target/release/cis2-verify run ../weights -o receipt.txt
+./target/release/cis2-verify verify ../weights receipt.txt
+```
+
+`selftest` needs no weights: it pins the floating-point environment, self-tests FTZ/DAZ against
+denormal inputs, and reproduces §6.6's `table_digest` from the pinned polynomials alone.
+
+No timing figures are published from this crate's runs on the development machine, which is a
+virtualized container (see the project's Rule A).
