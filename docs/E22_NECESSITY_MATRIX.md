@@ -30,7 +30,7 @@ it is *untested by this vector*, which is a statement about the conformance suit
 | M14 | §4 bf16 widening | DIFFERS | exercised |
 | **M01** | **§1.3 MXCSR FTZ/DAZ pin + self-test** | **SAME** | **not exercised** |
 | **M15** | **§11 argmax tie-break** | **SAME** | **not exercised** |
-| **M16** | **§9 attention scale via pinned rsqrt** | **SAME** | **not exercised** |
+| **M16** | **§9 attention scale via pinned rsqrt** | **SAME** | **VACUOUS MUTATION — see correction below** |
 | M07 | §6.1 | skipped | declared SKIPPED by the leg |
 
 Positive controls — unmutated source at four optimization levels — all reproduced the baseline:
@@ -47,31 +47,85 @@ this compiler.
 Each has a concrete, nameable cause. None indicates a defective clause.
 
 **M01 — FTZ/DAZ pinning replaced with no-ops.** The pin and its abort-on-failure self-test were
-gutted; the digest did not move. The reason is that the pinned vector never produces a denormal
-anywhere in the decode, so flush-to-zero has nothing to flush. The clause protects against inputs
-this vector does not contain.
+gutted; the digest did not move. The reason is that the pinned vector produces no denormal that
+reaches a result, so flush-to-zero has nothing to flush. The clause protects against inputs this
+vector does not contain.
 
 **M15 — argmax tie-break `>` changed to `>=`** (first maximal index → last maximal index). The digest
 did not move because **no tie occurs** in any of the 16 argmaxes over a 49152-wide fp32 logit vector.
 The clause is correct and necessary in general; this vector simply never reaches the branch.
 
-**M16 — `cis2_rsqrt((float)head_dim)` replaced with `1.0f / sqrtf((float)head_dim)`.** The digest did
-not move because `head_dim = 64` is a perfect square and `1/8 = 0.125` is exactly representable, so
-both routes return bit-identical results. The clause would bite immediately for any head_dim whose
-inverse square root is not exact.
+**M01 — precision.** "SAME digest" is evidence that no denormal *changed a result*, which is
+slightly weaker than "no denormal ever arose"; the mutant is not instrumented to tell those apart.
+It is also worth stating that this clause is **not** left unguarded by the spec: §15 item 4 requires
+§1.3's adversarial self-test to pass independently of the §13.1 digest, and M01 gutted that self-test
+too. A conforming implementation cannot make M01's edit and still claim conformance. The gap is in
+what the *digest* can see, not in the conformance bar.
+
+**M16 — CORRECTED 2026-09-09. The first published reading of this row was wrong.**
+
+The mutation as executed replaced the call `cis2_rsqrt((float)head_dim)` with the expression
+`1.0f / sqrtf((float)head_dim)`. Re-reading the reference source after the fact:
+
+```c
+/* verify3/mathpin.c, §6.1 */
+float cis2_rsqrt(float x)
+{
+    return 1.0f / sqrtf(x);
+}
+```
+
+The mutation substituted the function for its own body. It is a **vacuous mutation**: it could not
+have moved the digest for *any* `head_dim`, perfect square or not, and it tested nothing about §9 or
+§6.1. The originally published explanation — that the digest held because `head_dim = 64` is a
+perfect square — was a plausible-sounding rationalisation of a result that has a much duller cause,
+and the forward-looking claim that "the clause would bite immediately for any head_dim whose inverse
+square root is not exact" was simply false.
+
+**What the row should have tested, and what that would have shown.** The route that genuinely differs
+from §6.1 is one computed at a different precision — `(float)(1.0 / sqrt((double)head_dim))`, a single
+rounding from f64 rather than two roundings in f32. Measured, on this host in C with FTZ/DAZ pinned
+and `-ffp-contract=off`, and independently reproduced by `cis2-verify`'s software square root (which
+never calls a hardware `sqrtf`):
+
+| head_dim | §6.1 route `1.0f/sqrtf(d)` | f64 route | |
+|---|---|---|---|
+| 16, 32, 48, 64, 80, 128, 256 | — | — | SAME |
+| 24 | `0x3E5105EB` | `0x3E5105EC` | DIFFER (1 ULP) |
+| 72 | `0x3DF15BF0` | `0x3DF15BEF` | DIFFER |
+| 96 | `0x3DD105EB` | `0x3DD105EC` | DIFFER |
+| 112 | `0x3DC18490` | `0x3DC1848F` | DIFFER |
+| 136 | `0x3DAF9D54` | `0x3DAF9D53` | DIFFER |
+
+So the "perfect square" reasoning is the right explanation for *that* mutation — 64 is one of the
+values where even a differently-rounded route agrees — but it was never the explanation for the
+mutation actually run.
+
+This turns a dull row into the sharpest finding in the matrix: **§6.1's only stated conformance
+check is `rsqrt(64.0) == 0.125`, and 64 is precisely a value at which every plausible implementation
+route agrees.** The spec's one rsqrt check cannot discriminate between a conforming implementation
+and a non-conforming one. `head_dim = 96` and `head_dim = 112` are not synthetic corners; both occur
+in shipping checkpoints.
+
+Both golden sets below are now pinned as tests in `cis2-verify/src/mathpin.rs`
+(`op_level_goldens`), computed by that crate's independent software square root and matching the C
+reference bit-for-bit.
 
 ## What this means
 
-The conformance vector proves 12 clauses necessary and is **silent on three**. That silence is a
+The conformance vector proves 12 clauses necessary and is **silent on two** (§1.3 and §11); the
+third silent row, M16, turned out to be a vacuous mutation that tested nothing. That silence is a
 property of a single 4-token prompt against a single 135M checkpoint with `head_dim = 64`, not a
-property of the specification.
+property of the specification. Correcting M16 also surfaced a real defect in the spec's own
+conformance surface: §6.1's single stated check is at the one value that cannot discriminate.
 
 The honest sentence for the paper and for any conformance claim is:
 
 > A single-vector conformance pass demonstrates that an implementation agrees on the clauses that
-> vector exercises. We measured which ones those are: 12 of 16 mutations are caught; §1.3, §9's
-> pinned-rsqrt routing and §11's tie-break are not reachable from this vector, for reasons we can
-> state exactly.
+> vector exercises. We measured which ones those are: 12 of 16 mutations are caught; §1.3 and §11's
+> tie-break are not reachable from this vector, for reasons we can state exactly; and one mutation we
+> originally counted as a null result was a vacuous edit that tested nothing, which we found by
+> re-reading our own source and have corrected in place.
 
 Saying "our test vector validates the spec" without this table would be an overclaim. Publishing the
 table is stronger than the overclaim would have been, because it shows the suite has been attacked
@@ -85,8 +139,14 @@ Three targeted additions would close the gap without touching the existing pinne
    so §1.3 becomes observable.
 2. **A tie vector** — a synthetic logit vector with two exactly-equal maxima, so §11's tie-break is
    reachable. This can be an op-level golden; it does not need a full decode.
-3. **A non-perfect-square `head_dim` vector** — so §9's routing through the pinned rsqrt is
-   observable. Also cheapest as an op-level golden.
+3. **An rsqrt route-discrimination golden** — `rsqrt` at `head_dim` ∈ {24, 72, 96, 112, 136}, the
+   values where the §6.1 f32-composed route and an f64 route disagree by 1 ULP. §6.1's present
+   `rsqrt(64.0) == 0.125` check cannot discriminate and must not be a suite's only rsqrt test.
+
+Items 2 and 3 are **done**: both are pinned as tests in `cis2-verify/src/mathpin.rs`
+(`op_level_goldens`), computed independently of any hardware `sqrtf` and agreeing with the C
+reference bit-for-bit. Item 1 (a denormal-bearing decode vector) is still open; note that §15 item 4
+already requires §1.3's self-test, so it is a digest-visibility gap rather than an unguarded clause.
 
 All three are additive Tier-1 op-level goldens of the kind §15 already contemplates, so they extend
 the suite rather than break the frozen `CIS2_REF`.
@@ -96,3 +156,7 @@ the suite rather than break the frozen `CIS2_REF`.
 - Host: cm-box1 `aefinity-box`, Intel i5-5200U, gcc (Debian 14.2.0-19) 14.2.0, x86_64.
 - Leg dir: `~/legs/e22-necessity-matrix` (`RESULT.txt`, `MUTATION.txt` per mutant, `mut/`, `pc-O{0,1,3,s}/`).
 - No timing figures are reported from this run.
+- M16 correction and the rsqrt route table: penguin (Crostini), `gcc -O2 -ffp-contract=off` with
+  MXCSR FTZ+DAZ set, cross-checked against `cis2-verify`'s `softfp::sqrt_cr` (no libm, no hardware
+  `sqrtf`). Values agree across all three routes (C hardware sqrt, Rust software sqrt, and an
+  exact-rational check).
