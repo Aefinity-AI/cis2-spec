@@ -12,6 +12,10 @@ full-logit output digests:
 - across languages (Rust and C, written by separate clean-room passes that
   never read each other's source or the reference implementation),
 - across model families and decode horizons (see `EXPECTED_DIGESTS.md`),
+- and, as of 2026-09-08, across the CPU/GPU boundary: a CUDA implementation
+  on an NVIDIA Tesla P100 reproduces the primary normative `CIS2_REF`
+  digest below bit-for-bit, with a byte-identical per-step trace
+  (see `docs/GPU_RESULT.md`),
 
 for a pinned (model, prompt, decode-length) test vector, matching a
 PyTorch/`transformers` oracle within floating-point tolerance.
@@ -178,6 +182,7 @@ verify2/                  clean-room verifier #1 (Rust), written from the
                           spec text alone, no access to src/
 verify3/                  clean-room verifier #2 (C11), written from the
                           spec text alone, no access to src/ or verify2/
+docs/GPU_RESULT.md        CPU/GPU bit-identity result (P100, 2026-09-08)
 docs/                     spec, changelog, and E15* evidence/result notes
 docs/logs/, hardware_logs/  raw CI/local-run logs backing those notes
 weights/                  fetch manifest only; no weight files committed

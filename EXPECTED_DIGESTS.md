@@ -52,6 +52,23 @@ v0.3b's `CIS2_REF`.
 vectors below were generated and confirmed against spec v0.2 only; they
 have not been re-run against v0.3b as part of this port.
 
+## GPU confirmation of the §13.1 normative vector
+
+The `CIS2_REF` value above was reproduced bit-for-bit by an independent CUDA
+implementation on an NVIDIA Tesla P100 (sm_60) on 2026-09-08, alongside a
+byte-identical per-step trace. Full result, scope limits and provenance:
+`docs/GPU_RESULT.md`. One further informative vector was pinned by that run —
+the same model and prompt at a longer horizon:
+
+```
+SmolLM2-135M, "Once upon a time", gen_toks=128, spec v0.3b
+CIS2_REF = 22f69ad87a615d66a77efaca8b1172d22bdfb4bd5092ceffd302e35669a050f6
+```
+
+Two further digests from that run belong to a **candidate** pinned-tree
+reduction order that is not part of v0.3b and is not normative; they are
+recorded in `docs/GPU_RESULT.md` only.
+
 ## Informative: 128-token prompt set (SmolLM2-135M, spec v0.2)
 
 Five prompts of varying length, `gen_toks=128` each, confirmed identical
