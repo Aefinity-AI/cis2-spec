@@ -203,7 +203,16 @@ jobs:
 
       # src/unicode.rs is a generated file. Checking that it is still exactly
       # what the generator produces is what makes "generated from the UCD" a
-      # verifiable statement rather than a comment. Needs only Python.
+      # verifiable statement rather than a comment.
+      #
+      # The UCD version has to be pinned here, not inherited from the runner:
+      # \p{L} is version-dependent (Unicode 15.1 added 622 codepoints,
+      # U+2EBF0..U+2EE5D, that 15.0 does not classify as letters), and these
+      # images ship a Python carrying 15.0.0 while the tables are generated
+      # from 15.1.0. Without the pin this step compares two different Unicode
+      # versions and fails for a reason that has nothing to do with the repo.
+      - name: Pin the Unicode Character Database
+        run: python3 -m pip install --quiet --break-system-packages unicodedata2==15.1.0
       - name: Generated Unicode tables are current
         working-directory: cis2-verify
         run: python3 tools/gen_unicode.py

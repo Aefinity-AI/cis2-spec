@@ -37,8 +37,20 @@ asserted below rather than trusted, by checking the result against the 25
 codepoints PropList.txt lists for White_Space.
 """
 import sys
-import unicodedata
 import os
+
+# The UCD version is part of the answer, not an incidental detail: \p{L} is
+# version-dependent. Unicode 15.1 added U+2EBF0..U+2EE5D (CJK Extension I, 622
+# codepoints) to General_Category Lo; 15.0 does not have them. A host Python
+# carries whatever UCD its build shipped with (GitHub's ubuntu-24.04 images
+# carry 15.0.0; Debian trixie carries 15.1.0), so this script pins the version
+# explicitly and prefers the standalone `unicodedata2` package, which ships a
+# chosen UCD independent of the interpreter.
+REQUIRED_UCD = "15.1.0"
+try:
+    import unicodedata2 as unicodedata
+except ImportError:
+    import unicodedata
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TARGET = os.path.join(HERE, "..", "src", "unicode.rs")
@@ -119,6 +131,16 @@ def build():
 
 
 def main():
+    if unicodedata.unidata_version != REQUIRED_UCD:
+        print(
+            f"WRONG UCD: this interpreter carries Unicode "
+            f"{unicodedata.unidata_version}, but src/unicode.rs is generated "
+            f"from {REQUIRED_UCD}. Comparing the tables here would test the "
+            f"host's Python, not this repository. Install the pinned database "
+            f"with:  pip install unicodedata2=={REQUIRED_UCD}",
+            file=sys.stderr,
+        )
+        return 2
     text = build()
     write = "--write" in sys.argv[1:]
     with open(TARGET, encoding="utf-8") as f:
