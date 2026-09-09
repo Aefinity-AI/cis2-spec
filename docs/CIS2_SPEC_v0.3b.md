@@ -139,6 +139,22 @@ arithmetic runs:**
      optimization barrier — e.g. Rust's `std::hint::black_box` — so the
      compiler cannot fold the arithmetic away and mask a broken pin.)
 
+   **ERRATUM E-11 (2026-09-09).** The first half of that self-test, as
+   published, **cannot fail**. `f32::MIN_POSITIVE * 1.0e-10` is
+   `1.18e-48`, which is below *half* the smallest positive subnormal
+   (`7.0e-46`), so it rounds to `+0.0` under RNE whether or not FTZ is set.
+   Measured directly, in a build with the pin deliberately gutted and proven
+   gutted (`is_pinned() == false`): the probe still reads `0x00000000`. The
+   multiplier `1.0e-10` is therefore **REPLACED by `0.5`**:
+   `f32::MIN_POSITIVE * 0.5` is `5.88e-39`, a genuine subnormal, which reads
+   `0x00000000` when FTZ is pinned and `0x00400000` when it is not. The DAZ
+   half of the self-test (`0x00000001 + 0.0`) always did discriminate, and the
+   readback assertion above always did enforce the pin, so no digest anywhere
+   in this specification changes and no implementation whose pin is correct is
+   affected --- the corrected probe newly fails exactly those implementations
+   whose FTZ was in fact broken, which is what the self-test exists to catch.
+   See docs/E38_REACH_SWEEP.md §5.
+
 1.4. **No FMA contraction, anywhere, in the reference.** Every
 multiply-then-add in this spec is defined as **two separate, separately
 RNE-rounded operations**: compute the product, round to `f32`; then add,
@@ -1501,6 +1517,51 @@ step (§10 softmax and §6.4 SiLU); and it did not know that §6.2's high guard
 clips below the representable range. §6.2, §6.4 and §6.5 are unchanged; only
 this limitations note was. See CHANGELOG.md, "Errata against v0.3b", and
 docs/E27_EXP_LN_RANGE.md.
+
+**ERRATUM E-10 (2026-09-09).** The reach census quoted in (a) and the
+zero count quoted in (b) were both taken on **one model, six ASCII prompts and
+at most 64 generated tokens**, and the clause said so. Extending the same
+instrument to **20 cells across both §0 models** --- ten per model, adding
+Japanese, Cyrillic, Arabic, emoji, accented-Latin and mathematical-symbol
+prompts, a 32-character repeat, a punctuation repeat, and a 256-token decode ---
+censused **145,385,472** `silu_pinned` arguments and **43,523,148** softmax
+`exp_pinned` arguments, against the 18,892,800 and 2,355,480 quoted above.
+
+Two of the numbers above therefore need correcting, and one claim needs
+retracting:
+
+* The SiLU side is **strengthened, not changed**: still **0** arguments in
+  §6.2's clip band, on either model, in any of the 20 cells. The deepest
+  `silu_pinned` argument seen anywhere is now **-32.173088** (SmolLM2, Japanese
+  prompt) rather than -31.406876 --- still some 56 units short of the band.
+* "**0** of its 2,355,480 softmax `exp_pinned` arguments below `-88.0`" is
+  **false in the wider scope.** Qwen2.5-0.5B decoding `"Once upon a time"` for
+  256 tokens produces a softmax argument of **-88.369385**, and **2** of that
+  cell's 22,626,240 arguments fall below `-88.0` and so trip (b)'s LOW guard.
+  It is a monotone trend in decode length on that one prompt and model, not a
+  freak: 16 tokens reaches -55.623780, 128 reaches -80.235170, 192 reaches
+  -82.705530, 256 reaches -88.369385.
+* (b)'s "the measured count of arguments where it returned zero and the oracle
+  was nonzero is **0**" is likewise **now 2**. (b)'s *substance* is unaffected:
+  the true `exp(-88.369385)` is about 4.2e-39, a subnormal, which §1.3 flushes
+  in any case --- which is exactly what (b) asserts.
+
+A second counter, absent when this clause was written, records the
+FTZ-**dependent** window separately: arguments in
+`[-88.0, -87.33654022216797)`, where no guard fires, `exp_pinned` is evaluated,
+and the result is a subnormal that §1.3 flushes. The same Qwen cell puts **2**
+arguments there. So a denormal genuinely arises in a real decode. E22's M01
+mutant --- §1.3's pin gutted, and instrumented to prove the pin is really absent
+--- was re-run on that cell: the witness and argmax digests are **byte-identical
+to the pinned build**. The denormal arises and does not change the receipt.
+§10's max-subtraction guarantees `exp(0) = 1` is in the denominator, so a
+numerator below 1.18e-38 contributes a term far under the accumulator's ulp.
+
+Nothing normative changes. The clip in (a) and the guard in (b) are unaltered,
+and every digest in §13 is unaffected. What changes is the scope of the
+supporting measurement and the retraction of a count. The clause's own caveat
+--- "does not establish unreachability in general" --- was right to be there.
+See CHANGELOG.md and docs/E38_REACH_SWEEP.md.
 
 14.2. **Digest byte encoding for artifact hashes: CLOSED.** v0.1 fed the
 64-character hex **string's** ASCII bytes into the witness hash, not the

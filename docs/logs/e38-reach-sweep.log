@@ -1,0 +1,399 @@
+== E38 control: cell 1 on SmolLM2 through spec-3 (ids derived), for digest comparison
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="Once upon a time" gen_toks=16
+  REACH tokenization=spec-3 (this crate derived the prompt token ids)
+  REACH silu calls=1751040
+  REACH silu arg range=[-2.5979437e1, 4.915266e1]  bits=[0xC1CFD5E3, 0x42449C53]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102600
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.5557106e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
+  REACH argmax-digest 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+##### model=smollm2 dir=/home/justinbrianthompson/projects/cis2-spec/weights
+### smollm2 cell=1 gen_toks=16 why=<13.1 reference decode, ASCII control> prompt=<Once upon a time>
+  E38 supplied_ids=6403,1980,253,655
+  E38 mem_avail_mb=2128
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="Once upon a time" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[6403, 1980, 253, 655] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=1751040
+  REACH silu arg range=[-2.5979437e1, 4.915266e1]  bits=[0xC1CFD5E3, 0x42449C53]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102600
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.5557106e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
+  REACH argmax-digest 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=2 gen_toks=16 why=<Japanese, 3-byte UTF-8> prompt=<こんにちは世界>
+  E38 supplied_ids=7365,237,10391,237,41152,7365,111,7365,124,7906,240,178,239,230
+  E38 mem_avail_mb=2154
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="こんにちは世界" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[7365, 237, 10391, 237, 41152, 7365, 111, 7365, 124, 7906, 240, 178, 239, 230] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2672640
+  REACH silu arg range=[-3.2173088e1, 4.8947735e1]  bits=[0xC200B13E, 0x4243CA7B]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=234900
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.498112e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest c4c2b21612a81bd5aeab856f2f3fa8e21d50ab3041008483dbd1eb4934686a0a
+  REACH argmax-digest d31d36c71da0ba7d7b29fa0c992b058515b98e57566f20166613b2cab2d6ca7e
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=3 gen_toks=16 why=<Cyrillic, 2-byte UTF-8> prompt=<Привет мир>
+  E38 supplied_ids=155,249,46879,16464,32547,41337,7872,9175
+  E38 mem_avail_mb=2124
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="Привет мир" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[155, 249, 46879, 16464, 32547, 41337, 7872, 9175] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2119680
+  REACH silu arg range=[-2.3862293e1, 4.8866905e1]  bits=[0xC1BEE5FA, 0x424377B6]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=149040
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.8499416e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 1679cd85ec416131f07231ed85811d198d1f46189a1393c65ac020f3b4d98df6
+  REACH argmax-digest 1e3f9150b9bd36b8a9980896ef0ef61bb831353f749df22cd95d29f5be8f465e
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=4 gen_toks=16 why=<Arabic, RTL> prompt=<مرحبا بالعالم>
+  E38 supplied_ids=21706,20602,44626,31462,10805,45726,22208,34966,22208,21706
+  E38 mem_avail_mb=2109
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="مرحبا بالعالم" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[21706, 20602, 44626, 31462, 10805, 45726, 22208, 34966, 22208, 21706] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2304000
+  REACH silu arg range=[-2.2467804e1, 4.8940575e1]  bits=[0xC1B3BE10, 0x4243C326]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=175500
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.1474518e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest f8a9bc4f4a015b5969cbf6aac3fd8f7f2646b5aca239769d8a0abaaa0cd5a47d
+  REACH argmax-digest a19b6b8e368505a02e8b92e9ac149441588e673b8dfb1d5724d48716ebf79abb
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=5 gen_toks=16 why=<4-byte UTF-8 astral plane> prompt=<🙂🚀✨ emoji test>
+  E38 supplied_ids=10813,38887,10813,244,218,38083,118,649,33777,1028
+  E38 mem_avail_mb=2147
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="🙂🚀✨ emoji test" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[10813, 38887, 10813, 244, 218, 38083, 118, 649, 33777, 1028] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2304000
+  REACH silu arg range=[-2.3757832e1, 4.9046978e1]  bits=[0xC1BE100A, 0x4244301B]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=175500
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.8725563e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 7e255a8aed134eddeb3977b4fd643c87e38343411283ec770a6f616f1441d50b
+  REACH argmax-digest 1141f175959d23c1aa9029e16dd018916f4894b0a3d2b34978ef5189a6d8b3aa
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=6 gen_toks=16 why=<accented Latin, NFC-sensitive> prompt=<café naïve résumé>
+  E38 supplied_ids=83,1939,2756,15486,46494,412,2756,5422,2756
+  E38 mem_avail_mb=2112
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="café naïve résumé" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[83, 1939, 2756, 15486, 46494, 412, 2756, 5422, 2756] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2211840
+  REACH silu arg range=[-2.8945948e1, 4.917141e1]  bits=[0xC1E7914D, 0x4244AF86]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=162000
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.8559597e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 96112461515e3c68dceff8f0b61d2bdbf59290fc716005261cb6e4e2163d9761
+  REACH argmax-digest 5b1b3cba51bca105245d14f7adad1ec36ba1f05c5a6b086a4c1725e7b87c4df3
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=7 gen_toks=16 why=<mathematical symbols> prompt=<∑∫∂∇ ℵ₀ ⊗>
+  E38 supplied_ids=22052,235,22052,121,22052,220,22052,225,4636,222,130,25699,218,4636,228,241
+  E38 mem_avail_mb=2149
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="∑∫∂∇ ℵ₀ ⊗" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[22052, 235, 22052, 121, 22052, 220, 22052, 225, 4636, 222, 130, 25699, 218, 4636, 228, 241] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=2856960
+  REACH silu arg range=[-3.0499046e1, 4.8901436e1]  bits=[0xC1F3FE0C, 0x42439B12]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=267840
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.2764233e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest b1c1fa5dcb5f45c9ed8ae06612e4ce67ca530d8b6657d41757f45445eba3b968
+  REACH argmax-digest 005944d486515791a323aa564385efeb8c1cdbebfc847239020157b155bc0753
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=8 gen_toks=16 why=<32x repetition, degenerate attention> prompt=<AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA>
+  E38 supplied_ids=44843,44843,44843,44843
+  E38 mem_avail_mb=2148
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[44843, 44843, 44843, 44843] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=1751040
+  REACH silu arg range=[-2.4873625e1, 4.8991592e1]  bits=[0xC1C6FD2F, 0x4243F764]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102600
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.2288208e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest aa48b1ee6511c590e78277fa29a60c45dcfdafa6b16c9ec2e59a81758246eab8
+  REACH argmax-digest c7f5d90bf03cd63323043ae1f2a9c8dadbdce7068da9b76f5600cc305e5f9f58
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=9 gen_toks=16 why=<punctuation repetition> prompt=<!!!!!!!!!!!!!!!!>
+  E38 supplied_ids=36689,36689,36689,36689
+  E38 mem_avail_mb=2203
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="!!!!!!!!!!!!!!!!" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[36689, 36689, 36689, 36689] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=1751040
+  REACH silu arg range=[-8.9002e0, 4.8958305e1]  bits=[0xC10E6738, 0x4243D54E]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102600
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-1.0727894e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 195f4873e48565959db927889c863ad921a4aae7e843747f478f170272e3aa71
+  REACH argmax-digest 24e8b158d7aa6bcd4e3792f51bc6cec30c88ef408a9b3b462123d7652fefd9c1
+  E38 SUPPLIED-ID CHECK PASS
+### smollm2 cell=10 gen_toks=256 why=<4x the previous generated-token ceiling> prompt=<Once upon a time>
+  E38 supplied_ids=6403,1980,253,655
+  E38 mem_avail_mb=2101
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/projects/cis2-spec/weights prompt="Once upon a time" gen_toks=256
+  REACH tokenization=SUPPLIED prompt_token_ids=[6403, 1980, 253, 655] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=23869440
+  REACH silu arg range=[-3.2130276e1, 4.915266e1]  bits=[0xC2008567, 0x42449C53]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=18181800
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.4795147e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 8824a22600faa57bcee3a00c8139f4ee3ddc4d1be3188ec1426aa596c3515cc2
+  REACH argmax-digest 3b58d24cad757b7d72c1720674879208e51e6aef2f698b33017d701a087a5ec8
+  E38 SUPPLIED-ID CHECK PASS
+##### model=qwen dir=/home/justinbrianthompson/qwen05b
+### qwen cell=1 gen_toks=16 why=<13.1 reference decode, ASCII control> prompt=<Once upon a time>
+  E38 supplied_ids=12522,5193,264,882
+  E38 mem_avail_mb=2213
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="Once upon a time" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[12522, 5193, 264, 882] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=4435968
+  REACH silu arg range=[-2.989102e1, 4.196279e1]  bits=[0xC1EF20CF, 0x4227D9E6]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=127680
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.562378e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest c9dff099d927a6dda91514c260c7207de7aca4b361291e57fae390a352392e62
+  REACH argmax-digest 9619177f959f63d175d9442e73a6063f31654b08ba4e38717e88bd2e39b0aff5
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=2 gen_toks=16 why=<Japanese, 3-byte UTF-8> prompt=<こんにちは世界>
+  E38 supplied_ids=89015,99489
+  E38 mem_avail_mb=3661
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="こんにちは世界" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[89015, 99489] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=3969024
+  REACH silu arg range=[-2.5645554e1, 4.0864895e1]  bits=[0xC1CD2A18, 0x422375A7]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102816
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.3374634e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 164df958999b2ebddcbd757e5c7b0c6a999c7542d9f8e9c574719e6e9e860409
+  REACH argmax-digest 9aad7f7b1740e7868711e3046238f2da916038fc7e58a1a4cc4b5315c5ce9a42
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=3 gen_toks=16 why=<Cyrillic, 2-byte UTF-8> prompt=<Привет мир>
+  E38 supplied_ids=53645,26991,8178,137144
+  E38 mem_avail_mb=3670
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="Привет мир" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[53645, 26991, 8178, 137144] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=4435968
+  REACH silu arg range=[-2.6955866e1, 4.0417896e1]  bits=[0xC1D7A59D, 0x4221ABED]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=127680
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.4012817e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 8f1c54055500f247e7e693c597bb2ac7a5534fae771fab6c85c9aa96a6f7ed7f
+  REACH argmax-digest 69318c9497401a71aa07507412505d0ea0a822ebb2429402db9856cfbdc877db
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=4 gen_toks=16 why=<Arabic, RTL> prompt=<مرحبا بالعالم>
+  E38 supplied_ids=124122,29825,124671,124476,129634
+  E38 mem_avail_mb=3745
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="مرحبا بالعالم" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[124122, 29825, 124671, 124476, 129634] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=4669440
+  REACH silu arg range=[-3.0749832e1, 3.9899734e1]  bits=[0xC1F5FFA8, 0x421F9954]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=141120
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.6369328e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 4c09cb25d9eeb5575294c8f60f83e2f44a3d0e4e07c34b17b2073875c1725ee1
+  REACH argmax-digest 874ff1af56a28ff1648469254ebad57eccea42e04b5fdd97df4253e3133711d3
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=5 gen_toks=16 why=<4-byte UTF-8 astral plane> prompt=<🙂🚀✨ emoji test>
+  E38 supplied_ids=145080,145836,144232,42365,1273
+  E38 mem_avail_mb=3674
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="🙂🚀✨ emoji test" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[145080, 145836, 144232, 42365, 1273] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=4669440
+  REACH silu arg range=[-2.615626e1, 4.0040127e1]  bits=[0xC1D14005, 0x42202917]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=141120
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-4.530164e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 5d714135336c5cb4d542486a5d9590f45e446f7ec09a3d907b890453d59e10ea
+  REACH argmax-digest 19454ae4f1f0fd7d0e278bf5c73ed7aebfc8f21d4e802e447161c967787c02f9
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=6 gen_toks=16 why=<accented Latin, NFC-sensitive> prompt=<café naïve résumé>
+  E38 supplied_ids=924,58858,94880,586,9333,1242,963
+  E38 mem_avail_mb=3731
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="café naïve résumé" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[924, 58858, 94880, 586, 9333, 1242, 963] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=5136384
+  REACH silu arg range=[-2.4526997e1, 4.1194927e1]  bits=[0xC1C4374A, 0x4224C79B]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=170016
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.712874e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest a45f3efa6da37e3381006ba22a7ce77d53d6792a8f197e7c898a399c2c6ed04f
+  REACH argmax-digest d831f21805aa46eee39155a0eb387bc8605f12cb13007655bc95364f222e1b4a
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=7 gen_toks=16 why=<mathematical symbols> prompt=<∑∫∂∇ ℵ₀ ⊗>
+  E38 supplied_ids=145127,145706,145371,144648,28653,113,89669,53025,245
+  E38 mem_avail_mb=3638
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="∑∫∂∇ ℵ₀ ⊗" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[145127, 145706, 145371, 144648, 28653, 113, 89669, 53025, 245] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=5603328
+  REACH silu arg range=[-2.7084917e1, 3.923885e1]  bits=[0xC1D8ADE9, 0x421CF495]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=201600
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-5.5231323e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 91ad96cf52225e91ad9792c47854fc83de070bfc0f3d0d5c5f8035e82f7b3b90
+  REACH argmax-digest 0de48ea148e1595204ca95e0753ff7b5e34f94d79b2abe3f639b4d3587eb3746
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=8 gen_toks=16 why=<32x repetition, degenerate attention> prompt=<AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA>
+  E38 supplied_ids=57905,57905,57905,57905
+  E38 mem_avail_mb=3685
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[57905, 57905, 57905, 57905] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=4435968
+  REACH silu arg range=[-2.2270254e1, 3.7961678e1]  bits=[0xC1B2297B, 0x4217D8C2]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=127680
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-3.119741e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 07eeaabcc1c15de1b3194ac9fed61d8d052a65d3c6741f0a468a50f4ba516f31
+  REACH argmax-digest a6b70b253431f59f832394d161b8eb3b65d14d57f18b58aa6efcc30890a67279
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=9 gen_toks=16 why=<punctuation repetition> prompt=<!!!!!!!!!!!!!!!!>
+  E38 supplied_ids=50667,50667
+  E38 mem_avail_mb=3694
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="!!!!!!!!!!!!!!!!" gen_toks=16
+  REACH tokenization=SUPPLIED prompt_token_ids=[50667, 50667] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=3969024
+  REACH silu arg range=[-2.2363834e1, 3.7019794e1]  bits=[0xC1B2E922, 0x42141445]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=102816
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=0 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-2.1702114e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=0 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest 3138d6bf468098041504900ccbbd8ef75f2b36baf50834b1adbeafb10687af19
+  REACH argmax-digest 5cd01a170c0aff4351e774bca0547020bffaab45d820c83fcd87b6316dc32afb
+  E38 SUPPLIED-ID CHECK PASS
+### qwen cell=10 gen_toks=256 why=<4x the previous generated-token ceiling> prompt=<Once upon a time>
+  E38 supplied_ids=12522,5193,264,882
+  E38 mem_avail_mb=3785
+  REACH fp-env=pinned control=x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)
+  REACH build=instrumented (NOT a conforming verifier)
+  REACH artifacts=/home/justinbrianthompson/qwen05b prompt="Once upon a time" gen_toks=256
+  REACH tokenization=SUPPLIED prompt_token_ids=[12522, 5193, 264, 882] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+  REACH silu calls=60469248
+  REACH silu arg range=[-3.0068079e1, 4.196279e1]  bits=[0xC1F08B6D, 0x4227D9E6]
+  REACH silu IN 6.2 CLIP BAND [-88.7228317, -88.0000076] n=0 (>0 means a real decode reaches the clip; each such element returns -0.0 instead of a normal f32 near -5.328e-37)
+  REACH silu arg < -88.0 (any) n=0
+  REACH silu IN SUBNORMAL BAND (87.33654, 88.0] n=0 (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)
+  REACH softmax exp args=22626240
+  REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n=2 (this side is FTZ-independent: the guard returns 0.0 before exp runs, and the unclamped exp would have been subnormal and flushed anyway. The FTZ-dependent side is the SUBNORMAL BAND line below.)
+  REACH softmax arg range=[-8.8369385e1, 0e0]
+  REACH softmax IN SUBNORMAL BAND [-88.0, -87.33654) n=2 (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant should move the digest; =0 means it is not, which is what E22 item 1 asks and no counter previously answered)
+  REACH witness-digest ab76b80ba0d5fd826bee8166760b0ed3be4385c064a4df7245fa4ae4cc0335bc
+  REACH argmax-digest 5991edc7b6176aeb4197d36da484c3ebdcd1ac3a435695d0bd6c12dd586b502e
+  E38 SUPPLIED-ID CHECK PASS
+== E38 DONE

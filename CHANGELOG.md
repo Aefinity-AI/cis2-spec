@@ -342,7 +342,10 @@ instrumented build records **18,892,800** `silu_pinned` calls and
 clip band `[-88.7228317, -88.0000076]` and **0** below `-88.0`. The most
 negative SiLU argument observed anywhere is -31.406876, some 57 units short
 of the band, and it occurs in the longest run --- the direction the range
-would drift if context length were the driver.
+would drift if context length were the driver. (Extended again by **E-10**:
+20 cells across both section 0 models. The SiLU half holds and the softmax
+half does not --- context length was indeed the driver, and at 256 tokens on
+the other model it carries a softmax argument past `-88.0`.)
 
 **What changed in the text.** Section 13.5 gains a paragraph for the
 six-input extension and its scope limit now reads "six ASCII prompts, at most
@@ -489,6 +492,84 @@ No digest, coefficient, or required behaviour is affected. Section 14.6 carries
 this correction inline as **ERRATUM E-9**, and its "one prompt and 19 positions"
 scope note is widened to six prompts and up to 67 fed positions on each model.
 The Qwen half still attests to sections 4-11 only (section 14.8 / E-3).
+
+### E-10 (2026-09-09) --- section 6.2's low guard IS reachable by a real decode; E35's "not constructible" was a generalisation from six prompts
+
+**What v0.3b said.** Section 14.1(a) reported a read-only reach census of
+SmolLM2-135M over six ASCII prompt/length configurations: **0** of 18,892,800
+`silu_pinned` arguments in section 6.2's clip band, and **0** of 2,355,480
+softmax `exp_pinned` arguments below `-88.0`. Section 14.1(b) added that the
+count of arguments where the low guard returned zero while the oracle was
+nonzero is **0**. E35 went further in its own header: a denormal-bearing decode
+vector is "not constructible from these prompts on this checkpoint", with a
+26.79 margin in ln-space.
+
+**What is wrong with it.** The census was correct; the scope it was quoted at
+was not. Running the same instrument on **20 cells across both section 0
+models** --- ten per model, adding Japanese, Cyrillic, Arabic, emoji,
+accented-Latin and mathematical-symbol prompts, a 32-character repeat, a
+punctuation repeat, and a 256-token decode --- censuses **145,385,472**
+`silu_pinned` and **43,523,148** softmax `exp_pinned` arguments. Qwen2.5-0.5B
+decoding `"Once upon a time"` for 256 tokens reaches a softmax argument of
+**-88.369385**. Two of that cell's 22,626,240 arguments fall below `-88.0` and
+trip the low guard; two more fall in the FTZ-**dependent** band
+`[-88.0, -87.33654022216797)`, where no guard fires, `exp_pinned` runs, and the
+result is a subnormal that section 1.3 flushes. It is a monotone trend in decode
+length on that prompt, not an accident: 16 tokens reaches -55.623780, 128
+reaches -80.235170, 192 reaches -82.705530, 256 reaches -88.369385.
+
+**What is confirmed.** The SiLU side is unchanged and better supported: still
+**0** arguments in the clip band on either model in any of the 20 cells, with
+the deepest argument now -32.173088 (SmolLM2, Japanese) rather than -31.406876.
+Section 14.1(b)'s substance also survives --- the true `exp(-88.369385)` is
+about 4.2e-39, a subnormal that section 1.3 flushes in any case --- but its
+literal count of **0** becomes **2**.
+
+**And the question it finally answers.** E22's M01 mutant (section 1.3's pin
+gutted) previously returned SAME on a vector containing no denormals, which E22
+recorded as "not exercised" with an explicit caveat that "SAME digest" is weaker
+than "no denormal ever arose". M01 was rebuilt with probes that prove the pin is
+genuinely absent --- `is_pinned() == false`, `f32::MIN_POSITIVE * 0.5` reading
+`0x00400000` rather than `0x00000000`, `f32::from_bits(1) + 0.0` reading
+`0x00000001` --- and run on the cell that reaches the band. Witness and argmax
+digests are **byte-identical to the pinned build**, and a 16-token control cell
+with no band hit also matches. So a denormal **did** arise in a real decode and
+**did not** change the receipt. Section 1.3 still has **no end-to-end necessity
+witness**; it remains justified as a portability requirement and at op level.
+
+No digest, coefficient, or required behaviour is affected. Section 14.1 carries
+this correction inline as **ERRATUM E-10**; E35 and E22's M01 row are corrected
+in place. Details, limits and provenance in docs/E38_REACH_SWEEP.md.
+
+### E-11 (2026-09-09) --- half of section 1.3's adversarial self-test cannot fail
+
+**What v0.3b said.** Section 1.3 requires, before decode, that with FTZ/DAZ
+pinned `f32::MIN_POSITIVE (2^-126) * 1.0e-10` MUST equal exactly `+0.0` "not a
+subnormal", and that `0x00000001 + 0.0` MUST also equal exactly `+0.0`.
+
+**What is wrong with it.** `2^-126 * 1.0e-10` is `1.18e-48`, which is below
+*half* the smallest positive subnormal (`7.0e-46`), so it rounds to `+0.0` under
+round-to-nearest-even whether or not FTZ is set. The check is inert. This is not
+inference: measured in a build with the pin deliberately gutted and proven
+gutted, the probe still reads `0x00000000`. The clause presents this arithmetic
+as adversarial evidence independent of the readback assertion, and on the FTZ
+half it is not evidence at all.
+
+**Correction.** The multiplier `1.0e-10` is replaced by `0.5`.
+`f32::MIN_POSITIVE * 0.5` is `5.88e-39`, a genuine subnormal: it reads
+`0x00000000` when FTZ is pinned and `0x00400000` when it is not. The DAZ half of
+the self-test always did discriminate (`0x00000001` unpinned vs `0x00000000`
+pinned), and the readback assertion always did enforce the pin, so no
+implementation with a correct pin is affected --- the corrected probe newly
+fails exactly those implementations whose FTZ was in fact broken, which is the
+purpose of the self-test.
+
+`cis2-verify/src/fpenv.rs` is updated to match. Every digest is unaffected and
+this was checked rather than assumed: the section 13.1 reference decode still
+gives `CIS2_REF = d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`
+and `argmax_digest = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff`,
+`selftest` passes, and the suite is 53/53 green. Section 1.3 carries this
+correction inline as **ERRATUM E-11**.
 
 ## Repository releases
 

@@ -14,7 +14,7 @@ pub enum FpEnvError {
     /// The control register was written but did not read back with the
     /// required bits set.
     ReadbackFailed,
-    /// `MIN_POSITIVE * 1e-10` did not flush to exactly `+0.0`.
+    /// `MIN_POSITIVE * 0.5` did not flush to exactly `+0.0` (erratum E-11).
     UnderflowNotFlushed,
     /// `f32::from_bits(1) + 0.0` did not flush to exactly `+0.0`.
     DenormalInputNotZeroed,
@@ -98,9 +98,15 @@ pub fn pin_and_selftest() -> Result<(), FpEnvError> {
         return Err(FpEnvError::ReadbackFailed);
     }
 
-    // Denormal OUTPUT must flush: 2^-126 * 1e-10 is subnormal without FTZ.
+    // Denormal OUTPUT must flush: 2^-126 * 0.5 is 5.88e-39, a genuine
+    // subnormal, kept without FTZ and flushed with it.
+    //
+    // ERRATUM E-11: this probe used to multiply by 1.0e-10, giving 1.18e-48 ---
+    // below half the smallest subnormal, so it rounded to +0.0 with or without
+    // FTZ and could not fail. Measured at is_pinned()==false it still read
+    // 0x00000000. A halving discriminates: 0x00000000 pinned, 0x00400000 not.
     let tiny = black_box(f32::MIN_POSITIVE);
-    let scale = black_box(1.0e-10f32);
+    let scale = black_box(0.5f32);
     let prod = black_box(tiny * scale);
     if prod.to_bits() != 0 {
         return Err(FpEnvError::UnderflowNotFlushed);
