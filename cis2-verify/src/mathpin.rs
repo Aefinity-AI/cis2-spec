@@ -338,3 +338,99 @@ mod op_level_goldens {
         bi
     }
 }
+
+#[cfg(test)]
+mod large_angle {
+    //! Spec 14.4 said the trig polynomials were "only validated for
+    //! `|x| ≲ 14`" and warned an implementer targeting a longer sequence not
+    //! to assume the accuracy holds. E26 settled that exhaustively: every f32
+    //! in `[0, 2^20)` -- 1,233,125,376 of them, which is every RoPE angle any
+    //! context up to 1,048,576 positions can produce, since §7.1 makes
+    //! `inv_freq[0]` exactly 1.0 and every other entry smaller -- lands within
+    //! 9.4218e-8 absolute of the f64 value, i.e. under 0.8 ULP at 1.0.
+    //!
+    //! An exhaustive sweep is a measurement and cannot live in `cargo test`.
+    //! What lives here is what a conformance suite needs: bit goldens at the
+    //! arguments that sweep found worst, so a reduction that regresses at
+    //! large angles fails loudly instead of quietly, plus the exact symmetry
+    //! the sweep proved, which needs no oracle at all.
+    //!
+    //! Every operand is routed through `black_box` in both directions, per the
+    //! house rule (CONTRIBUTING §3): `sin_pinned(f32::from_bits(K))` on a
+    //! literal K is exactly the shape LLVM is entitled to fold, and a folded
+    //! constant reports the compiler's arithmetic, not the pinned runtime
+    //! FPU's.
+    use super::*;
+    use crate::fpenv;
+    use core::hint::black_box;
+
+    /// `(x, sin_pinned(x), cos_pinned(x))` as bits. The first seven rows are
+    /// the arguments at which E26's exhaustive sweep of `[0, 2^20)` recorded
+    /// its worst absolute or worst ULP error for one of the two functions; the
+    /// rest span the range so a reduction that breaks in one octant or one
+    /// decade cannot slip through.
+    const GOLDENS: &[(u32, u32, u32)] = &[
+        (0x4503_4E6F, 0x3F3B_C37A, 0xBF2E_0390), // 2100.902   worst |abs| sin
+        (0x458B_E628, 0x33F7_F000, 0xBF80_0000), // 4476.7695  worst |ulp| sin < 2^16
+        (0x467D_9F8D, 0x3F29_198C, 0xBF40_337A), // 16231.888  worst |abs| cos < 2^16
+        (0x474D_246F, 0x3F80_0000, 0xB28B_6000), // 52516.434  worst |ulp| cos < 2^16
+        (0x47CD_246F, 0xB30B_6000, 0xBF80_0000), // 105032.87  worst |ulp| sin < 2^20
+        (0x47FF_31CE, 0x3F32_60D2, 0x3F37_9F5A), // 130659.61  worst |abs| cos < 2^20
+        (0x4943_998D, 0x3F80_0000, 0x33DD_4000), // 801176.8   worst |ulp| cos < 2^20
+        (0x3F80_0000, 0x3F57_6AA5, 0x3F0A_5140), // 1.0
+        (0x4198_0000, 0x3E19_7969, 0x3F7D_1BBF), // 19.0   -- the old §14.4 edge
+        (0x43C8_0000, 0xBF59_D5D9, 0xBF06_79D2), // 400.0
+        (0x477F_FF00, 0x3F7B_3849, 0x3E44_F5D5), // 65535.0  -- a 64k context
+        (0x497F_FFF0, 0xBF1D_9959, 0x3F49_BD22), // 1048575.0 -- a 1M context
+    ];
+
+    fn sin_at(bits: u32) -> u32 {
+        let x = black_box(f32::from_bits(black_box(bits)));
+        black_box(sin_pinned(x)).to_bits()
+    }
+
+    fn cos_at(bits: u32) -> u32 {
+        let x = black_box(f32::from_bits(black_box(bits)));
+        black_box(cos_pinned(x)).to_bits()
+    }
+
+    /// §6.3's Cody-Waite reduction, pinned at the angles E26 found hardest.
+    #[test]
+    fn reduction_goldens_hold_out_to_a_one_million_position_context() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        for &(x, s, c) in GOLDENS {
+            assert_eq!(sin_at(x), s, "sin_pinned at 0x{x:08X}");
+            assert_eq!(cos_at(x), c, "cos_pinned at 0x{x:08X}");
+        }
+    }
+
+    /// E26 checked every f32 with `2^-126 <= |x| < 2^31` and found
+    /// `sin_pinned` exactly odd and `cos_pinned` exactly even in value, with
+    /// no exceptions. That is what makes a positive-only sweep a statement
+    /// about every finite f32 of that magnitude. Two caveats, both measured
+    /// rather than assumed:
+    ///
+    ///  * below `2^-126` it does not hold and is not meant to -- §1.3's DAZ
+    ///    flushes the input, so `sin_pinned` returns `+0.0` for both signs;
+    ///  * at exactly three arguments in `[2^29, 2^31)` (620046660,
+    ///    1175634300, 1240093300) the reduced argument underflows to zero and
+    ///    only the *sign* of a zero result fails to mirror. Nothing below
+    ///    `2^20` is affected, so no RoPE angle a 1M-position context can
+    ///    produce is affected.
+    #[test]
+    fn sin_is_exactly_odd_and_cos_exactly_even_for_normal_inputs() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        for &(x, _, _) in GOLDENS {
+            let neg = x ^ 0x8000_0000;
+            let s = f32::from_bits(sin_at(x));
+            assert_eq!(sin_at(neg), (-s).to_bits(), "sin(-x) != -sin(x) at 0x{x:08X}");
+            assert_eq!(cos_at(neg), cos_at(x), "cos(-x) != cos(x) at 0x{x:08X}");
+        }
+        // The documented exception, asserted rather than assumed: on the
+        // zero/subnormal class the pinned environment does not carry the sign.
+        for z in [0x0000_0000u32, 0x0000_0001, 0x007F_FFFF] {
+            assert_eq!(sin_at(z), 0x0000_0000, "sin_pinned flushes 0x{z:08X}");
+            assert_eq!(sin_at(z ^ 0x8000_0000), 0x0000_0000, "and its negation");
+        }
+    }
+}
