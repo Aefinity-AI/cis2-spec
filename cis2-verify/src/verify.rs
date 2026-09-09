@@ -116,7 +116,7 @@ fn run_from_token_ids(
 /// to §4-§11 only; it says nothing about §3. It is behind the `census`
 /// feature for that reason, and the default build's public surface is
 /// unchanged.
-#[cfg(feature = "census")]
+#[cfg(any(feature = "census", feature = "layerdump"))]
 pub fn run_with_token_ids(
     art: &Artifacts,
     prompt: &str,

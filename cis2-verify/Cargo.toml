@@ -26,6 +26,11 @@ std = []
 # run the decode in the non-conforming multiply order; it is not a
 # conforming verifier and is never enabled by default or in CI.
 census = ["std"]
+# Spec 14.6 measurement only. A `layerdump` build writes every intermediate
+# activation of the forward pass to a file for comparison against an
+# independent oracle. The tap is write-only; a layerdump build is not a
+# conforming verifier and is never enabled by default or in CI.
+layerdump = ["std"]
 
 [[bin]]
 name = "cis2-verify"
@@ -49,3 +54,8 @@ opt-level = 2
 # default and this crate adds none. 1.4's no-FMA rule is satisfied at
 # source level (never `f32::mul_add`) and checked mechanically by
 # tools/check_no_fma.sh.
+
+[[example]]
+name = "layer_dump"
+path = "examples/layer_dump.rs"
+required-features = ["layerdump"]

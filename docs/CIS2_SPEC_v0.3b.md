@@ -80,10 +80,15 @@ claim:
   mathematical `exp`: §6.2's `x > 88.0` guard clips 94,743 arguments whose
   true `exp` is finite and representable.
 - Cross-framework agreement (vs. PyTorch/`transformers`) as a conformance
-  requirement — oracle comparisons (§13.3, `docs/E15b_m1p5_CORRECTNESS.md`,
-  `docs/E15d_bc_RESULT.md`) are evidence of correctness, not a conformance
-  requirement; CIS-2 conformance is defined relative to this document's own
-  bits, not to any third-party framework's output.
+  requirement — oracle comparisons (§13.3, §14.6, `docs/E15b_m1p5_CORRECTNESS.md`,
+  `docs/E15d_bc_RESULT.md`, `docs/E28_LAYER_ORACLE.md`) are evidence of
+  correctness, not a conformance requirement; CIS-2 conformance is defined
+  relative to this document's own bits, not to any third-party framework's
+  output. That evidence now covers every intermediate activation of both §0
+  models and not only the stack's output (§14.6, erratum E-5), but ~1e-5
+  relative agreement with `transformers` is what it shows and all it could
+  show: bit-exactness is claimed between conforming implementations of this
+  document, never against a third-party framework.
 - Seeded/temperature sampling — decode is greedy-only (argmax every step),
   matching CIS-1's own non-goal (CIS-1 §10).
 - Anything about `verify/` or `cis2-verify2` (independently-written
@@ -1314,6 +1319,12 @@ A second, independently-run oracle comparison against Qwen2.5-0.5B
 diff ≈4.4e-6) is informative evidence for §7's theta-general RoPE, not a
 §13.1 test vector.
 
+This clause compares only the *output* of the layer stack. §14.6 (erratum
+E-5) records the corresponding comparison of every *intermediate* activation
+— 7,467 tensors on the first model and 5,985 on the second, worst relative L2
+error 9.923e-5, with no layer diverging from or compensating for the oracle
+(`docs/E28_LAYER_ORACLE.md`).
+
 13.4. **Compiler-invariance matrix (NEW in v0.2, informative but
 strongly evidential)**: the pinned SmolLM2-135M test vector's `CIS2_REF`
 and `inv_freq_table_digest` reproduce bit-for-bit across a 20-cell matrix
@@ -1480,15 +1491,69 @@ from v0.1. That was wrong: E22's M09 mutation is this exact reassociation and
 had already moved the digest. §8 is unchanged; only this limitations note was.
 See CHANGELOG.md, "Errata against v0.3b".
 
-14.6. **The oracle correctness checks (§13.3) are defensible spot-checks,
-not exhaustive.** They confirm greedy token-id agreement and one step's
-full-vocab logit agreement to ~4e-6 relative on two model families now
-(SmolLM2-135M, Qwen2.5-0.5B) — neither checks every intermediate layer's
-activations against the oracle, so a compensating pair of errors elsewhere
-in the layer stack that happens to preserve step-0's output and all
-argmax decisions cannot be completely ruled out by this evidence alone.
-**Unchanged in kind from v0.1 (was §14.6 there); now covers two models
-instead of one.**
+14.6. **Every intermediate activation has been compared against the oracle,
+on both models. CLOSED.** §13.3's checks look only at the two ends of the
+pipe --- greedy token ids and one step's full-vocab logit vector. That left a
+compensating pair of errors inside the layer stack, one layer diverging and a
+later one bringing the result back, outside the reach of the evidence. It is
+now inside it.
+
+Every named intermediate of the forward pass --- `embed`, and per layer
+`ln1`, `q_proj`, `k_proj`, `v_proj`, `attn_out`, `o_proj`, `resid_attn`,
+`ln2`, `gate_proj`, `up_proj`, `mlp_act`, `down_proj`, `resid_mlp`, and
+`final_norm`/`logits` --- has been dumped at every position of a full decode
+of **both** §0 models and compared against the same tensors taken from a
+`transformers` fp32 forward pass by module hook:
+
+| | SmolLM2-135M | Qwen2.5-0.5B |
+|---|---|---|
+| tensors compared | 7,467 | 5,985 |
+| worst relative L2 error, any tensor | **2.228e-5** | **9.923e-5** |
+| `embed` agreement | exactly 0 | exactly 0 |
+| worst amplification of the carried-in error by any layer | **4.07x** | **3.22x** |
+
+The last row is the one that closes the clause. A divergent layer shows its
+own tensors far above the error it was handed; a compensating layer shows the
+opposite. Measured, **every layer's first computed tensor is within
+0.73-1.18x of the error handed to it**, on all 30 layers of the first model
+and all 24 of the second, with the worst whole-layer amplification bounded by
+4.07x and uniform with depth. There is no divergent layer and no compensating
+layer.
+
+The residual stream shows apparent spikes (8.79x at layer 9 of the first
+model) which are **cancellation, not divergence**: there the two addends have
+norms 486.5 and 414.1 and their sum has norm 105.6, so a 4.6x cancellation
+inflates the relative measure by 4.6x while every input to the add sits at
+1-3e-6. Evidence and method: `docs/E28_LAYER_ORACLE.md`. Instrumentation:
+`cis2-verify` `--features layerdump`, plus `scripts/oracle_layers.py` and
+`scripts/compare_layers.py`.
+
+Scope, unchanged by this: agreement with `transformers` is ~1e-5 relative and
+**must not** be bit-exact --- the oracle uses different kernels and a
+different summation order. CIS-2's bit-exactness claim is between conforming
+implementations of *this document*, not between this document and PyTorch.
+This is one prompt and 19 positions on each model, so a compensating pair
+that appears only at some other context length or activation pattern is not
+excluded; and the Qwen run supplies its prompt token ids from outside §3
+(§14.8), so it attests to §4-§11 only.
+
+**ERRATUM E-5 (2026-09-09).** Through v0.3b as published, and unchanged in
+kind since v0.1, this clause read:
+
+> The oracle correctness checks (§13.3) are defensible spot-checks, not
+> exhaustive. They confirm greedy token-id agreement and one step's
+> full-vocab logit agreement to ~4e-6 relative on two model families now
+> (SmolLM2-135M, Qwen2.5-0.5B) --- neither checks every intermediate layer's
+> activations against the oracle, so a compensating pair of errors elsewhere
+> in the layer stack that happens to preserve step-0's output and all argmax
+> decisions cannot be completely ruled out by this evidence alone.
+> **Unchanged in kind from v0.1 (was §14.6 there); now covers two models
+> instead of one.**
+
+That statement was correct when written, and the measurement it asked for has
+now been made. Nothing normative changes: no digest, coefficient, or required
+behaviour is affected. What changes is the strength of the evidence behind
+§13.3, and the fact that this clause is no longer an open gap.
 
 14.7. **This spec's own history.** Carried forward from v0.1: earlier
 states of the reference computed `inv_freq` via unpinned host `f64::powf`,

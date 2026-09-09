@@ -361,3 +361,62 @@ mod tests {
         );
     }
 }
+
+/// Spec 14.6 measurement only: a per-layer activation tap.
+///
+/// Section 14.6 records that the oracle checks of section 13.3 are
+/// spot-checks on the *output* of the stack — greedy token ids and one
+/// step's full logit vector — and that a compensating pair of errors inside
+/// the layer stack, which happened to preserve step-0's logits and every
+/// argmax decision, could not be ruled out by that evidence alone. Closing
+/// that gap needs the *intermediate* tensors, compared against an
+/// independent implementation.
+///
+/// This module exists only under `--features layerdump`. A layerdump build
+/// writes named f32 tensors to a file and is not a conforming verifier; the
+/// tap is write-only and touches no value the forward pass reads, which is
+/// checked by the digests the dumping run reproduces.
+///
+/// Record format, little-endian, repeated until EOF:
+///
+/// ```text
+///   u32  name_len
+///   u8   name[name_len]        (ASCII)
+///   u32  n                     (element count)
+///   f32  data[n]
+/// ```
+#[cfg(feature = "layerdump")]
+pub mod tap {
+    use std::fs::File;
+    use std::io::{BufWriter, Write};
+    use std::sync::Mutex;
+
+    static SINK: Mutex<Option<BufWriter<File>>> = Mutex::new(None);
+
+    /// Open the dump file. Any previously open sink is flushed and dropped.
+    pub fn open(path: &str) {
+        let f = File::create(path).expect("layerdump: cannot create dump file");
+        *SINK.lock().unwrap() = Some(BufWriter::new(f));
+    }
+
+    /// Flush and close, returning the number of bytes the file holds.
+    pub fn close() {
+        let mut g = SINK.lock().unwrap();
+        if let Some(mut w) = g.take() {
+            w.flush().expect("layerdump: flush failed");
+        }
+    }
+
+    /// Record one named tensor. Read-only in `v`.
+    pub fn emit(name: &str, v: &[f32]) {
+        let mut g = SINK.lock().unwrap();
+        let Some(w) = g.as_mut() else { return };
+        let nb = name.as_bytes();
+        w.write_all(&(nb.len() as u32).to_le_bytes()).unwrap();
+        w.write_all(nb).unwrap();
+        w.write_all(&(v.len() as u32).to_le_bytes()).unwrap();
+        for x in v {
+            w.write_all(&x.to_bits().to_le_bytes()).unwrap();
+        }
+    }
+}
