@@ -247,6 +247,57 @@ shows and all it could show, since bit-exactness is claimed between
 conforming implementations of this document and never against a third-party
 framework.
 
+### E-6 (2026-09-09) --- section 1.5 is a limit on the optimizer's licence, not on optimization; measured at every intermediate
+
+**What v0.3b said.** Section 1.5 forbids fast-math and reassociation, and
+section 13.4 shows the two pinned digests reproducing across a 20-cell
+compiler matrix. Neither passage said what an implementer needs to know
+next --- whether a conforming build may be optimized at all --- and section
+13.4's evidence is two 32-byte digests, not the computation between them.
+
+**What is wrong with it.** Nothing is retracted. Both clauses stand as
+written. What is added is the measurement they imply and did not make, and
+a mechanism that explains why the result is structural rather than lucky.
+
+**What was measured.** Three binaries from one source tree --- a default
+`--release` build, a `-C target-cpu=native` build on an AVX2 part, and a
+`-C target-cpu=native` build on a part without AVX2 --- run on both section
+0 models, eight runs across two microarchitectures:
+
+- **Every intermediate identical byte for byte.** SmolLM2-135M 7,467
+  tensors / 51,750,154 B, sha256 `5386d3b0...`, all four runs. Qwen2.5-0.5B
+  5,985 tensors / 103,942,814 B, sha256 `5ccf6520...`, all four runs. The
+  AVX2 binary emits 397 `%ymm` instructions; the other two emit none. Zero
+  FMA instructions in all three (section 1.4).
+- **Why.** `matvec` is scalar in all three builds, including the AVX2 one:
+  section 5.1's `acc = acc + p` is a serial floating-point dependency an
+  optimizer denied fast-math may not reassociate. Section 8's sum-of-squares
+  splits into an elementwise map and section 5.3's fold, and the AVX2 build
+  vectorizes the map 8-wide while emitting the fold as a scalar `vaddss`
+  chain. The specification pins exactly the operations whose order changes
+  the result and leaves free exactly those whose order does not.
+- **The vector path executes.** Replacing one `vmulps` of that loop with
+  `ud2` in a copy of the binary terminates the run with SIGILL.
+- **The dump is sensitive.** One flipped low-order mantissa bit of one
+  weight in the 269 MB artifact moves 570 of 7,467 tensors --- entering at
+  `L27.down_proj` in a single element, saturating L28 and L29, and moving
+  all 19 `logits` vectors --- while changing no argmax decision at all. That
+  is the measured form of section 12.1's requirement to hash the full logit
+  vector rather than the emitted token ids.
+
+**What changes in the document.** New section 13.5 records the result, the
+mechanism and its scope limits. Section 1.5 gains the sentence that its
+prohibition is on licensing reassociation and not on optimization, with a
+pointer to 13.5. Full method, disassembly and provenance in
+`docs/E29_OPTIMIZER_INVARIANCE.md`; the per-tensor comparison tool added
+for it is `scripts/diff_dumps.py`.
+
+**Scope.** Both hosts ran the same `rustc`/LLVM, so this is two code
+generation targets and not two independent compilers; section 13.4 remains
+the wider compiler axis and section 0's four-implementation convergence the
+independent-implementation axis. One prompt, two models; opt-level 0..3,s
+were not re-run at intermediate granularity.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
