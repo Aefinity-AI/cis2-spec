@@ -238,3 +238,103 @@ pub fn table_digest() -> [u8; 32] {
     }
     h.finalize()
 }
+
+#[cfg(test)]
+mod op_level_goldens {
+    //! Tier-1 op-level goldens for the two spec clauses that the §13.1
+    //! full-run test vector provably cannot exercise (E22 necessity matrix,
+    //! rows M15 and M16).
+    //!
+    //! These values are computed here by this crate's *software* square root
+    //! (`softfp::sqrt_cr`), independently of any hardware `sqrtf`, and match
+    //! the C reference (`verify3/mathpin.c`, `cis2_rsqrt`) bit-for-bit.
+    use super::*;
+
+    /// §6.1's only stated conformance check is `rsqrt(64.0) == 0.125`. That is
+    /// the one value in the plausible head_dim range where *every* plausible
+    /// implementation route agrees, so it cannot detect a wrong route.
+    #[test]
+    fn the_spec_s_only_rsqrt_check_is_at_a_value_that_cannot_discriminate() {
+        assert_eq!(rsqrt(64.0).to_bits(), 0x3E00_0000, "spec 6.1's stated check");
+        // A double-precision route -- 1/sqrt computed in f64 and rounded once
+        // -- is a different computation, but at 64 it lands on the same bits,
+        // because 64 is a perfect square and 1/8 is exactly representable.
+        assert_eq!(rsqrt_via_f64(64.0).to_bits(), 0x3E00_0000);
+    }
+
+    /// The head_dims at which the spec's composed-f32 route and a
+    /// single-rounded f64 route differ by 1 ULP. 96 and 112 are head_dims that
+    /// occur in shipping checkpoints, so this is not a synthetic corner.
+    #[test]
+    fn rsqrt_route_goldens_separate_the_f32_route_from_an_f64_route() {
+        // (head_dim, spec-route bits, f64-route bits)
+        const DIVERGE: &[(f32, u32, u32)] = &[
+            (24.0, 0x3E51_05EB, 0x3E51_05EC),
+            (72.0, 0x3DF1_5BF0, 0x3DF1_5BEF),
+            (96.0, 0x3DD1_05EB, 0x3DD1_05EC),
+            (112.0, 0x3DC1_8490, 0x3DC1_848F),
+            (136.0, 0x3DAF_9D54, 0x3DAF_9D53),
+        ];
+        for &(d, spec, other) in DIVERGE {
+            assert_eq!(rsqrt(d).to_bits(), spec, "spec 6.1 route at head_dim {d}");
+            assert_ne!(spec, other, "golden must actually discriminate at {d}");
+            assert_eq!(rsqrt_via_f64(d).to_bits(), other, "f64 route at {d}");
+        }
+        // Perfect squares in the same range agree on both routes -- these are
+        // the values a conformance suite must NOT use as its only check.
+        for d in [16.0f32, 64.0, 256.0] {
+            assert_eq!(rsqrt(d).to_bits(), rsqrt_via_f64(d).to_bits());
+        }
+    }
+
+    /// A non-conforming route computed with f64 intermediates. Present only so
+    /// the goldens above are demonstrated to discriminate; never used by the
+    /// verifier itself.
+    fn rsqrt_via_f64(x: f32) -> f32 {
+        // Newton on f64 is not needed: this crate has no libm, so the f64
+        // reference square root is built from the software f32 root refined
+        // once in f64, which is exact to well beyond f32 precision.
+        let x64 = x as f64;
+        let mut r = sqrt_cr(x) as f64;
+        r = 0.5 * (r + x64 / r); // one Newton step: f64-accurate sqrt
+        (1.0f64 / r) as f32
+    }
+
+    /// §11.2's `>` (first-maximal) vs `>=` (last-maximal). The §13.1 vector
+    /// never reaches this branch -- no exact tie occurs in 16 argmaxes over
+    /// 49152 fp32 logits -- so the clause needs its own golden.
+    #[test]
+    fn argmax_tie_golden_separates_first_maximal_from_last_maximal() {
+        let logits: [f32; 6] = [1.0, 3.0, 3.0, 2.0, 3.0, -1.0];
+        assert_eq!(argmax_first_maximal(&logits), 1);
+        assert_eq!(argmax_last_maximal(&logits), 4);
+        // A vector with no tie cannot tell the two rules apart, which is
+        // exactly why the pinned full-run vector missed this.
+        let untied: [f32; 4] = [1.0, 3.0, 2.0, -1.0];
+        assert_eq!(argmax_first_maximal(&untied), argmax_last_maximal(&untied));
+    }
+
+    fn argmax_first_maximal(v: &[f32]) -> usize {
+        let mut bi = 0;
+        let mut bv = v[0];
+        for (i, &x) in v.iter().enumerate() {
+            if x > bv {
+                bv = x;
+                bi = i;
+            }
+        }
+        bi
+    }
+
+    fn argmax_last_maximal(v: &[f32]) -> usize {
+        let mut bi = 0;
+        let mut bv = v[0];
+        for (i, &x) in v.iter().enumerate() {
+            if x >= bv {
+                bv = x;
+                bi = i;
+            }
+        }
+        bi
+    }
+}
