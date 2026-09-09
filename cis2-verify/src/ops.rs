@@ -105,6 +105,13 @@ pub mod census {
     static SILU_BELOW_88: AtomicU64 = AtomicU64::new(0);
     static SILU_MIN: AtomicI64 = AtomicI64::new(i64::MAX);
     static SILU_MAX: AtomicI64 = AtomicI64::new(i64::MIN);
+    // 6.4 evaluates `exp_pinned(-x)`, so SiLU has its own subnormal window,
+    // mirrored about zero: `-x` is in [-88.0, SUBNORM_TOP) exactly when `x`
+    // is in (-SUBNORM_TOP, 88.0]. Above 88.0 the LOW guard fires on `-x` and
+    // returns 0.0, so that side is clamped rather than computed. Counting
+    // both windows is what makes E35 a statement about the whole `exp`
+    // route rather than about softmax alone.
+    static SILU_SUBNORM_BAND: AtomicU64 = AtomicU64::new(0);
 
     // 6.2's LOW guard, `x < -88.0 -> 0.0`, on the softmax path. Reachable by
     // construction (any score more than 88 below the row maximum), and
@@ -112,6 +119,32 @@ pub mod census {
     // it anyway). This counts how often a real decode exercises it.
     static SOFTMAX_N: AtomicU64 = AtomicU64::new(0);
     static SOFTMAX_LOW_GUARD: AtomicU64 = AtomicU64::new(0);
+
+    // The window the low guard does NOT cover, and the one that actually
+    // matters to 1.3. `ln(f32::MIN_POSITIVE)` is -87.3365447505531, so
+    // `exp_pinned(a)` is **subnormal** for `a` in [-88.0, -87.3365447505531)
+    // -- above the guard, so it is computed rather than clamped. With FTZ
+    // pinned that subnormal is flushed to zero; without it, it survives and
+    // contributes to the softmax denominator. That is precisely the case
+    // E22's M01 mutant (FTZ/DAZ gutted) would have to hit to move the digest,
+    // and no counter measured it: `SOFTMAX_LOW_GUARD` counts `a < -88.0`,
+    // where the guard fires and the answer is 0.0 either way. E22 called this
+    // out as unresolved -- "no denormal *changed a result*, which is slightly
+    // weaker than no denormal ever arose" -- and this counter is what closes
+    // it. The arg range says how far a real decode lands from the window.
+    static SOFTMAX_SUBNORM_BAND: AtomicU64 = AtomicU64::new(0);
+    static SOFTMAX_MIN: AtomicI64 = AtomicI64::new(i64::MAX);
+    static SOFTMAX_MAX: AtomicI64 = AtomicI64::new(i64::MIN);
+
+    /// Exclusive top of the subnormal band: the largest f32 whose
+    /// `exp_pinned` is still normal is `SUBNORM_TOP` itself, so `a <
+    /// SUBNORM_TOP` holds exactly for the arguments whose `exp_pinned` is
+    /// subnormal (`0xC2AE_AC4F` is -87.336_540_222_167_97, one ULP above
+    /// `ln(f32::MIN_POSITIVE)` = -87.336_544_750_553_1 rounded to f32).
+    /// `subnorm_band_edge_is_exp_pinneds_own_boundary` pins this against
+    /// `exp_pinned` rather than against `libm`, so the band tracks the
+    /// implementation the digest actually runs.
+    pub const SUBNORM_TOP: f32 = f32::from_bits(0xC2AE_AC4F);
 
     /// Total order on f32 bits, so `fetch_min`/`fetch_max` mean what they say
     /// across the sign boundary.
@@ -133,6 +166,8 @@ pub mod census {
         }
         if x < -88.0 {
             SILU_BELOW_88.fetch_add(1, Relaxed);
+        } else if x > -SUBNORM_TOP {
+            SILU_SUBNORM_BAND.fetch_add(1, Relaxed);
         }
         let k = key(x);
         SILU_MIN.fetch_min(k, Relaxed);
@@ -144,23 +179,39 @@ pub mod census {
         SOFTMAX_N.fetch_add(1, Relaxed);
         if a < -88.0 {
             SOFTMAX_LOW_GUARD.fetch_add(1, Relaxed);
+        } else if a < SUBNORM_TOP {
+            SOFTMAX_SUBNORM_BAND.fetch_add(1, Relaxed);
         }
+        SOFTMAX_MIN.fetch_min(key(a), Relaxed);
+        SOFTMAX_MAX.fetch_max(key(a), Relaxed);
     }
 
-    /// `(calls, in_clip_band, below_-88, min_arg, max_arg)` for 6.4's SiLU.
-    pub fn silu_counts() -> (u64, u64, u64, f32, f32) {
+    /// `(calls, in_clip_band, below_-88, in_subnormal_band, min_arg,
+    /// max_arg)` for 6.4's SiLU.
+    pub fn silu_counts() -> (u64, u64, u64, u64, f32, f32) {
         (
             SILU_N.load(Relaxed),
             SILU_CLIP_BAND.load(Relaxed),
             SILU_BELOW_88.load(Relaxed),
+            SILU_SUBNORM_BAND.load(Relaxed),
             unkey(SILU_MIN.load(Relaxed)),
             unkey(SILU_MAX.load(Relaxed)),
         )
     }
 
-    /// `(calls, hit_low_guard)` for 10's softmax `exp_pinned`.
-    pub fn softmax_counts() -> (u64, u64) {
-        (SOFTMAX_N.load(Relaxed), SOFTMAX_LOW_GUARD.load(Relaxed))
+    /// `(calls, hit_low_guard, in_subnormal_band, min_arg, max_arg)` for 10's
+    /// softmax `exp_pinned`. `in_subnormal_band > 0` means this decode
+    /// produced a subnormal that FTZ flushed, so 1.3 is digest-relevant on
+    /// this vector; `== 0` with a `min_arg` far above -87.34 means it is not,
+    /// and now says so by measurement rather than by absence of a counter.
+    pub fn softmax_counts() -> (u64, u64, u64, f32, f32) {
+        (
+            SOFTMAX_N.load(Relaxed),
+            SOFTMAX_LOW_GUARD.load(Relaxed),
+            SOFTMAX_SUBNORM_BAND.load(Relaxed),
+            unkey(SOFTMAX_MIN.load(Relaxed)),
+            unkey(SOFTMAX_MAX.load(Relaxed)),
+        )
     }
 
     pub fn note(pinned: f32, other: f32) {
@@ -181,14 +232,113 @@ pub mod census {
         SILU_N.store(0, Relaxed);
         SILU_CLIP_BAND.store(0, Relaxed);
         SILU_BELOW_88.store(0, Relaxed);
+        SILU_SUBNORM_BAND.store(0, Relaxed);
         SILU_MIN.store(i64::MAX, Relaxed);
         SILU_MAX.store(i64::MIN, Relaxed);
         SOFTMAX_N.store(0, Relaxed);
         SOFTMAX_LOW_GUARD.store(0, Relaxed);
+        SOFTMAX_SUBNORM_BAND.store(0, Relaxed);
+        SOFTMAX_MIN.store(i64::MAX, Relaxed);
+        SOFTMAX_MAX.store(i64::MIN, Relaxed);
     }
     /// `(elements, divergent)`
     pub fn counts() -> (u64, u64) {
         (ELEMENTS.load(Relaxed), DIVERGENT.load(Relaxed))
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::SUBNORM_TOP;
+        use crate::mathpin::exp_pinned;
+
+        /// The band's edge is pinned against `exp_pinned` itself, not against
+        /// `libm`, because `exp_pinned` is what the digest runs. The assertion
+        /// is written as `is_normal()` on both sides so it holds whether or
+        /// not 1.3's FTZ pin is in effect in the harness thread: with the pin
+        /// a band argument returns +0.0, without it a subnormal, and neither
+        /// is normal, while an argument at or above the edge returns a normal
+        /// f32 either way. That is exactly the asymmetry `SOFTMAX_SUBNORM_BAND`
+        /// exists to count.
+        #[test]
+        fn subnorm_band_edge_is_exp_pinneds_own_boundary() {
+            let top = SUBNORM_TOP;
+            assert_eq!(top.to_bits(), 0xC2AE_AC4F);
+
+            // At the edge and one ULP above it (toward zero): normal.
+            assert!(exp_pinned(top).is_normal(), "exp_pinned({top}) should be normal");
+            let above = f32::from_bits(top.to_bits() - 1);
+            assert!(exp_pinned(above).is_normal(), "exp_pinned({above}) should be normal");
+
+            // One ULP below the edge (further from zero): not normal, i.e.
+            // subnormal unpinned and flushed to zero pinned.
+            let below = f32::from_bits(top.to_bits() + 1);
+            assert!(!exp_pinned(below).is_normal(), "exp_pinned({below}) should not be normal");
+
+            // The LOW guard's own boundary sits inside the band: -88.0 is not
+            // clamped (6.2's test is strict `< -88.0`) and its exp is
+            // subnormal, so the band and the guard meet without a gap.
+            assert!(!exp_pinned(-88.0).is_normal());
+            assert!(-88.0f32 < top);
+        }
+
+        /// A counter that cannot fire proves nothing when it reads zero, so
+        /// drive a score gap through the real `softmax_seq` and check that
+        /// each of the three regions lands in the bucket it should. This is
+        /// the positive control for E35's `n=0` sweep result: without it,
+        /// "no decode reached the subnormal band" and "the instrument is
+        /// dead" are the same observation.
+        #[test]
+        fn subnorm_band_counter_fires_on_a_constructed_gap() {
+            // Inside the band: computed, not clamped, and subnormal.
+            crate::ops::census::reset();
+            let mut v = [0.0f32, -87.5];
+            crate::ops::softmax_seq(&mut v);
+            let (n, low, band, min, max) = crate::ops::census::softmax_counts();
+            assert_eq!((n, low, band), (2, 0, 1));
+            assert_eq!(min.to_bits(), (-87.5f32).to_bits());
+            assert_eq!(max.to_bits(), 0.0f32.to_bits());
+
+            // Below the guard: 6.2 clamps to 0.0 before `exp` is evaluated,
+            // so this is NOT a subnormal-band case and must not be counted
+            // as one. Conflating the two is what made E29's n=0 unreadable.
+            crate::ops::census::reset();
+            let mut v = [0.0f32, -90.0];
+            crate::ops::softmax_seq(&mut v);
+            assert_eq!(crate::ops::census::softmax_counts().0, 2);
+            assert_eq!(crate::ops::census::softmax_counts().1, 1);
+            assert_eq!(crate::ops::census::softmax_counts().2, 0);
+
+            // Above the band: an ordinary normal `exp`, counted in neither.
+            crate::ops::census::reset();
+            let mut v = [0.0f32, -80.0];
+            crate::ops::softmax_seq(&mut v);
+            assert_eq!(crate::ops::census::softmax_counts().1, 0);
+            assert_eq!(crate::ops::census::softmax_counts().2, 0);
+        }
+
+        /// 6.4's window is the same one mirrored, because SiLU evaluates
+        /// `exp_pinned(-x)`. Checked against `exp_pinned` on the same
+        /// arguments so the bucket boundary and the arithmetic cannot drift
+        /// apart.
+        #[test]
+        fn silu_subnorm_band_is_the_softmax_band_mirrored() {
+            use crate::ops::census;
+
+            census::reset();
+            census::note_silu(87.5); // -87.5 is inside the band
+            census::note_silu(-90.0); // -(-90) = 90 -> LOW guard on -x
+            census::note_silu(0.0); // ordinary
+            let (n, _clip, below, band, _min, _max) = census::silu_counts();
+            assert_eq!((n, below, band), (3, 1, 1));
+
+            assert!(!exp_pinned(-87.5).is_normal());
+            assert!(exp_pinned(-0.0).is_normal());
+
+            // The mirror is exact: negation of an f32 is exact, so the two
+            // windows share one constant rather than two rounded literals.
+            assert_eq!((-SUBNORM_TOP).to_bits(), SUBNORM_TOP.to_bits() ^ 0x8000_0000);
+            census::reset();
+        }
     }
 }
 
