@@ -5,6 +5,41 @@ clean-room verifiers. The reference implementation the spec was audited
 against lives in a separate repository (see README "Scope"); this
 changelog covers the spec text and verifiers published here.
 
+## Repository releases
+
+Version numbers above name the *specification* document. The section
+below records what the repository shipped alongside it.
+
+### 2026-09-09 --- release `v0.3b` (first tagged release)
+
+The v0.3b spec text is unchanged; every pinned digest in section 13 is
+unchanged. What is new in the repository since the spec was frozen:
+
+- **Op-level conformance vectors** (`tests/conformance/`): five pinned
+  input/expected pairs -- `matvec_v1`, `rmsnorm_v1`, `rope_v1`,
+  `exp_pinned_v1`, `attention_block_v1` -- with a written protocol
+  (`PROTOCOL.md`), so an implementer can localize a divergence to one
+  operation instead of bisecting a whole decode. Previously the only
+  conformance surface was the end-to-end `CIS2_REF` digest: pass or fail,
+  no diagnosis.
+- **Dual-ISA CI** (`.github/workflows/verify.yml`): every job now runs
+  natively on both `ubuntu-24.04` (x86_64) and `ubuntu-24.04-arm`
+  (aarch64) and asserts `uname -m` matches, so the cross-ISA claim is
+  re-checked by a third party on every push rather than asserted from a
+  local log. Jobs: `reference`, `conformance`, `verify2`, and `verify3`
+  built with both gcc and clang -- 10 jobs, all green on `main`.
+- **A GPU leg** (`docs/GPU_RESULT.md`): a CUDA port written from the
+  v0.3b spec text reproduces the normative witness digest
+  `d82743059d...` bit-for-bit on an NVIDIA Tesla P100-PCIE-16GB (sm_60,
+  CUDA 12.8), with a byte-identical per-step trace against the CPU
+  reference. This is a first-party result, not an independent
+  replication; the CUDA source is not published. See that document's
+  Scope section for what it does and does not establish.
+- **A Hugging Face dataset card** (`docs/HF_DATASET_CARD.md`) and
+  `scripts/publish_hf.sh`, which assembles the conformance payload from
+  the working tree and refuses to upload if the v0.3b digest is missing
+  from either the card or `EXPECTED_DIGESTS.md`.
+
 ## v0.2 (2026-08-28)
 
 Three normative changes relative to v0.1, all affecting the pinned test

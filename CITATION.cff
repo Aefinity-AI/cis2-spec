@@ -8,7 +8,7 @@ authors:
   - family-names: "Thompson"
     given-names: "Justin Brian"
 license: Apache-2.0
-repository-code: "https://github.com/Aefinity-AI/cis2-spec"  # planned; repo not yet created
+repository-code: "https://github.com/Aefinity-AI/cis2-spec"
 abstract: >
   A normative specification for fp32 transformer decode such that
   independent implementations, written from the specification text alone,
