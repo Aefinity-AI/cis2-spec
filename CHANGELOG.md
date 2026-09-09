@@ -353,6 +353,49 @@ section 2b and `docs/E27_EXP_LN_RANGE.md` section 1. Re-derivable with
 `scripts/e30_prompt_sweep.sh` / `scripts/e30_prompt_sweep_box2.sh` over
 `scripts/e30_prompts.txt`.
 
+### E-8 (2026-09-09) --- section 13.5's last scope limit closed: the aarch64 half of section 13.4's matrix, at intermediate granularity, as a CI gate
+
+E-6 measured every intermediate activation across ten `{opt-level} x
+{target-cpu}` cells, but on x86_64 only, and said so. That limit needed a
+machine rather than a decision, so it was closed.
+
+**All twenty cells of section 13.4's matrix** --- `{x86_64, aarch64} x
+{opt-level 0,1,2,3,s} x {target-cpu generic, native}` --- now run at
+intermediate granularity in `.github/workflows/verify.yml` (job
+`intermediates`), on GitHub-hosted runners of both ISAs. Twenty distinct
+binaries; every one produces
+`5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` --- all
+51,750,154 bytes, 7,467 tensors --- reproduces the section 13.1 witness
+digest, and disassembles to zero FMA-family instructions. Run 34372521833,
+20/20 success.
+
+Two observations recorded because they were measured, not because they
+change the claim: on aarch64 the identity does **not** rest on the code
+having stayed scalar --- NEON is architecturally baseline, so every cell
+including `-O0` emits 875-936 vector instructions, with no
+`generic`/`native` cliff of the kind x86_64 shows; and `target-cpu=native`
+on the CI x86_64 runner emits 404/524/284 `%ymm` where the same source on
+`penguin` emitted 397/529/286. The instruction counts are host-dependent.
+The 51,750,154 bytes are not.
+
+An independent cross-check, kept out of the evidence above on purpose: the
+same aarch64 binary cross-compiled on `penguin` and run under `qemu-aarch64`
+user-mode emulation reproduces the dump exactly. Emulated softfloat is the
+wrong thing to trust for a bit-exactness claim, so the CI runners carry the
+result --- but the crate's 47 library and 6 end-to-end tests pass under that
+emulator too, including the six pinned FTZ/DAZ denormal goldens in
+`cis2-verify/src/fpenv.rs`, so section 1.3's FPCR FZ pin is exercised on the
+aarch64 path rather than assumed.
+
+**This is now a gate.** Section 13.4 gates two digests across those cells;
+this gates every intermediate in each of them. The difference is the one
+E-6 measured: one flipped weight mantissa bit moves 570 tensors and **zero**
+argmax decisions, so a divergence the new job catches is one an
+output-digest job would let through. No pinned digest moves.
+
+Method, per-cell table and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
+section 2c.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
