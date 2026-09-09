@@ -20,6 +20,13 @@ full-logit output digests:
 for a pinned (model, prompt, decode-length) test vector, matching a
 PyTorch/`transformers` oracle within floating-point tolerance.
 
+**Where to get it.** Tagged release:
+[`v0.3b`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.3b). The
+spec, the five op-level conformance vectors, `EXPECTED_DIGESTS.md` and
+`docs/GPU_RESULT.md` are also mirrored on Hugging Face as
+[`aefinityAIINC/cis2-conformance`](https://huggingface.co/datasets/aefinityAIINC/cis2-conformance),
+regenerated from this repository by `scripts/publish_hf.sh`.
+
 **What the clean-rooms in this repository actually verify:** `verify2/`
 (Rust) and `verify3/` (C) — the two independent, from-spec-text-only
 implementations shipped here — reproduce the primary bit-identical

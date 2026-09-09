@@ -30,7 +30,11 @@ with pinned expected outputs, the expected end-to-end digests, and the GPU
 result.
 
 Everything here is Apache-2.0. Source of truth and CI:
-**https://github.com/Aefinity-AI/cis2-spec**
+**https://github.com/Aefinity-AI/cis2-spec** — tagged release
+[`v0.3b`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.3b).
+
+This dataset is a snapshot assembled from that repository. If the two ever
+disagree, the repository wins.
 
 ## The claim
 
