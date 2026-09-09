@@ -170,6 +170,102 @@ jobs:
           [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
           echo "PASS: verify2 (${{ matrix.arch_label }}) matches CIS2_REF"
 
+  # --- cis2-verify: fourth clean-room implementation, zero dependencies ---
+  # This crate had no CI job at all until now: it was built and tested only by
+  # hand. It is the standalone verifier a third party is meant to run, so it is
+  # the one implementation that most needs a green check next to it.
+  cis2-verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: uname (assert matches expected arch)
+        run: |
+          U=$(uname -m)
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
+          else
+            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+          fi
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      # Runs before the 500 MB fetch on purpose: the unit tests and the
+      # committed 2.8 kB fixture in tests/fixtures/tiny cover the whole
+      # pipeline without any download, so an arithmetic or receipt-format
+      # regression fails here in seconds rather than after the weights land.
+      - name: Test suite (no artifacts needed)
+        working-directory: cis2-verify
+        run: cargo test --release -j2
+
+      - name: Build cis2-verify (release)
+        working-directory: cis2-verify
+        run: cargo build --release -j2
+
+      - name: Self-test (fp environment, table digest, cancellation regression)
+        run: ./cis2-verify/target/release/cis2-verify selftest
+
+      - name: FMA gate (objdump, zero fused multiply-add on decode path)
+        run: |
+          objdump -d cis2-verify/target/release/cis2-verify > /tmp/disasm_cv.txt
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_cv.txt; then
+            echo "FMA-family instruction found in disassembly - spec 1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Run against the pinned test vector (spec 13.1)
+        run: |
+          set -euo pipefail
+          OUT=$(./cis2-verify/target/release/cis2-verify run weights -o /tmp/cv_receipt.txt | tee /tmp/cv_output.txt)
+          witness=$(echo "$OUT" | grep -oP '(?<=CIS2-VERIFY digest=)[0-9a-f]+' | head -1 || true)
+          echo "witness: got=$witness expected=$EXPECTED_WITNESS"
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
+          grep -q 'CIS2-VERIFY conformance=PASS' /tmp/cv_output.txt \
+            || { echo "conformance line missing or not PASS"; exit 1; }
+          echo "PASS: cis2-verify (${{ matrix.arch_label }}) matches CIS2_REF"
+
+      - name: Re-verify the receipt it just wrote (round trip on real artifacts)
+        run: |
+          set -euo pipefail
+          ./cis2-verify/target/release/cis2-verify verify weights /tmp/cv_receipt.txt | tee /tmp/cv_verify.txt
+          grep -q 'CIS2-VERIFY VERIFY PASS' /tmp/cv_verify.txt || { echo "round trip failed"; exit 1; }
+
+      - name: A doctored receipt must be rejected (negative control)
+        run: |
+          set -euo pipefail
+          # Without this, the step above would pass just as happily against a
+          # verifier that returned PASS unconditionally.
+          # Flip the last hex nibble of the argmax digest: 0 -> 1, anything
+          # else -> 0. Never a no-op, whatever the digest happens to start or
+          # end with. (The first draft of this replaced the leading nibble
+          # with 0; the real digest starts with 0, so it changed nothing and
+          # the control silently passed against an unmodified receipt.)
+          sed -E 's/^(argmax-digest [0-9a-f]{63})0$/\11/; t; s/^(argmax-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            /tmp/cv_receipt.txt > /tmp/cv_bad.txt
+          cmp -s /tmp/cv_receipt.txt /tmp/cv_bad.txt && { echo "mutation was a no-op"; exit 1; }
+          if ./cis2-verify/target/release/cis2-verify verify weights /tmp/cv_bad.txt; then
+            echo "a doctored receipt verified clean - the verifier is not binding"
+            exit 1
+          fi
+          echo "negative control: PASS (doctored receipt rejected)"
+
   # --- verify3: C clean-room, gcc and clang ---
   verify3:
     strategy:
