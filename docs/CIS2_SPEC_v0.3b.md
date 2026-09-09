@@ -160,7 +160,13 @@ any flag that licenses reassociating floating-point expressions, assuming
 no NaN/Inf, or substituting approximate reciprocal/rsqrt hardware
 instructions (e.g. `-ffast-math`, `-Ofast`, `-freciprocal-math`). This
 spec's reduction orders (§5) are only bit-determining if the compiler
-computes exactly the sequence of operations stated, in the stated order.
+computes exactly the sequence of operations stated, in the stated order. This
+is a prohibition on *licensing* reassociation, not a prohibition on
+optimization: §13.5 measures that `--release -C target-cpu=native` emits
+8-wide AVX2 for the elementwise work and leaves every §5 reduction scalar,
+with every intermediate activation bit-identical to a non-vectorized
+build. An optimizer denied fast-math can only act where acting does not
+move the bits.
 
 1.6. **Division and sqrt**: ordinary IEEE-754 `/` and `sqrt` (both
 mandatory-correctly-rounded operations under IEEE-754), never a
@@ -1334,6 +1340,51 @@ Preregistered digest values and the full per-cell table are recorded in
 `docs/E15d_v0.2_DIGESTS.md` (this branch); the v0.1-era version of this
 same check (`docs/E15d_a_COMPILER_INVARIANCE.md`) targeted the old
 `ba88708b...` digest and is superseded by the v0.2 rerun.
+
+13.5. **Optimizer-invariance at every intermediate (NEW in v0.3b,
+informative but strongly evidential).** §13.4 compares two digests across a
+compiler matrix. This clause compares *every intermediate activation*
+across code generation targets. Three binaries built from one source tree —
+a default `--release` build, a `-C target-cpu=native` build on an AVX2 part
+(397 `%ymm` instructions emitted), and a `-C target-cpu=native` build on a
+part without AVX2 (none) — produce, on both of §0's models, dumps that are
+identical byte for byte: 7,467 tensors / 51,750,154 B for SmolLM2-135M and
+5,985 tensors / 103,942,814 B for Qwen2.5-0.5B, over eight runs on two
+microarchitectures. Zero FMA instructions in all three binaries (§1.4).
+
+The mechanism is the point, and it is a property of this specification
+rather than of these builds. §5.1's `acc = acc + p` is a serial
+floating-point dependency, so an optimizer denied fast-math (§1.5) cannot
+vectorize the reduction: `matvec` is scalar in all three binaries,
+including the AVX2 one. §8's sum-of-squares splits into an elementwise map
+and §5.3's fold, and the AVX2 build vectorizes the map 8-wide while
+emitting the fold as a scalar `vaddss` chain. **This spec pins exactly
+those operations whose order changes the result and leaves free exactly
+those whose order does not**, so an optimizer can act only where acting is
+a no-op on the bits. A conforming implementation therefore need not ship an
+unoptimized build; `--release -C target-cpu=native` was measured to be
+conforming.
+
+Two controls accompany the result, because an invariance claim is empty
+without them. (a) The AVX2 vector loop is on the executed path: replacing
+one of its `vmulps` instructions with `ud2` in a copy of the binary
+terminates the run with SIGILL. (b) The dump is sensitive: flipping one
+low-order mantissa bit of one weight in the 269 MB artifact moves 570 of
+the 7,467 tensors — entering at `L27.down_proj` in a single element,
+saturating L28 and L29, and moving all 19 `logits` vectors — while changing
+**no** argmax decision. That last observation is the measured form of
+§12.1's requirement to hash the full logit vector rather than the emitted
+token ids: the corruption was visible in 100 % of the logit vectors and 0 %
+of the decisions. Full method, disassembly and provenance in
+`docs/E29_OPTIMIZER_INVARIANCE.md`; the per-tensor comparison tool is
+`scripts/diff_dumps.py`.
+
+Scope limits, stated so this is not over-read: both hosts ran the same
+`rustc`/LLVM, so this is two code generation targets and not two
+independent compilers (§13.4 is the wider compiler axis, and §0's
+four-implementation convergence is the independent-implementation axis);
+one prompt and two models; `opt-level` 0..3,s were not re-run at
+intermediate granularity.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 
