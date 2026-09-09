@@ -1652,6 +1652,47 @@ now been made. Nothing normative changes: no digest, coefficient, or required
 behaviour is affected. What changes is the strength of the evidence behind
 §13.3, and the fact that this clause is no longer an open gap.
 
+**ERRATUM E-9 (2026-09-09).** Three numbers above are **per-prompt maxima
+quoted as general bounds**. As published they read "every layer's first
+computed tensor is within **0.73-1.18x** of the error handed to it" and "the
+worst whole-layer amplification bounded by **4.07x**" (SmolLM2) / **3.22x**
+(Qwen). Each is the value measured on the single prompt E28 ran. Re-measuring
+the identical instrument over six prompt/length cells on each model
+(`docs/E36_ORACLE_PROMPT_SWEEP.md`, `docs/E37_QWEN_ORACLE_SWEEP.md`; 144,825
+tensors, 312 (cell, layer) ratio rows) gives:
+
+| | as published | measured over six cells per model |
+|---|---|---|
+| first-computed-tensor / carried-in ratio | 0.73-1.18x | **0.51-1.70x** |
+| worst whole-layer amplification, SmolLM2 | 4.07x | **6.48x** |
+| worst whole-layer amplification, Qwen | 3.22x | **4.83x** |
+
+E28's own cell reproduces 4.07x, 3.22x and the 0.73 low end exactly, so these
+are that prompt's values and not a transcription error. The table earlier in
+this clause is likewise per-prompt: SmolLM2's worst relative L2 error rises to
+**3.406e-5** across six prompts (E36), while Qwen's **9.923e-5** turns out to be
+the six-cell maximum already.
+
+**The conclusion of this clause is unchanged, and now rests on a better test.**
+The width of the ratio interval was never the evidence; whether an extreme is a
+property of the *weights* is. A divergent or compensating layer must appear at
+the same layer, in the same direction, on every input. Measured, it does not:
+Qwen's layer 22 hands back 0.73x the error it was given on one prompt and 1.61x
+on another, and SmolLM2's layer 3 spans 0.68x to 1.48x — activation-dependent
+scatter in a ratio of two small relative errors, not a layer that creates or
+destroys error. The compensating pair is excluded instead by the residual-stream
+test, run on all 324 (cell, layer) rows of both sweeps: a compensating pair would
+show a residual spike larger than that layer's own-tensor error times its
+cancellation factor, and `max resid_l2 / (own_l2 x cancellation)` is **0.848**
+on SmolLM2 and **0.557** on Qwen — every row below 1, none unexplained. Read the
+row above as: *no layer's own tensors depart from the error handed to it by more
+than about 1.7x in either direction, and no layer's departure reproduces across
+inputs.* The "one prompt and 19 positions on each model" scope note below is
+correspondingly widened to six prompts and up to 67 fed positions on each; it is
+still not exhaustive, and the Qwen half still attests to §4-§11 only (§14.8).
+Nothing normative changes: no digest, coefficient, or required behaviour is
+affected. See CHANGELOG.md, "Errata against v0.3b".
+
 14.7. **This spec's own history.** Carried forward from v0.1: earlier
 states of the reference computed `inv_freq` via unpinned host `f64::powf`,
 producing a *different* `CIS2_REF`

@@ -215,9 +215,14 @@ fp32 forward pass hooked at the corresponding modules:
 - **13,452 tensors compared** (7,467 SmolLM2-135M, 5,985 Qwen2.5-0.5B), 0
   name or shape mismatches.
 - **Worst relative L2 error over all of them: 9.923e-5** (2.228e-5 on the
-  first model). `embed` agrees exactly on both.
-- **No layer creates error.** Every layer's first computed tensor is within
-  0.73-1.18x of the error it was handed, across all 30 layers of the first
+  first model). `embed` agrees exactly on both. *(Per-prompt maxima; E-9 below
+  widens the first model's to 3.406e-5 over six prompts and confirms 9.923e-5
+  as the six-cell maximum on the second.)*
+- **No layer creates error.** *(These two figures are corrected by E-9 below:
+  measured over six prompts per model the interval is 0.51-1.70x and the worst
+  amplification 6.48x / 4.83x. The conclusion is unchanged --- see E-9 for why
+  the interval width was never what carried it.)* Every layer's first computed
+  tensor is within 0.73-1.18x of the error it was handed, across all 30 layers of the first
   model and all 24 of the second; worst amplification of the carried-in error
   across a whole layer is 4.07x / 3.22x, uniform with depth. A divergent
   layer would show a large ratio at that layer alone, and a compensating one
@@ -436,6 +441,54 @@ cells are re-runnable measurements (`scripts/e32_lto_sweep.sh`,
 
 Method, per-cell tables and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
 sections 2c and 2d. Re-derivable with `scripts/e32_lto_sweep.sh`.
+
+### E-9 (2026-09-09) --- section 14.6's layer-error bounds were per-prompt maxima quoted as general bounds
+
+**What v0.3b said.** Section 14.6, and E-5 above, state as properties of the
+two section 0 models: "every layer's first computed tensor is within
+**0.73-1.18x** of the error handed to it", "worst amplification of the
+carried-in error across a whole layer is **4.07x / 3.22x**", and a worst
+relative L2 error of **2.228e-5 / 9.923e-5**.
+
+**What is wrong with them.** Each is the maximum over the *single prompt* E28
+ran, not over the model. The sentence around each number is the defect; the
+numbers themselves are correct for that input, and no test in the repository
+can catch this --- only running the same instrument on inputs the original
+author did not choose. This is the third instance of that pattern found in
+E28's headline table.
+
+**What was measured.** The identical instrument, over six prompt/length cells
+on each model --- the same six E-7 used, so the two sweeps are comparable:
+`"Once upon a time"`/16, a 43-character sentence/16, a digit-heavy prompt/16,
+a code prompt/16, `"Once upon a time"`/64 and `"A"`/32.
+
+- **144,825 tensors compared** (80,565 SmolLM2-135M in
+  `docs/E36_ORACLE_PROMPT_SWEEP.md`, 64,260 Qwen2.5-0.5B in
+  `docs/E37_QWEN_ORACLE_SWEEP.md`), 0 name or shape mismatches, 0 differing
+  duplicate records, and the oracle's own argmax reproduces every generated id
+  in all twelve cells.
+- **SmolLM2's worst relative L2 error is 3.406e-5**, 1.53x the published
+  2.228e-5. **Qwen's 9.923e-5 survives** as the six-cell maximum --- so a
+  single-prompt figure is not reliably an underestimate, it is simply unknown
+  until swept. Qwen's worst `rel_rms` is exceeded, 2.883e-3 vs 2.705e-3.
+- **The ratio interval is 0.51-1.70x**, not 0.73-1.18x, over 312 (cell, layer)
+  rows; **worst whole-layer amplification is 6.48x (SmolLM2) and 4.83x
+  (Qwen)**, not 4.07x / 3.22x. E28's own cell reproduces 4.07x, 3.22x and the
+  0.73 low end exactly, confirming these are that prompt's values.
+
+**The conclusion of section 14.6 is unchanged and better supported.** The
+width of the interval was never the evidence. A divergent or compensating layer
+is a property of the weights and must appear at the same layer, in the same
+direction, on every input --- and it does not: Qwen's layer 22 returns 0.73x on
+one prompt and 1.61x on another, SmolLM2's layer 3 spans 0.68x to 1.48x. The
+compensating pair is excluded by the residual-stream test instead, now run on
+all **324 (cell, layer) rows** of both sweeps: `max resid_l2 / (own_l2 x
+cancellation)` is 0.848 (SmolLM2) and 0.557 (Qwen), every row below 1.
+
+No digest, coefficient, or required behaviour is affected. Section 14.6 carries
+this correction inline as **ERRATUM E-9**, and its "one prompt and 19 positions"
+scope note is widened to six prompts and up to 67 fed positions on each model.
+The Qwen half still attests to sections 4-11 only (section 14.8 / E-3).
 
 ## Repository releases
 

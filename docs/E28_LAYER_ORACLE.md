@@ -96,7 +96,10 @@ intermediate rather than of the receipt.
 The two bolded worst-case figures are the maxima **over this run's single
 prompt**, not over the model. E36 (`E36_ORACLE_PROMPT_SWEEP.md`) reruns the
 SmolLM2 comparison over six prompts and finds 3.406e-05, 1.53x the 2.228e-5
-here. See §5.
+here. E37 (`E37_QWEN_ORACLE_SWEEP.md`) does the same six cells on Qwen: there
+the 9.923e-05 *is* the six-cell maximum, though its `rel_rms` rises to
+2.883e-03. The two layer-error bounds this doc reports (0.73-1.18x, 4.07x /
+3.22x) are per-prompt in the same way and are corrected by erratum E-9. See §5.
 
 13,452 tensors, worst case 9.9e-5. `embed` is bit-identical on both, which is
 the sanity check that the two sides are reading the same weights in the same
@@ -208,8 +211,18 @@ exclude is now excluded on the evidence, for these two models on this prompt.
   the verifier's:** cell 2 of E36 reaches 3.406e-05 at `p0.L11.attn_out`, 1.53x
   higher, so the figure on this page must not be quoted as a bound. And the
   context-length half of this bullet is closed by a controlled pair -- the same
-  prompt at 19 and at 67 positions has an *identical* worst case. The
-  "two models" half is not closed: E36 is SmolLM2 only.
+  prompt at 19 and at 67 positions has an *identical* worst case.
+  **Closed for the second model by E37** (`E37_QWEN_ORACLE_SWEEP.md`): the same
+  six cells on Qwen2.5-0.5B add 64,260 tensors, all `TOKEN CHECK PASS` and
+  `SUPPLIED-ID CHECK PASS`, cancellation accounting holding in all 144
+  (cell, layer) rows (`max resid_l2 / (own_l2 x cancellation) = 0.557`), and the
+  context-length control reproducing at identical tensors. There the published
+  9.923e-05 turns out to be the six-cell maximum -- a single-prompt figure is
+  therefore not reliably low, only unknown -- while `rel_rms` rises to
+  2.883e-03. E37 also shows the layer-ratio bounds quoted from this page
+  (0.73-1.18x; 4.07x / 3.22x) to be per-prompt: measured over twelve cells they
+  are 0.51-1.70x and 6.48x / 4.83x (erratum E-9). Six prompts per model is still
+  not all prompts.
 - **Not a check of §3.** The Qwen run supplies its prompt token ids from
   outside §3 — §14.8 / erratum E-3 — so it attests to §4–§11 only.
 - **Not a claim that the oracle is right.** `transformers` is an independent
