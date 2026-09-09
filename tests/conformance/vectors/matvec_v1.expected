@@ -1,0 +1,10 @@
+# Pinned expected output for matvec_v1.txt, computed by running the
+# reference implementation's matvec (src/math.rs::dot_seq, the same
+# function src/main.rs's per-layer projections/MLP/lm_head calls) via
+# `cargo test --test conformance_matvec` (see tests/conformance_matvec.rs
+# and tests/conformance/README.md "How this vector was derived").
+#
+# out_bits layout (3 values, index order): y[0] (the §5.1 order-sensitivity
+# worked example, must be exactly 0.0), y[1], y[2].
+out_bits=0x00000000,0x40C00000,0x40400000
+out_sha256=482ae30571ed4c04bcca4c5365b233b1a159d8e653692fa41c0aca3c563c6bbe

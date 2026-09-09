@@ -1,0 +1,7 @@
+# Pinned expected output for exp_pinned_v1.txt, computed by running the
+# reference implementation's pinned exp(x) (src/math.rs::exp_pinned) via
+# `cargo test --test conformance_exp_pinned` (see
+# tests/conformance_exp_pinned.rs and tests/conformance/README.md "How
+# this vector was derived").
+out_bits=0x229CBC92,0x383E6BCE,0x3EBC5AB2,0x3F800000,0x3FD3094C,0x402DF854,0x46AC14EE,0x5C51106A
+out_sha256=36c626b5cc5513b5297314fcb22f428891ad5713d39f0d45b9d27f229cd42bff

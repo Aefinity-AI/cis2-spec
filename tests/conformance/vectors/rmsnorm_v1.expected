@@ -1,0 +1,6 @@
+# Pinned expected output for rmsnorm_v1.txt, computed by running the
+# reference implementation's RMSNorm (src/math.rs::sum_seq/rsqrt_cr) via
+# `cargo test --test conformance_rmsnorm` (see tests/conformance_rmsnorm.rs
+# and tests/conformance/README.md "How this vector was derived").
+out_bits=0x3E6B80D1,0xBFB0A09D,0x3FB0A09D,0x3EEB80D1,0xBD6B80D1,0x3FEB80D1,0xC0047876,0x3F46B4B1
+out_sha256=f712eda3e8b49d3d84639db584c134fe265f7994a21dede9f401d7be9bc5e60c
