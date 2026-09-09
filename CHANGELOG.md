@@ -192,6 +192,61 @@ are corrected to match. 48 op-level goldens with two structural mutation
 controls now enforce the behaviour in CI
 (`cis2-verify/src/mathpin.rs`, `mod exp_ln_range`).
 
+### E-5 (2026-09-09) --- section 14.6's compensating-error gap is closed by measurement
+
+**What v0.3b said.** Section 14.6, unchanged in kind since v0.1: "The oracle
+correctness checks (section 13.3) are defensible spot-checks, not exhaustive.
+They confirm greedy token-id agreement and one step's full-vocab logit
+agreement to ~4e-6 relative on two model families now (SmolLM2-135M,
+Qwen2.5-0.5B) --- neither checks every intermediate layer's activations
+against the oracle, so a compensating pair of errors elsewhere in the layer
+stack that happens to preserve step-0's output and all argmax decisions
+cannot be completely ruled out by this evidence alone."
+
+**What is wrong with it.** Nothing. It was an accurate statement of a real
+hole --- section 13.3 looks only at the two ends of the pipe --- and it was
+the last open gap of its kind in section 14. It is corrected here because the
+measurement it asks for has now been made, not because it was mistaken.
+
+**What was measured.** Every named intermediate of the forward pass, at every
+position of a full decode, on both section 0 models, against a `transformers`
+fp32 forward pass hooked at the corresponding modules:
+
+- **13,452 tensors compared** (7,467 SmolLM2-135M, 5,985 Qwen2.5-0.5B), 0
+  name or shape mismatches.
+- **Worst relative L2 error over all of them: 9.923e-5** (2.228e-5 on the
+  first model). `embed` agrees exactly on both.
+- **No layer creates error.** Every layer's first computed tensor is within
+  0.73-1.18x of the error it was handed, across all 30 layers of the first
+  model and all 24 of the second; worst amplification of the carried-in error
+  across a whole layer is 4.07x / 3.22x, uniform with depth. A divergent
+  layer would show a large ratio at that layer alone, and a compensating one
+  a ratio far below 1; neither occurs.
+- The residual stream's apparent 8.79x spike at layer 9 is **cancellation,
+  not divergence**: addends of norm 486.5 and 414.1 sum to norm 105.6, so the
+  relative measure inflates by the 4.6x cancellation while every input to the
+  add sits at 1-3e-6.
+- The verifier runs each decode twice (section 12.4), so every tensor appears
+  twice in its dump; **0 of the 13,452 duplicates differ**, which re-confirms
+  determinism at the granularity of every intermediate rather than of the
+  receipt.
+- The oracle's own argmax reproduces all 16 generated ids on both models
+  without reference to the verifier's output.
+
+Evidence and method: `docs/E28_LAYER_ORACLE.md`. Instrumentation:
+`cis2-verify --features layerdump` (a write-only activation tap; the
+instrumented build reproduces every pinned digest, which is the check that it
+only reads), `scripts/oracle_layers.py`, `scripts/compare_layers.py`.
+
+**What changes.** Nothing normative --- no digest, coefficient or required
+behaviour. Section 14.6 is rewritten from an open gap to a CLOSED clause
+carrying the measurement; section 13.3 gains a forward pointer to it; section
+0's cross-framework bullet records that the evidence now covers the interior
+of the stack and restates that ~1e-5 agreement with `transformers` is what it
+shows and all it could show, since bit-exactness is claimed between
+conforming implementations of this document and never against a third-party
+framework.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section

@@ -148,6 +148,9 @@ impl<'a> Model<'a> {
         let scale = rsqrt(head_dim as f32);
 
         let mut hs: Vec<f32> = self.embed[token as usize * h..(token as usize + 1) * h].to_vec();
+        // 14.6 activation tap. Write-only; compiled out without the feature.
+        #[cfg(feature = "layerdump")]
+        crate::ops::tap::emit(&format!("p{pos}.embed"), &hs);
 
         for (li, layer) in self.layers.iter().enumerate() {
             // ---- attention block ----
@@ -159,6 +162,17 @@ impl<'a> Model<'a> {
             add_bias(&mut q, layer.q_bias);
             add_bias(&mut k, layer.k_bias);
             add_bias(&mut v, layer.v_bias);
+            // The tap is taken *after* the bias add, because the oracle's
+            // `q_proj` is an `nn.Linear` whose output already includes it.
+            // SmolLM2 has no QKV bias and Qwen2.5 does, so taking it before
+            // would compare different quantities on the second model only.
+            #[cfg(feature = "layerdump")]
+            {
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.ln1"), &ln1);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.q_proj"), &q);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.k_proj"), &k);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.v_proj"), &v);
+            }
 
             // Spec 9.1 / 7.4: rotate every query head and every key head at
             // this step's position. `v` is never rotated.
@@ -204,9 +218,16 @@ impl<'a> Model<'a> {
 
             // Spec 9.5.
             let o = matvec(layer.o, &attn_out, h, h);
+            #[cfg(feature = "layerdump")]
+            {
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.attn_out"), &attn_out);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.o_proj"), &o);
+            }
             for i in 0..h {
                 hs[i] = hs[i] + o[i];
             }
+            #[cfg(feature = "layerdump")]
+            crate::ops::tap::emit(&format!("p{pos}.L{li}.resid_attn"), &hs);
 
             // ---- MLP block (spec 10) ----
             let ln2 = rmsnorm(&hs, layer.post_attn_ln, eps);
@@ -220,14 +241,30 @@ impl<'a> Model<'a> {
                 hid[i] = silu_pinned(gate[i]) * up[i];
             }
             let down = matvec(layer.down, &hid, h, cfg.intermediate_size);
+            #[cfg(feature = "layerdump")]
+            {
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.ln2"), &ln2);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.gate_proj"), &gate);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.up_proj"), &up);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.mlp_act"), &hid);
+                crate::ops::tap::emit(&format!("p{pos}.L{li}.down_proj"), &down);
+            }
             for i in 0..h {
                 hs[i] = hs[i] + down[i];
             }
+            #[cfg(feature = "layerdump")]
+            crate::ops::tap::emit(&format!("p{pos}.L{li}.resid_mlp"), &hs);
         }
 
         // Spec 11.1.
         let hn = rmsnorm(&hs, self.final_norm, eps);
-        matvec(self.lm_head, &hn, self.cfg.vocab_size, h)
+        let logits = matvec(self.lm_head, &hn, self.cfg.vocab_size, h);
+        #[cfg(feature = "layerdump")]
+        {
+            crate::ops::tap::emit(&format!("p{pos}.final_norm"), &hn);
+            crate::ops::tap::emit(&format!("p{pos}.logits"), &logits);
+        }
+        logits
     }
 
     /// Spec 3.4's decode protocol: prefill the prompt, then greedily emit
