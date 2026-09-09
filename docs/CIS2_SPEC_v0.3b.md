@@ -1365,11 +1365,22 @@ precision. A clean-room implementer targeting a longer sequence than this
 spec's 20 positions should not assume this polynomial's accuracy holds
 unchanged. **Unchanged from v0.1 (was §14.4 there too).**
 
-14.5. **RMSNorm multiply order (§8) is pinned but its bit-level necessity
-is unconfirmed.** `(x[i]*inv)*weight[i]` vs. `x[i]*(inv*weight[i])` are
-not provably identical for arbitrary fp32 operands under rounding, but no
-divergence between the two orders has actually been observed on either
-model tested. **Unchanged from v0.1 (was §14.5 there too).**
+14.5. **RMSNorm multiply order (§8) is pinned, and its bit-level necessity
+is measured.** `(x[i]*inv)*weight[i]` and `x[i]*(inv*weight[i])` are not
+provably identical for arbitrary fp32 operands under rounding, and they in
+fact differ by one ULP on about 35 % of the operand triples an actual decode
+produces — 231,014 of the 667,584 RMSNorm elements in the §13.1 vector.
+Substituting the other association changes the §13.1 witness digest from
+`d82743059d…` to `570c0bbb0d…`. It does **not** change the argmax digest or
+the generated token ids for this vector, so the violation is invisible to any
+check that hashes only the model's outputs — one of the reasons §12.1 hashes
+the full logit vector. See `docs/E25_RMSNORM_ASSOCIATION.md`.
+**ERRATUM E-1 (2026-09-09).** Through v0.3b as published, this clause read
+"…its bit-level necessity is unconfirmed… no divergence between the two
+orders has actually been observed on either model tested," carried unchanged
+from v0.1. That was wrong: E22's M09 mutation is this exact reassociation and
+had already moved the digest. §8 is unchanged; only this limitations note was.
+See CHANGELOG.md, "Errata against v0.3b".
 
 14.6. **The oracle correctness checks (§13.3) are defensible spot-checks,
 not exhaustive.** They confirm greedy token-id agreement and one step's
