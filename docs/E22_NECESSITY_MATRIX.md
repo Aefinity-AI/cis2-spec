@@ -145,8 +145,22 @@ Three targeted additions would close the gap without touching the existing pinne
 
 Items 2 and 3 are **done**: both are pinned as tests in `cis2-verify/src/mathpin.rs`
 (`op_level_goldens`), computed independently of any hardware `sqrtf` and agreeing with the C
-reference bit-for-bit. Item 1 (a denormal-bearing decode vector) is still open; note that §15 item 4
-already requires §1.3's self-test, so it is a digest-visibility gap rather than an unguarded clause.
+reference bit-for-bit. Note that §15 item 4 already requires §1.3's self-test, so item 1 was a
+digest-visibility gap rather than an unguarded clause.
+
+Item 1 (a denormal-bearing decode vector) is **closed by measurement, negatively** — see
+[E35](E35_DENORMAL_REACH.md). §6.2's low guard clamps `a < -88.0` before `exp` runs, so that side is
+FTZ-independent; the side where §1.3 is digest-relevant is the unguarded band
+`[-88.0, -87.33654022216797)`, which no counter had measured. E35 added counters for that band and
+for §6.4's mirrored one, gave them positive controls that fire on constructed arguments, and swept
+the same six prompts E30 used: zero of 21,248,280 `exp_pinned` evaluations land in either window,
+with a nearest approach of 26.79 in ln-space. So M01's null result above is explained rather than
+merely reproduced — the vector never reaches an argument where FTZ and no-FTZ differ — and a
+denormal-bearing *decode* vector is not obtainable from ordinary prompts on this checkpoint. §1.3
+stays covered at op level, where `fpenv`'s `clearing_the_pin_changes_the_answers` already shows that
+clearing the pin moves every FTZ case and no inert one. The `exp` route is what E35 measures; a
+denormal arising in a matvec product or an rmsnorm intermediate remains covered only by M01's
+weaker "no denormal *changed a result*".
 
 All three are additive Tier-1 op-level goldens of the kind §15 already contemplates, so they extend
 the suite rather than break the frozen `CIS2_REF`.

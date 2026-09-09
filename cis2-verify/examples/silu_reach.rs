@@ -73,8 +73,9 @@ fn main() {
     }
     .expect("decode");
 
-    let (n, band, below, min, max) = census::silu_counts();
-    let (sn, low) = census::softmax_counts();
+    let (n, band, below, subband, min, max) = census::silu_counts();
+    let top = census::SUBNORM_TOP;
+    let (sn, low, subn, smin, smax) = census::softmax_counts();
 
     println!("REACH silu calls={n}");
     println!(
@@ -88,10 +89,25 @@ fn main() {
          instead of a normal f32 near -5.328e-37)"
     );
     println!("REACH silu arg < -88.0 (any) n={below}");
+    println!(
+        "REACH silu IN SUBNORMAL BAND ({}, 88.0] n={subband} \
+         (6.4 evaluates exp_pinned(-x), so this is the softmax band mirrored)",
+        -top
+    );
     println!("REACH softmax exp args={sn}");
     println!(
         "REACH softmax hit 6.2 LOW guard (arg < -88.0 -> 0.0) n={low} \
-         (harmless: exp(-88) is subnormal, so 1.3 flushes it anyway)"
+         (this side is FTZ-independent: the guard returns 0.0 before exp runs, \
+         and the unclamped exp would have been subnormal and flushed anyway. \
+         The FTZ-dependent side is the SUBNORMAL BAND line below.)"
+    );
+    println!("REACH softmax arg range=[{smin:e}, {smax:e}]");
+    println!(
+        "REACH softmax IN SUBNORMAL BAND [-88.0, {top}) n={subn} \
+         (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed \
+         to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant \
+         should move the digest; =0 means it is not, which is what E22 item 1 \
+         asks and no counter previously answered)"
     );
 
     // The census only reads, so these must be the pinned values.
