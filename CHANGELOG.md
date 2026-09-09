@@ -292,11 +292,25 @@ pointer to 13.5. Full method, disassembly and provenance in
 `docs/E29_OPTIMIZER_INVARIANCE.md`; the per-tensor comparison tool added
 for it is `scripts/diff_dumps.py`.
 
+**Extended the same day.** The entry above covered `--release` only, and
+flagged opt-level as unmeasured at this granularity. That is now measured:
+all ten `{opt-level 0,1,2,3,s} x {target-cpu generic, native}` cells of
+section 13.4's matrix were re-run on x86_64. **Ten distinct binaries, one
+dump** --- every cell reproduces `5386d3b0...` and the pinned section 13.1
+digests, with zero FMA instructions throughout. Emitted AVX2 instructions
+rise with optimization pressure (286 at `s`, 344 at 1, 397 at 2, 529 at 3)
+while `dot_seq`'s multiply/add stay scalar in every cell, varying only in
+unroll factor --- which changes the instruction count without changing the
+order of the additions. This crate's `[profile.release]` is `opt-level = 2`,
+so the two `--release` binaries of the entry above are the opt-level 2 row,
+and the sweep reproduces their digests exactly.
+
 **Scope.** Both hosts ran the same `rustc`/LLVM, so this is two code
 generation targets and not two independent compilers; section 13.4 remains
 the wider compiler axis and section 0's four-implementation convergence the
-independent-implementation axis. One prompt, two models; opt-level 0..3,s
-were not re-run at intermediate granularity.
+independent-implementation axis. One prompt, two models; the ten-cell sweep
+is x86_64 only, so the aarch64 half of section 13.4's matrix has not been
+re-run at intermediate granularity.
 
 ## Repository releases
 

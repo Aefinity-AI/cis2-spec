@@ -1352,6 +1352,17 @@ identical byte for byte: 7,467 tensors / 51,750,154 B for SmolLM2-135M and
 5,985 tensors / 103,942,814 B for Qwen2.5-0.5B, over eight runs on two
 microarchitectures. Zero FMA instructions in all three binaries (§1.4).
 
+The same check then covers all ten `{opt-level 0,1,2,3,s} × {target-cpu
+generic, native}` cells of §13.4's matrix on x86_64: **ten distinct
+binaries, one dump**, every cell reproducing
+`5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` and the
+pinned §13.1 digests, with zero FMA instructions throughout. The emitted
+AVX2 instruction count rises with optimization pressure — 286 at
+`opt-level s`, 344 at 1, 397 at 2, 529 at 3 — while `dot_seq`'s
+multiply/add stay scalar in every cell, varying only in unroll factor,
+which changes the instruction count without changing the order of the
+additions.
+
 The mechanism is the point, and it is a property of this specification
 rather than of these builds. §5.1's `acc = acc + p` is a serial
 floating-point dependency, so an optimizer denied fast-math (§1.5) cannot
@@ -1383,7 +1394,8 @@ Scope limits, stated so this is not over-read: both hosts ran the same
 `rustc`/LLVM, so this is two code generation targets and not two
 independent compilers (§13.4 is the wider compiler axis, and §0's
 four-implementation convergence is the independent-implementation axis);
-one prompt and two models; `opt-level` 0..3,s were not re-run at
+one prompt and two models; and the ten-cell sweep above is x86_64
+only, so the aarch64 half of §13.4's matrix has not been re-run at
 intermediate granularity.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
