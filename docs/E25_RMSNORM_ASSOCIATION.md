@@ -115,8 +115,101 @@ not.**
 
 ## 4. Second model — Qwen2.5-0.5B
 
-*(pending; §14.5's wording spoke of "either model tested", and the second model
-in §0 is `Qwen/Qwen2.5-0.5B`. Result to be appended.)*
+§14.5's false clause said no divergence had been observed "on either model
+tested". §0's second model is `Qwen/Qwen2.5-0.5B`: a different family
+(QKV bias, GQA with `n_kv_heads = 2`, `rope_theta = 1e6`, tied LM head),
+24 layers, `hidden_size = 896`, `vocab_size = 151936`. Same census, same
+prompt, same decode length:
+
+```
+CENSUS tokenization=SUPPLIED prompt_token_ids=[12522, 5193, 264, 882] (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)
+CENSUS decodes_per_run=2 (spec 12.4 determinism check)
+CENSUS rmsnorm_elements_total=1668352
+CENSUS rmsnorm_elements_per_decode=834176
+CENSUS elements_per_decode_where_the_two_orders_differ=287859 (34.5082%)
+CENSUS pinned   witness=c9dff099d927a6dda91514c260c7207de7aca4b361291e57fae390a352392e62 argmax=9619177f959f63d175d9442e73a6063f31654b08ba4e38717e88bd2e39b0aff5
+CENSUS altorder witness=4df2b260eef8a1ff713ae03565e9de6868de5a57682e7207db5c5cd8fba4a44f argmax=9619177f959f63d175d9442e73a6063f31654b08ba4e38717e88bd2e39b0aff5
+CENSUS witness_digest_moved=true
+CENSUS argmax_digest_moved=false
+CENSUS tokens_moved=false
+```
+
+The per-decode count is derivable the same way and checks out: 24 layers with
+two RMSNorms each plus one final norm is 49 calls per position;
+`hidden_size = 896`; `Model::decode` runs `prompt.len() - 1` prefill passes
+plus `gen_toks` decode passes, so a 4-token prompt and 16 generated tokens is
+3 + 16 = 19 forward passes. 49 x 896 x 19 = 834,176.
+
+**Same rate, different checkpoint.** 287,859 of 834,176 elements — 34.51 % —
+distinguish the two associations, against 34.60 % for SmolLM2-135M and 34.99 %
+for the synthetic sample in §1. Three populations that share no weights agree
+to within half a percent. Whatever drives the rate, it is not a peculiarity of
+one checkpoint's weight distribution.
+
+**Same asymmetry between the two digests.** The witness digest moves
+(`c9dff099d9…` → `4df2b260ee…`); the argmax digest and all sixteen generated
+token ids do not. §12.1's reason for hashing the full logit vector now holds on
+both models §0 names, not just the pinned one.
+
+**And the decode itself matches an independent implementation.** The sixteen
+tokens this Rust clean-room verifier generates —
+
+```
+[11, 1052, 572, 264, 2632, 3743, 6941, 47290, 13, 2932, 10245, 311, 1486, 448,
+ 1059, 23069]
+```
+
+— are token-for-token the sixteen the C reference implementation produced for
+the same checkpoint in E15d(c) (`docs/E15d_bc_RESULT.md`, whose line reads
+`rust = [12522, 5193, 264, 882, 11, 1052, ...]`, i.e. the 4-token prompt
+followed by these same 16). Two implementations that share no code, written
+from opposite sides of the specification, agree on all 16 greedy steps of a
+0.5 B-parameter model of a family the spec's pinned vector does not use.
+
+The *witness digests* are not comparable across that boundary and are not
+claimed to be: E15d(c) is a v0.2-era artifact, and §12.1's witness chain
+changed between v0.2 and v0.3b — the same change §14.7 already records for
+SmolLM2, whose `CIS2_REF` went `ba88708bf4…` (v0.1) → `a0c563ef80…` (v0.2) →
+`d82743059d…` (v0.3b) with the token ids never moving. E15d(c)'s Qwen digest
+`085da81c52…` is a v0.2 digest; `c9dff099d9…` above is the v0.3b witness of the
+same decode. Comparing them would be a category error. The token ids are the
+quantity that *is* stable across those receipt-format revisions, and they match.
+
+### 4.1 What had to change to run this at all, and why that is itself a finding
+
+`verify::run` could not be pointed at Qwen2.5-0.5B. It fails before any
+arithmetic happens:
+
+```
+thread 'main' panicked at examples/assoc_census.rs:41:55:
+pinned run: "tokenizer.json: spec 3.1.3 requires a null normalizer"
+```
+
+That is the verifier behaving correctly. §3.1.3 pins `normalizer: null` and
+§3.1.4 pins one exact `pre_tokenizer` value — `Sequence[Digits(individual_digits
+= true), ByteLevel(add_prefix_space = false, use_regex = true)]`, the shape
+`HuggingFaceTB/SmolLM2-135M` ships. Qwen2.5-0.5B's `tokenizer.json` carries an
+NFC normalizer and `Sequence[Split(<GPT-4-style regex>, Isolated),
+ByteLevel(use_regex = false)]`. `Tokenizer::from_json` refuses rather than
+reinterpreting, which is the same discipline `safetensors::load` applies to a
+non-BF16 dtype.
+
+But it means **§0's second model cannot be driven end-to-end by a conforming
+CIS-2 v0.3b verifier**, and the spec's §14 limitations list did not say so.
+That gap is now recorded as §14.8 (erratum E-3).
+
+The census therefore takes the prompt token ids as an argument. The entry point
+is `verify::run_with_token_ids`, gated behind the `census` feature so the
+default build's public surface is unchanged, and its documentation says plainly
+that a receipt produced this way attests to §4–§11 and nothing of §3. The
+census prints the same caveat on its own `tokenization=SUPPLIED` line. The ids
+used, `[12522, 5193, 264, 882]`, are the ones E15d(c) recorded for this
+checkpoint and this prompt.
+
+The SmolLM2 census was re-run after this refactor and is unchanged:
+`rmsnorm_elements_per_decode=667584`, `231014 (34.6045%)`, pinned witness
+`d82743059d…`, alt-order witness `570c0bbb0d…`. `cargo test --release` on the
+default feature set is green (43 lib + 6 end-to-end).
 
 ## What this changes
 
@@ -128,16 +221,23 @@ in §0 is `Qwen/Qwen2.5-0.5B`. Result to be appended.)*
   feature is off by default, the example carries `required-features`, and the
   default release binary still reproduces `d82743059d…` and still passes
   `tools/check_no_fma.sh` with 0 FMA instructions.
+- **CHANGELOG erratum E-3 and a new §14.8** record that §3.1.3/§3.1.4 admit
+  exactly one `tokenizer.json` shape, so §0's second model cannot be run
+  end-to-end by a conforming verifier. §3 is unchanged; the limitations list is.
 
 ## What this does *not* establish
 
 - It does not show that the pinned order is the *right* order in any numerical
   sense. Neither association is more accurate; the point of §8 is that a
   specification must choose one, and that the choice is observable.
-- The 35 % figure is a property of these weights and this prompt. It is not a
-  bound. A different checkpoint could plausibly sit anywhere between 0 % and
-  ~50 %; what E25 rules out is the "no divergence observed" claim, not a
-  particular rate.
+- The ~35 % figure is not a bound. It is now measured on two checkpoints from
+  two families (34.60 % and 34.51 %) and one synthetic sample (34.99 %), which
+  is enough to say it is not a peculiarity of one weight distribution and not
+  enough to say it is universal. What E25 rules out is the "no divergence
+  observed" claim, not a particular rate.
+- The Qwen2.5-0.5B run is **not** a conformance run and is not proposed as a
+  §13 test vector. Its prompt token ids were supplied, not derived, because §3
+  refuses that tokenizer; the digests it prints attest to §4–§11 only.
 - `tokens_moved=false` is a fact about this 16-token vector, not a guarantee.
   A longer decode could compound one-ULP hidden-state differences into a
   different argmax. E25 does not test that, and the honest reading is that the
@@ -151,8 +251,10 @@ in §0 is `Qwen/Qwen2.5-0.5B`. Result to be appended.)*
 - Toolchain: `rustc 1.98.0 (88d9e12ae 2026-08-18)`, `--release`
   (`opt-level = 2`), no fast-math or reassociation flags (see
   `cis2-verify/Cargo.toml`).
-- Repository: `cis2-spec`, branch `cm/cis2-verify-standalone`, parent commit
-  `eb5dc11`.
+- Repository: `cis2-spec`, branch `cm/cis2-verify-standalone`. §1–§3 were run
+  at parent commit `eb5dc11`; §4 (the Qwen census, the `run_with_token_ids`
+  entry point and the SmolLM2 re-run that confirms no regression) at parent
+  commit `85b64b6`.
 - Artifacts: SmolLM2-135M, `model.safetensors`
   `80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1`,
   `config.json`
@@ -160,6 +262,14 @@ in §0 is `Qwen/Qwen2.5-0.5B`. Result to be appended.)*
   `tokenizer.json`
   `9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c` — all
   three identical to the digests `EXPECTED_DIGESTS.md` pins.
+- Artifacts (§4): Qwen2.5-0.5B, `model.safetensors`
+  `88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342`,
+  `config.json`
+  `479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b`,
+  `tokenizer.json`
+  `c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539` — all
+  three identical to the digests `docs/E15d_bc_RESULT.md` records, verified
+  after the copy from `cm-box1` to `penguin`.
 - Date: 2026-09-09.
 - The `570c0bbb0d…` cross-check comes from E22 (`docs/E22_NECESSITY_MATRIX.md`),
   run on cm-box1 (`aefinity-box`, i5-5200U, gcc 14.2.0) 2026-09-09T07:39:31Z →
@@ -168,4 +278,10 @@ in §0 is `Qwen/Qwen2.5-0.5B`. Result to be appended.)*
   ```
   cargo test --release                                   # the two ops tests
   cargo run --release --features census --example assoc_census -- weights
+  # second model: ids supplied because spec 3 refuses this tokenizer.json
+  cargo run --release --features census --example assoc_census -- \
+      <qwen2.5-0.5b-dir> "Once upon a time" 16 12522,5193,264,882
   ```
+  The Qwen pass needs about 2.9 GB resident: the 988 MB checkpoint stays
+  mapped as a byte slice while §4's widening builds the ~1.93 GB of f32
+  weights beside it.

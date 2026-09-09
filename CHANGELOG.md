@@ -46,6 +46,21 @@ well as on the conforming one.
 The corrected text is applied in place in `docs/CIS2_SPEC_v0.3b.md` with an
 E-1 marker. Section 8 itself is unchanged; only the limitations note was wrong.
 
+**Addendum (same day) --- the second model section 0 names says the same thing.**
+The false clause spoke of "either model tested". The second model is
+`Qwen/Qwen2.5-0.5B`: a different family (QKV bias, GQA with `n_kv_heads = 2`,
+`rope_theta = 1e6`, tied LM head), 24 layers, `hidden_size = 896`. Same prompt,
+same 16 greedy steps: the two associations differ on **287,859 of its 834,176**
+RMSNorm elements (34.51%, against 34.60% for SmolLM2-135M), the witness digest
+moves from `c9dff099d9...` to `4df2b260ee...`, and the argmax digest and all
+sixteen generated token ids do not move. Those sixteen token ids are also
+token-for-token the ones the C reference implementation produced for this
+checkpoint in `docs/E15d_bc_RESULT.md`. The witness digests are not comparable
+across that boundary --- E15d(c) is a v0.2-era artifact and section 12.1's
+witness chain changed between v0.2 and v0.3b, exactly as section 14.7 records
+for SmolLM2 --- so the token ids are the quantity that carries the
+cross-implementation claim. Section 14.5 now carries the second-model figure.
+
 ### E-2 (2026-09-09) --- section 14.4 was five orders of magnitude too pessimistic about the trig range
 
 **What v0.3b said**, carried unchanged from v0.1:
@@ -96,6 +111,32 @@ worst-case arguments were added in `cis2-verify/src/mathpin.rs`,
 f32-staged reduction fails them -- and also moves the section 12.1 witness
 digest while leaving the argmax digest and the generated token ids untouched,
 the third independent violation to show that pattern.
+
+### E-3 (2026-09-09) --- section 3 admits exactly one `tokenizer.json`, and section 14 never said so
+
+**What v0.3b said.** Section 3.1.3 pins `normalizer: null`; section 3.1.4 pins
+the `pre_tokenizer` value `Sequence[Digits(individual_digits = true),
+ByteLevel(add_prefix_space = false, use_regex = true)]`. Section 0 separately
+names `Qwen/Qwen2.5-0.5B` as a second model used as evidence of correctness.
+
+**What is missing.** Qwen2.5-0.5B's `tokenizer.json` ships an NFC normalizer and
+`Sequence[Split(<GPT-4-style regex>, Isolated), ByteLevel(use_regex = false)]`.
+A conforming implementation of section 3 must therefore *refuse* that
+checkpoint --- and the clean-room verifier does, with
+`tokenizer.json: spec 3.1.3 requires a null normalizer`, before any arithmetic
+runs. So section 0's second model cannot be driven end-to-end from its
+artifacts by a conforming CIS-2 v0.3b verifier. That was always true of the
+text and was never stated; a reader could reasonably have read section 0 the
+other way.
+
+**What changes.** Nothing normative. Section 3 is unchanged and the refusal is
+the correct behaviour --- the same "refuse rather than reinterpret" discipline
+section 2.5 applies to a non-BF16 dtype. A new section 14.8 states the boundary,
+and says what work on such a checkpoint is confined to (sections 4-11, prompt
+token ids supplied from outside section 3, and a receipt that attests to
+sections 4-11 and nothing of section 3). A future version wanting a second
+normative tuple must generalize sections 3.1.3/3.1.4 from a pinned literal to a
+small enumerated set.
 
 ## Repository releases
 

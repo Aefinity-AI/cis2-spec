@@ -62,9 +62,13 @@ This spec's primary pinned tuple is unchanged from v0.1: `HuggingFaceTB/SmolLM2-
 `"Once upon a time"`, 16 greedy-decoded tokens, fp32 compute, bf16-on-disk
 weights. §7's RoPE construction is now general (any `rope_theta`), so a
 second (model, prompt, decode-length) tuple — `Qwen/Qwen2.5-0.5B`,
-`rope_theta = 1_000_000` — is evidence-of-correctness (`docs/E15d_bc_RESULT.md`)
-but is **not** itself a pinned §13 test vector in this version; only the
-SmolLM2-135M tuple's digests are normative test vectors here. It does **not**
+`rope_theta = 1_000_000` — is evidence-of-correctness (`docs/E15d_bc_RESULT.md`,
+`docs/E25_RMSNORM_ASSOCIATION.md` §4) but is **not** itself a pinned §13 test
+vector in this version; only the SmolLM2-135M tuple's digests are normative
+test vectors here. §14.8 (erratum E-3) records a further consequence: §3 pins
+one exact `tokenizer.json` shape, which that second checkpoint does not have,
+so a conforming implementation cannot drive it end-to-end at all — work on it
+is confined to §4–§11 with the prompt token ids supplied from outside §3. It does **not**
 claim:
 
 - General correctness of the pinned transcendental polynomials (`exp`,
@@ -1403,7 +1407,13 @@ Substituting the other association changes the §13.1 witness digest from
 `d82743059d…` to `570c0bbb0d…`. It does **not** change the argmax digest or
 the generated token ids for this vector, so the violation is invisible to any
 check that hashes only the model's outputs — one of the reasons §12.1 hashes
-the full logit vector. See `docs/E25_RMSNORM_ASSOCIATION.md`.
+the full logit vector. The second model §0 names behaves the same way:
+`Qwen/Qwen2.5-0.5B` on the same prompt and decode length diverges on 287,859
+of its 834,176 RMSNorm elements (34.51 %), moves its witness
+digest from `c9dff099d9…` to `4df2b260ee…`, and leaves its argmax digest and
+all sixteen generated token ids unchanged. (That run supplies its prompt token
+ids rather than deriving them; see §14.8.) See
+`docs/E25_RMSNORM_ASSOCIATION.md`.
 **ERRATUM E-1 (2026-09-09).** Through v0.3b as published, this clause read
 "…its bit-level necessity is unconfirmed… no divergence between the two
 orders has actually been observed on either model tested," carried unchanged
@@ -1438,6 +1448,27 @@ time, the exact failure mode §14.3 (now closed) used to warn about: a
 `CIS2_REF`-only comparison cannot localize *which* internal change moved
 the digest without also comparing the finer-grained digests
 individually.
+
+14.8. **§3 admits exactly one `tokenizer.json`, and §0's second model is not
+it. ERRATUM E-3 (2026-09-09).** §3.1.3 pins `normalizer: null` and §3.1.4 pins
+the `pre_tokenizer` value `Sequence[Digits(individual_digits = true),
+ByteLevel(add_prefix_space = false, use_regex = true)]` — the shape
+`HuggingFaceTB/SmolLM2-135M` ships. `Qwen/Qwen2.5-0.5B`, which §0 names as the
+second model and `docs/E15d_bc_RESULT.md` uses as evidence of correctness,
+ships an NFC normalizer and `Sequence[Split(<GPT-4-style regex>, Isolated),
+ByteLevel(use_regex = false)]`. A conforming implementation of §3 therefore
+**must refuse that checkpoint's tokenizer**, and cannot run that model
+end-to-end from its artifacts. This was always true of the text; it was never
+written down, and a reader could reasonably have taken §0's second-model
+sentence to mean otherwise. The scope is unchanged — §13.1 was and is the only
+normative test vector, and §0 already said the Qwen tuple is not one — but the
+boundary is now stated. Work on such a checkpoint is confined to §4–§11 and
+must supply the prompt token ids from outside §3, saying so; a receipt produced
+that way attests to §4–§11 and nothing of §3. A future version that wants a
+second normative tuple has to generalize §3.1.3/§3.1.4 from a pinned literal to
+a small enumerated set, with the same "refuse rather than reinterpret"
+discipline for anything outside it. See `docs/E25_RMSNORM_ASSOCIATION.md` §4.1
+and CHANGELOG.md, "Errata against v0.3b".
 
 ## 15. Conformance (normative)
 
