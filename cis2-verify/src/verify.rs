@@ -31,16 +31,31 @@ pub struct Artifacts<'a> {
 /// process and all three of the witness digest, the argmax digest and the
 /// token ids must agree before anything is returned.
 pub fn run(art: &Artifacts, prompt: &str, gen_toks: usize) -> Result<Receipt, String> {
-    let weights_sha = sha256(art.weights);
-    let config_sha = sha256(art.config);
-    let tokenizer_sha = sha256(art.tokenizer);
-
-    let cfg: Config = parse_config(art.config)?;
     let tok = Tokenizer::from_json(art.tokenizer)?;
     let prompt_token_ids = tok.encode(prompt)?;
     if prompt_token_ids.is_empty() {
         return Err("prompt tokenizes to zero tokens; there is nothing to decode".to_string());
     }
+    run_from_token_ids(art, prompt, prompt_token_ids, gen_toks)
+}
+
+/// The decode itself, with the prompt token ids already in hand.
+///
+/// Split out of `run` so that a caller who cannot go through §3 can still
+/// exercise §4-§11. `run` is the only conforming entry point; see
+/// `run_with_token_ids` for what "cannot go through §3" means and why the
+/// distinction matters.
+fn run_from_token_ids(
+    art: &Artifacts,
+    prompt: &str,
+    prompt_token_ids: Vec<u32>,
+    gen_toks: usize,
+) -> Result<Receipt, String> {
+    let weights_sha = sha256(art.weights);
+    let config_sha = sha256(art.config);
+    let tokenizer_sha = sha256(art.tokenizer);
+
+    let cfg: Config = parse_config(art.config)?;
 
     let st = safetensors::load(art.weights)?;
     let model = Model::load(&st, cfg)?;
@@ -82,6 +97,36 @@ pub fn run(art: &Artifacts, prompt: &str, gen_toks: usize) -> Result<Receipt, St
         argmax_digest: a1,
         witness_digest: w1,
     })
+}
+
+/// Run §4-§11 on a checkpoint whose `tokenizer.json` §3 refuses, with the
+/// prompt token ids supplied by the caller.
+///
+/// §3.1.3 pins `normalizer: null` and §3.1.4 pins one exact `pre_tokenizer`
+/// shape -- the one `HuggingFaceTB/SmolLM2-135M` ships. `Tokenizer::from_json`
+/// enforces both and refuses anything else rather than guessing, which is the
+/// correct behaviour for a conformance verifier. It also means the *second*
+/// model §0 names, `Qwen/Qwen2.5-0.5B`, cannot be driven through `run` at all:
+/// its `tokenizer.json` carries an NFC normalizer and a `Split`-regex
+/// pre-tokenizer, so §3 rejects it before any arithmetic happens.
+///
+/// This entry point exists so a §14.5-style measurement can still be taken on
+/// such a checkpoint. **It is not a conformance path.** The receipt it returns
+/// records prompt token ids this crate did not derive, so the receipt attests
+/// to §4-§11 only; it says nothing about §3. It is behind the `census`
+/// feature for that reason, and the default build's public surface is
+/// unchanged.
+#[cfg(feature = "census")]
+pub fn run_with_token_ids(
+    art: &Artifacts,
+    prompt: &str,
+    prompt_token_ids: &[u32],
+    gen_toks: usize,
+) -> Result<Receipt, String> {
+    if prompt_token_ids.is_empty() {
+        return Err("no prompt token ids supplied; there is nothing to decode".to_string());
+    }
+    run_from_token_ids(art, prompt, prompt_token_ids.to_vec(), gen_toks)
 }
 
 /// Check a receipt against the values CIS-2 v0.3b pins (spec 2.1, 3.3,

@@ -35,16 +35,41 @@ fn main() {
     let (w, c, t) = (read(dir, "model.safetensors"), read(dir, "config.json"), read(dir, "tokenizer.json"));
     let art = verify::Artifacts { weights: &w, config: &c, tokenizer: &t };
 
+    // Optional 4th argument: a comma-separated prompt token id list, used
+    // when the checkpoint's `tokenizer.json` is one spec 3.1.3/3.1.4 refuses.
+    // Qwen2.5-0.5B -- the second model spec 0 names -- is exactly that case:
+    // its tokenizer carries an NFC normalizer and a `Split`-regex
+    // pre-tokenizer, so spec 3 rejects it before any arithmetic runs. Supplying
+    // the ids exercises spec 4-11 and nothing of spec 3; the printed lines say so.
+    let ids: Option<Vec<u32>> = std::env::args().nth(4).map(|v| {
+        v.split(',')
+            .map(|p| p.trim().parse::<u32>().expect("token id"))
+            .collect()
+    });
+
+    let go = |art: &verify::Artifacts| match &ids {
+        None => verify::run(art, &prompt, gen_toks),
+        Some(ids) => verify::run_with_token_ids(art, &prompt, ids, gen_toks),
+    };
+
+    match &ids {
+        None => println!("CENSUS tokenization=spec-3 (this crate derived the prompt token ids)"),
+        Some(ids) => println!(
+            "CENSUS tokenization=SUPPLIED prompt_token_ids={ids:?} \
+             (spec 3.1.3/3.1.4 refuse this tokenizer.json; spec 4-11 only, NOT a conformance run)"
+        ),
+    }
+
     // Pass 1: the pinned association (8), instrumented.
     census::reset();
     census::set_alt_order(false);
-    let pinned = verify::run(&art, &prompt, gen_toks).expect("pinned run");
+    let pinned = go(&art).expect("pinned run");
     let (elements, divergent) = census::counts();
 
     // Pass 2: the same decode, associated the other way throughout.
     census::reset();
     census::set_alt_order(true);
-    let other = verify::run(&art, &prompt, gen_toks).expect("alternative-order run");
+    let other = go(&art).expect("alternative-order run");
     census::set_alt_order(false);
 
     // `verify::run` decodes twice: spec 12.4 makes the same-host determinism
