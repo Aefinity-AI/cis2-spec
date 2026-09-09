@@ -81,6 +81,47 @@ three builds and the two machines. Every run printed the pinned
 `witness-digest` and `argmax-digest` (§13.1), which is the check that the
 instrumentation itself changed nothing.
 
+### 2a. Extended to the full opt-level axis
+
+The first pass covered `--release` only. §13.4's compiler matrix also varies
+`opt-level`, so the same experiment was re-run over all ten cells of
+`{0, 1, 2, 3, s} × {generic, native}` on SmolLM2-135M. This crate's
+`[profile.release]` sets `opt-level = 2`, so the two `--release` binaries of
+§2 are the `opt-level 2` row, and the sweep reproduces their digests exactly.
+
+| opt-level | target-cpu | binary sha256 (first 16) | `%ymm` | FMA | `matvec`/`dot_seq` FP ops |
+|---|---|---|---|---|---|
+| 0 | generic | `f9e7f38965c4331c` | 0 | 0 | 1 `addss`, 1 `mulss` |
+| 0 | native | `473cfb3ae5d6124d` | 147 | 0 | 1 `vaddss`, 1 `vmulss` |
+| 1 | generic | `f95d8587a7b5347c` | 0 | 0 | 5 `addss`, 5 `mulss` |
+| 1 | native | `06bc8e7e7b7fd2c2` | 344 | 0 | 9 `vaddss`, 9 `vmulss` |
+| 2 | generic | `c095d7f9e113d762` | 0 | 0 | 5 `addss`, 5 `mulss` |
+| 2 | native | `eaf8129c66d7e986` | 397 | 0 | 9 `vaddss`, 9 `vmulss` |
+| 3 | generic | `74715903bcfce9c5` | 0 | 0 | 5 `addss`, 5 `mulss` |
+| 3 | native | `979299faa78eb1dc` | **529** | 0 | 9 `vaddss`, 9 `vmulss` |
+| s | generic | `87e7d74188e99938` | 0 | 0 | 1 `addss`, 1 `mulss` |
+| s | native | `2aee547352f5eac1` | 286 | 0 | 1 `vaddss`, 1 `vmulss` |
+
+**Ten distinct binaries. One dump.** Every cell produced
+`5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64`, 51,750,154
+bytes, and printed the pinned `witness d8274305…` / `argmax 0b9c8f3a…`. Zero
+FMA instructions in all ten.
+
+The AVX2 instruction count rises monotonically with optimization pressure to
+529 at `opt-level 3` — the optimizer is doing progressively more, on
+progressively more of the program — and the reduction column does not move:
+`dot_seq`'s multiply/add stay scalar in all ten cells, differing only in
+unroll factor (1× at `opt-level 0` and `s`, 5× or 9× elsewhere), which
+changes the instruction count without changing the order of the additions.
+
+Two reporting notes, so the table is not over-read. At `opt-level 0` the
+compiler does not inline `dot_seq` into `matvec`, so the FP ops of that row
+are counted in `dot_seq` itself; and the 147 `%ymm` instructions of the
+`0/native` cell are in the tokenizer's JSON parsing, the allocator and struct
+moves — the arithmetic kernels at `opt-level 0` are not vectorized at all.
+The informative cells are therefore `1/2/3/s × native`, where between 286 and
+529 AVX2 instructions coexist with an unchanged dump.
+
 The two baseline binaries are themselves byte-identical, although they were
 built on different machines from different absolute source paths
 (`~/projects/cis2-spec` vs `~/e28-src`) — an incidental reproducible-build
@@ -223,9 +264,11 @@ not a tautology.
   §0 is the independent-implementation axis.
 - **Not exhaustive over inputs.** One prompt, 19 positions, two models —
   the same scope limit E28 carries.
-- **Not exhaustive over optimizer settings.** Two `target-cpu` values at
-  `--release`. §13.4 covers opt-level 0..3,s at the digest level; those
-  cells have not been re-run at intermediate granularity.
+- **Not exhaustive over optimizer settings**, though less narrow than it
+  was: §2a re-ran all ten `{opt-level 0,1,2,3,s} × {generic, native}` cells
+  of §13.4's matrix at intermediate granularity on x86_64. The aarch64 half
+  of §13.4's matrix has not been re-run this way, and no non-default
+  codegen flags beyond `target-cpu` were varied.
 - **The `ud2` test covers one instruction**, and so one vector loop, not all
   397 `%ymm` instructions.
 - **The negative control is one bit at one offset.** It calibrates
@@ -246,7 +289,8 @@ not a tautology.
 | Toolchain | `rustc 1.98.0 (88d9e12ae 2026-08-18)`, `cargo 1.98.0`, `--release --offline --features layerdump`, both hosts |
 | FP environment | `x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)`, `fpenv::pin_and_selftest()`, every run |
 | Artifacts | SmolLM2 `model.safetensors` `80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1`; Qwen `88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342`; verified identical on both hosts before any run |
-| Binaries | baseline `c095d7f9…` (bit-identical on both hosts), penguin native `eaf8129c…`, box2 native `85df5f53…`; 0 FMA instructions in all three |
+| Binaries | baseline `c095d7f9…` (bit-identical on both hosts), penguin native `eaf8129c…`, box2 native `85df5f53…`; 0 FMA instructions in all three. §2a adds seven more penguin binaries across `opt-level 0,1,3,s`, also 0 FMA |
+| Opt-level sweep | `~/e29-sweep.sh`, log `~/e29-optlevel-sweep.log`, 10 cells, all reproducing dump `5386d3b0…` and the pinned digests |
 | Dumps | SmolLM2 `5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` (4/4 runs), Qwen `5ccf65207a6638d7c2aa6111e0b08e867686b0efe5c07e4e9b2e6c6d048d550e` (4/4 runs) |
 | Digests reproduced by every run | SmolLM2 `witness d8274305…`, `argmax 0b9c8f3a…`; Qwen `witness c9dff099…`, `argmax 9619177f…` |
 | Negative control | flipped byte at offset 200,000,000, `0xcd → 0xcc`; witness `c459040f…`, argmax unchanged |
