@@ -174,7 +174,12 @@ both functions are exactly monotone over the whole finite domain;
 is now stated to be normative.** Section 10's softmax cannot reach the
 affected band (its argument is always `<= 0`), but section 6.4's SiLU can, for
 an FFN intermediate in `[-88.7228317, -88.0000076]`; there `silu_pinned`
-returns `-0.0` in place of a normal f32 of magnitude ~5.328e-37. Every
+returns `-0.0` in place of a normal f32 of magnitude ~5.328e-37. A read-only
+census of the section 13.1 reference decode records **0** of its 1,751,040
+SiLU arguments in that band (observed range [-25.979437, 49.15266]) and
+**0** softmax arguments below `-88.0`, with the pinned digests reproduced ---
+so section 13.1 does not depend on the clip, though that is one model on one
+prompt and is not a general unreachability result. Every
 conforming implementation produces the same `-0.0`, so bit-exact agreement ---
 the property CIS-2 claims --- is unaffected; widening the guard would be more
 faithful to `exp` and would move every pinned digest. Section 14.1 is

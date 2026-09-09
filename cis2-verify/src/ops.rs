@@ -86,9 +86,82 @@ pub fn rmsnorm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 pub mod census {
     use core::sync::atomic::{AtomicBool, AtomicU64, Ordering::Relaxed};
 
+    use core::sync::atomic::AtomicI64;
+
     static ELEMENTS: AtomicU64 = AtomicU64::new(0);
     static DIVERGENT: AtomicU64 = AtomicU64::new(0);
     static ALT: AtomicBool = AtomicBool::new(false);
+
+    // 14.1 reach census. 6.2's high guard clips every `x > 88.0`, but
+    // `ln(f32::MAX)` is 88.7228390520684, so the 94,743 arguments in
+    // [0x42B00001, 0x42B17217] are clipped although their true `exp` is
+    // finite. 10's softmax cannot reach that band -- its argument is always
+    // <= 0 -- but 6.4's SiLU calls `exp_pinned(-x)`, so an FFN intermediate
+    // in [-88.7228317, -88.0000076] does reach it, and there `silu_pinned`
+    // returns -0.0 instead of a normal f32 near -5.3e-37. These counters
+    // answer whether a real decode ever gets there. They only read.
+    static SILU_N: AtomicU64 = AtomicU64::new(0);
+    static SILU_CLIP_BAND: AtomicU64 = AtomicU64::new(0);
+    static SILU_BELOW_88: AtomicU64 = AtomicU64::new(0);
+    static SILU_MIN: AtomicI64 = AtomicI64::new(i64::MAX);
+    static SILU_MAX: AtomicI64 = AtomicI64::new(i64::MIN);
+
+    // 6.2's LOW guard, `x < -88.0 -> 0.0`, on the softmax path. Reachable by
+    // construction (any score more than 88 below the row maximum), and
+    // harmless by measurement (E27: `exp(-88)` is subnormal, so 1.3 flushes
+    // it anyway). This counts how often a real decode exercises it.
+    static SOFTMAX_N: AtomicU64 = AtomicU64::new(0);
+    static SOFTMAX_LOW_GUARD: AtomicU64 = AtomicU64::new(0);
+
+    /// Total order on f32 bits, so `fetch_min`/`fetch_max` mean what they say
+    /// across the sign boundary.
+    fn key(v: f32) -> i64 {
+        let b = v.to_bits() as i64;
+        if v.to_bits() & 0x8000_0000 != 0 { 0x8000_0000i64 - b } else { b }
+    }
+    fn unkey(k: i64) -> f32 {
+        let b = if k < 0 { (0x8000_0000i64 - k) as u32 } else { k as u32 };
+        f32::from_bits(b)
+    }
+
+    /// One SiLU argument (6.4's `x`, i.e. the FFN gate value).
+    pub fn note_silu(x: f32) {
+        SILU_N.fetch_add(1, Relaxed);
+        let b = x.to_bits();
+        if (0xC2B0_0001..=0xC2B1_7217).contains(&b) {
+            SILU_CLIP_BAND.fetch_add(1, Relaxed);
+        }
+        if x < -88.0 {
+            SILU_BELOW_88.fetch_add(1, Relaxed);
+        }
+        let k = key(x);
+        SILU_MIN.fetch_min(k, Relaxed);
+        SILU_MAX.fetch_max(k, Relaxed);
+    }
+
+    /// One softmax `exp_pinned` argument (`v - max_v`, always <= 0).
+    pub fn note_softmax_exp_arg(a: f32) {
+        SOFTMAX_N.fetch_add(1, Relaxed);
+        if a < -88.0 {
+            SOFTMAX_LOW_GUARD.fetch_add(1, Relaxed);
+        }
+    }
+
+    /// `(calls, in_clip_band, below_-88, min_arg, max_arg)` for 6.4's SiLU.
+    pub fn silu_counts() -> (u64, u64, u64, f32, f32) {
+        (
+            SILU_N.load(Relaxed),
+            SILU_CLIP_BAND.load(Relaxed),
+            SILU_BELOW_88.load(Relaxed),
+            unkey(SILU_MIN.load(Relaxed)),
+            unkey(SILU_MAX.load(Relaxed)),
+        )
+    }
+
+    /// `(calls, hit_low_guard)` for 10's softmax `exp_pinned`.
+    pub fn softmax_counts() -> (u64, u64) {
+        (SOFTMAX_N.load(Relaxed), SOFTMAX_LOW_GUARD.load(Relaxed))
+    }
 
     pub fn note(pinned: f32, other: f32) {
         ELEMENTS.fetch_add(1, Relaxed);
@@ -105,6 +178,13 @@ pub mod census {
     pub fn reset() {
         ELEMENTS.store(0, Relaxed);
         DIVERGENT.store(0, Relaxed);
+        SILU_N.store(0, Relaxed);
+        SILU_CLIP_BAND.store(0, Relaxed);
+        SILU_BELOW_88.store(0, Relaxed);
+        SILU_MIN.store(i64::MAX, Relaxed);
+        SILU_MAX.store(i64::MIN, Relaxed);
+        SOFTMAX_N.store(0, Relaxed);
+        SOFTMAX_LOW_GUARD.store(0, Relaxed);
     }
     /// `(elements, divergent)`
     pub fn counts() -> (u64, u64) {
@@ -123,7 +203,10 @@ pub fn softmax_seq(scores: &mut [f32]) {
         }
     }
     for v in scores.iter_mut() {
-        *v = exp_pinned(*v - max_v);
+        let arg = *v - max_v;
+        #[cfg(feature = "census")]
+        census::note_softmax_exp_arg(arg);
+        *v = exp_pinned(arg);
     }
     let denom = sum_seq(scores);
     for v in scores.iter_mut() {

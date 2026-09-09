@@ -37,6 +37,11 @@ name = "assoc_census"
 path = "examples/assoc_census.rs"
 required-features = ["census"]
 
+[[example]]
+name = "silu_reach"
+path = "examples/silu_reach.rs"
+required-features = ["census"]
+
 [profile.release]
 opt-level = 2
 # CIS-2 v0.3b 1.5: no flag anywhere that licenses reassociation, fast-math,
