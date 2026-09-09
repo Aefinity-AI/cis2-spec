@@ -393,8 +393,24 @@ E-6 measured: one flipped weight mantissa bit moves 570 tensors and **zero**
 argmax decisions, so a divergence the new job catches is one an
 output-digest job would let through. No pinned digest moves.
 
-Method, per-cell table and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
-section 2c.
+**Extended the same day (E32).** The scope note above listed LTO, PGO and
+`codegen-units=1` as untested. LTO is the one that actually threatens the
+result --- it changes what the optimizer can *see*, inlining across crate
+boundaries, which is exactly where a reassociation invisible to per-unit
+compilation could appear. Eight further cells, `{lto=fat, lto=thin,
+codegen-units=1, lto=fat + codegen-units=1} x {generic, native}`: eight
+distinct binaries, all reproducing the same dump and the same witness digest,
+zero FMA. Thin LTO with `target-cpu=native` emits **1,539** AVX2
+instructions --- 3.9x the plain native build of E-6, the most vectorized
+binary measured in this work --- and computes the same bits. Under fat LTO
+`matvec`, `dot_seq` and `rmsnorm` no longer exist as symbols, and the
+whole-binary FP mix is still 102 `vaddss` against 21 `vaddps`: scalar chains
+where section 5 pins an order, packed arithmetic where it does not, with
+every boundary the optimizer could have crossed removed. **PGO remains
+untested.**
+
+Method, per-cell tables and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
+sections 2c and 2d. Re-derivable with `scripts/e32_lto_sweep.sh`.
 
 ## Repository releases
 

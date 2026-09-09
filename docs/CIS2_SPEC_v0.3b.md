@@ -1415,8 +1415,11 @@ compiler axis (`verify3`'s four `{x86_64, aarch64} × {gcc, clang}` cells are
 the independent-compiler axis, and §0's four-implementation convergence is
 the independent-implementation axis, though neither compares
 intermediates); six ASCII prompts, at most 64 generated tokens, on two
-models; and no codegen flag beyond `target-cpu` and `opt-level` was varied
-— LTO, PGO and `codegen-units=1` are untested.
+models; and of the remaining codegen flags, `lto=fat`, `lto=thin` and
+`codegen-units=1` have since been measured over eight further cells (same
+dump, same digests, zero FMA — thin LTO with `target-cpu=native` emits 1,539
+AVX2 instructions, 3.9× the plain native build, and computes the same bits),
+while **PGO remains untested**.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 

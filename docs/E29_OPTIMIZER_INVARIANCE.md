@@ -247,6 +247,51 @@ an output-digest job would let through.
 
 ---
 
+### 2d. Link-time optimization, the setting most likely to break this (E32)
+
+§2c's scope note listed LTO, PGO and `codegen-units=1` as untested. LTO is
+the one of those that actually threatens the result, and it is worth saying
+why before the numbers: opt-level changes what the optimizer does *within* a
+compilation unit, while LTO changes what it can *see* — every function
+inlined into every caller, across crate boundaries, which is precisely the
+condition under which a reassociation opportunity invisible to per-unit
+compilation could appear.
+
+Eight more cells, `{lto=fat, lto=thin, codegen-units=1, lto=fat +
+codegen-units=1} × {generic, native}`:
+
+| flags | target-cpu | binary (16) | `%ymm` | FMA | dump |
+|---|---|---|---|---|---|
+| `lto=fat` | generic | `3ac32ea09a2a8b52` | 0 | 0 | `5386d3b0…` |
+| `lto=fat` | native | `3d6ae879f14db7ec` | **1388** | 0 | `5386d3b0…` |
+| `lto=thin` | generic | `3f3d5fae61bf1c6e` | 0 | 0 | `5386d3b0…` |
+| `lto=thin` | native | `0d36165792274cec` | **1539** | 0 | `5386d3b0…` |
+| `codegen-units=1` | generic | `cf6ce388fd339e3b` | 0 | 0 | `5386d3b0…` |
+| `codegen-units=1` | native | `9d9291e05bf5309c` | 387 | 0 | `5386d3b0…` |
+| `lto=fat, cgu=1` | generic | `ab40afca6e2de1c0` | 0 | 0 | `5386d3b0…` |
+| `lto=fat, cgu=1` | native | `008393200659a4b1` | 1362 | 0 | `5386d3b0…` |
+
+Eight distinct binaries, every one reproducing witness `d8274305…` and the
+same 51,750,154 bytes. Thin LTO with `target-cpu=native` emits **1,539**
+AVX2 instructions — 3.9× the 397 of §2's plain native build, and the most
+vectorized binary measured anywhere in this document. It computes the same
+bits.
+
+Under fat LTO the interesting functions no longer exist as symbols: `matvec`,
+`dot_seq` and `rmsnorm` are inlined into their callers, so §3's per-function
+disassembly cannot be repeated cell-for-cell. The whole-binary floating-point
+mix still shows the shape §3 describes — **102 `vaddss` against 21 `vaddps`**,
+95 `vmulss` against 16 `vmulps` — scalar chains where §5 pins an order,
+packed arithmetic where it does not, even with every boundary the optimizer
+could have crossed removed.
+
+That is the §1.5 mechanism stated as strongly as this document can state it:
+give LLVM the whole program, an AVX2 target and permission to inline
+everything, and it still may not reassociate a floating-point reduction,
+because nothing in the build licensed it to. **PGO remains untested.**
+
+---
+
 ## 3. Why it holds: what the optimizer actually did
 
 This is the part that generalizes beyond these two machines.
@@ -391,8 +436,9 @@ not a tautology.
 - **Not exhaustive over optimizer settings.** All twenty cells of §13.4's
   matrix — both ISAs × five opt-levels × `{generic, native}` — now run at
   intermediate granularity (§2a locally, §2c in CI on real runners of both
-  ISAs), but no non-default codegen flags beyond `target-cpu` were varied,
-  and LTO, PGO and `codegen-units=1` were not exercised.
+  ISAs), and §2d adds eight more cells for `lto=fat`, `lto=thin` and
+  `codegen-units=1`. **PGO is untested**, as is any codegen flag outside
+  `{opt-level, target-cpu, lto, codegen-units}`.
 - **The `ud2` test covers one instruction**, and so one vector loop, not all
   397 `%ymm` instructions.
 - **The negative control is one bit at one offset.** It calibrates
@@ -417,6 +463,7 @@ not a tautology.
 | Opt-level sweep | `~/e29-sweep.sh`, log `~/e29-optlevel-sweep.log`, 10 cells, all reproducing dump `5386d3b0…` and the pinned digests |
 | CI matrix (§2c) | `.github/workflows/verify.yml` job `intermediates`, run `34372521833` on `cm/cis2-verify-standalone`, 20/20 cells success; runners `ubuntu-24.04` (x86_64) and `ubuntu-24.04-arm` (aarch64), real hardware, `rustc 1.98.0`; every cell asserts the dump digest and the §13.1 witness digest and greps its own disassembly for FMA |
 | qemu cross-check (§2c) | `aarch64-unknown-linux-gnu` cross-build on `penguin`, run under `qemu-aarch64` user-mode with `-L /usr/aarch64-linux-gnu`; same dump digest; 47 lib + 6 end-to-end tests pass under the same emulator, including the `src/fpenv.rs` FTZ/DAZ denormal goldens |
+| LTO sweep (§2d) | `scripts/e32_lto_sweep.sh`, log `~/e32-lto-sweep.log`, 8 cells on `penguin`, all reproducing dump `5386d3b0…` and witness `d8274305…`, 0 FMA; a ninth fat-LTO build at the profile's own `codegen-units` (`b129e583…`, 1,372 `%ymm`) likewise |
 | Prompt sweep (§2b) | `scripts/e30_prompt_sweep.sh` (penguin) and `scripts/e30_prompt_sweep_box2.sh` (box2) over `scripts/e30_prompts.txt`; logs `~/e30-sweep.log`, `cm-box2:~/e30-box2.log`; 6 configurations × 4 runs, 6 dump digests, every configuration's four runs identical |
 | Dumps | SmolLM2 `5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` (4/4 runs), Qwen `5ccf65207a6638d7c2aa6111e0b08e867686b0efe5c07e4e9b2e6c6d048d550e` (4/4 runs) |
 | Digests reproduced by every run | SmolLM2 `witness d8274305…`, `argmax 0b9c8f3a…`; Qwen `witness c9dff099…`, `argmax 9619177f…` |
