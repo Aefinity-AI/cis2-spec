@@ -288,7 +288,81 @@ could have crossed removed.
 That is the §1.5 mechanism stated as strongly as this document can state it:
 give LLVM the whole program, an AVX2 target and permission to inline
 everything, and it still may not reassociate a floating-point reduction,
-because nothing in the build licensed it to. **PGO remains untested.**
+because nothing in the build licensed it to. That leaves PGO, which §2e
+measures.
+
+---
+
+### 2e. Profile-guided optimization, the last untested flag (E33)
+
+Everything above is a *static* decision: the optimizer chose from the source
+and the target description. PGO adds the one input those cells could not
+supply — a measurement of where the program actually spends its time — and
+that is the input most likely to make a compiler restructure a hot loop.
+
+The profile says exactly what one would fear. `llvm-profdata show` on the
+merged profile reports 293 functions, 3,173 blocks and 11,868,112,190
+counted events, and the largest internal block count in the whole program is
+
+```
+_RNvNtCslqp2CDIoJoR_11cis2_verify3ops6matvec, max count = 10220470272
+```
+
+`ops::matvec` — 1.02 × 10¹⁰, two orders of magnitude above the next entry
+(`sha256::compress`, 5.5 × 10⁸). That is the function §3 shows to be scalar
+and §5 shows to pin the reduction order. So PGO enters this experiment
+knowing that 86 % of the program's counted activity is inside the one loop
+whose serial dependency chain is the obvious thing to break.
+
+Two profiles were trained, both on the same instrumented binary: `once` from
+the reference prompt, and `cross` from `1234567890 + 9876543210 =` — a
+different prompt, a different sequence length, and by E30 a different dump
+digest. The `cross` cells are the sharper test: the profile that guides the
+build was collected on a workload that is *not* the workload being verified.
+
+| cell | target-cpu | binary (16) | `%ymm` | FMA | dump |
+|---|---|---|---|---|---|
+| `profile-generate` (instrumented) | generic | `8423f510bb4aaf96` | 40 | 0 | `5386d3b0…` |
+| `profile-generate` (instrumented) | native | `0a71b3d5bebba233` | 434 | 0 | `5386d3b0…` |
+| `profile-use=once` | generic | `569c7a5794b02971` | 0 | 0 | `5386d3b0…` |
+| `profile-use=once` | native | `6496f08d546d97be` | 398 | 0 | `5386d3b0…` |
+| `profile-use=cross` | generic | `0bcfc13ee57da0d5` | 0 | 0 | `5386d3b0…` |
+| `profile-use=cross` | native | `a451167f6ec1e555` | 364 | 0 | `5386d3b0…` |
+| `profile-use=once` + `lto=thin` | native | `537ed4055464df95` | **1529** | 0 | `5386d3b0…` |
+| `profile-use=cross` + `lto=fat` | native | `dd74a61ad4ca6a05` | 1316 | 0 | `5386d3b0…` |
+
+Eight more distinct binaries, every one reproducing witness `d8274305…`,
+argmax `0b9c8f3a…` and the same 51,750,154 bytes.
+
+Two controls, because "the flag was silently dropped" is the failure mode
+that would make this table meaningless:
+
+1. **The profile changed the code.** At `opt-level=3, target-cpu=native` the
+   non-PGO build of §2a is `979299fa…` with 529 `%ymm`; the same settings
+   with `profile-use=once` give `6496f08d…` with 398, and with
+   `profile-use=cross` `a451167f…` with 364. Three different binaries, three
+   different vector-instruction counts — the profile is being read, and a
+   profile trained on a *different prompt* produces a *different binary* from
+   one trained on the verified prompt. Both compute the same bits.
+2. **rustc validates the flag.** `-C profile-use=/nonexistent/nope.profdata`
+   fails the build with `error: file … does not exist`, so a mistyped path
+   cannot masquerade as a passing PGO cell.
+
+A third observation falls out for free: the *instrumented* binary is itself
+conforming. Running it on the `cross` prompt reproduced E30's
+`860bbffaf566dc78…` and witness `4caad3f9…` — counter increments on every
+basic block, and the arithmetic is unmoved.
+
+Under fat LTO with a cross-trained profile the floating-point mix is
+**102 `vaddss` against 21 `vaddps`, 95 `vmulss` against 16 `vmulps`** —
+identical to E32's fat-LTO census. PGO moved block layout and inlining (the
+binary and its `%ymm` count both differ from E32's `008393200659a4b1…`) and
+did not move the scalar/packed split by a single instruction. That split is
+what §1.5 pins, and it is not a performance decision the profile is allowed
+to revise.
+
+With this cell, every codegen flag §13.5 nominates is measured:
+`opt-level`, `target-cpu`, `lto`, `codegen-units` and `profile-use`.
 
 ---
 
@@ -437,8 +511,14 @@ not a tautology.
   matrix — both ISAs × five opt-levels × `{generic, native}` — now run at
   intermediate granularity (§2a locally, §2c in CI on real runners of both
   ISAs), and §2d adds eight more cells for `lto=fat`, `lto=thin` and
-  `codegen-units=1`. **PGO is untested**, as is any codegen flag outside
-  `{opt-level, target-cpu, lto, codegen-units}`.
+  `codegen-units=1`, and §2e eight more for `profile-generate` and
+  `profile-use` (including a profile trained on a different prompt than the
+  one verified). Every codegen flag §13.5 nominates is now measured; **any
+  flag outside `{opt-level, target-cpu, lto, codegen-units, profile-use}` is
+  untested**, and of those five only the first two are gated in CI — §2d's
+  and §2e's cells are measurements, re-runnable from
+  `scripts/e32_lto_sweep.sh` and `scripts/e33_pgo_sweep.sh`, not standing
+  checks.
 - **The `ud2` test covers one instruction**, and so one vector loop, not all
   397 `%ymm` instructions.
 - **The negative control is one bit at one offset.** It calibrates
@@ -464,6 +544,7 @@ not a tautology.
 | CI matrix (§2c) | `.github/workflows/verify.yml` job `intermediates`, run `34372521833` on `cm/cis2-verify-standalone`, 20/20 cells success; runners `ubuntu-24.04` (x86_64) and `ubuntu-24.04-arm` (aarch64), real hardware, `rustc 1.98.0`; every cell asserts the dump digest and the §13.1 witness digest and greps its own disassembly for FMA |
 | qemu cross-check (§2c) | `aarch64-unknown-linux-gnu` cross-build on `penguin`, run under `qemu-aarch64` user-mode with `-L /usr/aarch64-linux-gnu`; same dump digest; 47 lib + 6 end-to-end tests pass under the same emulator, including the `src/fpenv.rs` FTZ/DAZ denormal goldens |
 | LTO sweep (§2d) | `scripts/e32_lto_sweep.sh`, log `~/e32-lto-sweep.log`, 8 cells on `penguin`, all reproducing dump `5386d3b0…` and witness `d8274305…`, 0 FMA; a ninth fat-LTO build at the profile's own `codegen-units` (`b129e583…`, 1,372 `%ymm`) likewise |
+| PGO sweep (§2e) | `scripts/e33_pgo_sweep.sh`, log `~/e33-pgo-sweep.log`, 8 cells on `penguin`; `llvm-profdata` from the matching `llvm-tools` component (rustc 1.98.0 carries LLVM 22.1.8, so the distro's LLVM 19 `llvm-profdata` cannot read these `.profraw` files); profiles `once` (87,672 bytes) and `cross` (87,384 bytes, trained on `1234567890 + 9876543210 =`); all 8 cells reproduce dump `5386d3b0…` and witness `d8274305…`, 0 FMA. Discrimination: `-C profile-use` on a nonexistent path fails the build, and the three `opt-level=3, native` binaries (`979299fa…`/529 `%ymm` non-PGO, `6496f08d…`/398 with `once`, `a451167f…`/364 with `cross`) are three distinct binaries |
 | Prompt sweep (§2b) | `scripts/e30_prompt_sweep.sh` (penguin) and `scripts/e30_prompt_sweep_box2.sh` (box2) over `scripts/e30_prompts.txt`; logs `~/e30-sweep.log`, `cm-box2:~/e30-box2.log`; 6 configurations × 4 runs, 6 dump digests, every configuration's four runs identical |
 | Dumps | SmolLM2 `5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` (4/4 runs), Qwen `5ccf65207a6638d7c2aa6111e0b08e867686b0efe5c07e4e9b2e6c6d048d550e` (4/4 runs) |
 | Digests reproduced by every run | SmolLM2 `witness d8274305…`, `argmax 0b9c8f3a…`; Qwen `witness c9dff099…`, `argmax 9619177f…` |
