@@ -312,6 +312,47 @@ independent-implementation axis. One prompt, two models; the ten-cell sweep
 is x86_64 only, so the aarch64 half of section 13.4's matrix has not been
 re-run at intermediate granularity.
 
+### E-7 (2026-09-09) --- the optimizer-invariance result and the section 14.1 reach census both extended from one input to six
+
+E-6 (section 13.5) and E-5's reach census (section 14.1) each rested on a single
+prompt. Neither claim needs a new decision to widen, only more runs, so both
+were re-run over six prompt/length configurations: `"Once upon a time"`/16
+(the section 13.1 reference decode), a 43-character sentence/16, a digit-heavy
+prompt/16, a code prompt/16, `"Once upon a time"`/64 and `"A"`/32. All six
+are ASCII, deliberately, so that section 3.1.4's still-open Unicode question
+(section 14.8) could not confound a codegen or reachability result.
+
+**Optimizer invariance (section 13.5).** Each configuration was run four times
+--- the generic binary `c095d7f9...` on both hosts, plus `penguin`'s AVX2
+`target-cpu=native` build `eaf8129c...` (397 `%ymm`) and `cm-box2`'s
+`target-cpu=native` build `85df5f53...` (SSE only on a Celeron N4020,
+0 `%ymm`). Twenty-four runs produced **six** dump digests --- one per
+configuration, all six different from one another --- and within each
+configuration all four runs agree on every byte of every intermediate
+activation. Total compared: 558,394,570 bytes per sweep.
+
+**Reach census (section 14.1).** Across the same six configurations the
+instrumented build records **18,892,800** `silu_pinned` calls and
+**2,355,480** softmax `exp_pinned` arguments, with **0** in section 6.2's
+clip band `[-88.7228317, -88.0000076]` and **0** below `-88.0`. The most
+negative SiLU argument observed anywhere is -31.406876, some 57 units short
+of the band, and it occurs in the longest run --- the direction the range
+would drift if context length were the driver.
+
+**What changed in the text.** Section 13.5 gains a paragraph for the
+six-input extension and its scope limit now reads "six ASCII prompts, at most
+64 generated tokens, on two models" rather than "one prompt". Section
+14.1(a)'s census figures are replaced with the six-configuration totals and
+its honest limit now reads "one model, six ASCII prompts and at most 64
+generated tokens". **No pinned digest moves**; the reference configuration
+reproduces every value E-5 and E-6 recorded, which is the control on the
+harness.
+
+Method, per-configuration tables and provenance: `docs/E29_OPTIMIZER_INVARIANCE.md`
+section 2b and `docs/E27_EXP_LN_RANGE.md` section 1. Re-derivable with
+`scripts/e30_prompt_sweep.sh` / `scripts/e30_prompt_sweep_box2.sh` over
+`scripts/e30_prompts.txt`.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section

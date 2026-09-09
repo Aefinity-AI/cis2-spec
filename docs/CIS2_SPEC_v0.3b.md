@@ -1390,13 +1390,22 @@ of the decisions. Full method, disassembly and provenance in
 `docs/E29_OPTIMIZER_INVARIANCE.md`; the per-tensor comparison tool is
 `scripts/diff_dumps.py`.
 
+The same comparison was then extended over *inputs*. Six prompt/length
+configurations (different lengths, a digit-heavy prompt, a code prompt, a
+single-token prompt with 32 generated tokens; all ASCII, so §3.1.4's open
+question could not confound the result) were each run four times — the
+generic binary on both hosts, plus each host's `target-cpu=native` build.
+The six configurations produce six *different* dumps, totalling 558,394,570
+bytes of intermediate activations, and within each configuration all four
+runs agree on every byte.
+
 Scope limits, stated so this is not over-read: both hosts ran the same
 `rustc`/LLVM, so this is two code generation targets and not two
 independent compilers (§13.4 is the wider compiler axis, and §0's
 four-implementation convergence is the independent-implementation axis);
-one prompt and two models; and the ten-cell sweep above is x86_64
-only, so the aarch64 half of §13.4's matrix has not been re-run at
-intermediate granularity.
+six ASCII prompts, at most 64 generated tokens, on two models; and the
+ten-cell sweep above is x86_64 only, so the aarch64 half of §13.4's matrix
+has not been re-run at intermediate granularity.
 
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 
@@ -1425,13 +1434,17 @@ finite and representable. §10's softmax cannot reach this band --- it
 evaluates `exp_pinned(v - max_v)` with `max_v` the maximum over the same
 vector, so its argument is always `≤ 0` --- but §6.4's SiLU can: an FFN
 intermediate `x ∈ [-88.7228317, -88.0000076]` makes `exp_pinned(-x)` land
-inside it. A read-only census of the §13.1 reference decode (SmolLM2-135M,
-`"Once upon a time"`, 16 generated tokens) records **0** of its 1,751,040
-`silu_pinned` arguments in that band, with an observed argument range of
-[-25.979437, 49.15266], and **0** of its 102,600 softmax `exp_pinned`
-arguments below `-88.0`; the instrumented build reproduces the §13.1 pinned
+inside it. A read-only census of SmolLM2-135M decodes over six
+prompt/length configurations (the §13.1 reference decode
+`"Once upon a time"`/16 among them, plus a 43-character prompt, a
+digit-heavy prompt, a code prompt, `"Once upon a time"`/64 and `"A"`/32)
+records **0** of its **18,892,800** `silu_pinned` arguments in that band —
+the most negative argument seen anywhere is -31.406876, some 57 units short
+of the band — and **0** of its **2,355,480** softmax `exp_pinned` arguments
+below `-88.0`; the instrumented build reproduces each configuration's pinned
 digests exactly. So §13.1's digests do not depend on the clip. That is one
-model and one prompt and does not establish unreachability in general. This
+model, six ASCII prompts and at most 64 generated tokens, and does not
+establish unreachability in general. This
 clip is **normative and MUST be reproduced**; a clean-room implementation
 that returns the finite value will not reproduce the pinned digests.
 
