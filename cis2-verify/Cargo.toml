@@ -22,11 +22,20 @@ description = "Standalone, zero-dependency verifier for CIS-2 v0.3b receipts. Wr
 [features]
 default = ["std"]
 std = []
+# Spec 14.5 measurement only. A `census` build instruments RMSNorm and can
+# run the decode in the non-conforming multiply order; it is not a
+# conforming verifier and is never enabled by default or in CI.
+census = ["std"]
 
 [[bin]]
 name = "cis2-verify"
 path = "src/bin/cis2-verify.rs"
 required-features = ["std"]
+
+[[example]]
+name = "assoc_census"
+path = "examples/assoc_census.rs"
+required-features = ["census"]
 
 [profile.release]
 opt-level = 2

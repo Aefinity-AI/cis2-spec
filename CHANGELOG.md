@@ -5,6 +5,47 @@ clean-room verifiers. The reference implementation the spec was audited
 against lives in a separate repository (see README "Scope"); this
 changelog covers the spec text and verifiers published here.
 
+## Errata against v0.3b
+
+Numbered corrections to the published v0.3b text. **No erratum here moves a
+pinned digest**; every value in section 13 is unchanged.
+
+### E-1 (2026-09-09) --- section 14.5 was wrong: the RMSNorm multiply order *is* bit-level necessary
+
+**What v0.3b said**, carried unchanged from v0.1:
+
+> 14.5. **RMSNorm multiply order (section 8) is pinned but its bit-level
+> necessity is unconfirmed.** `(x[i]*inv)*weight[i]` vs. `x[i]*(inv*weight[i])`
+> are not provably identical for arbitrary fp32 operands under rounding, but no
+> divergence between the two orders has actually been observed on either model
+> tested.
+
+**Why that is wrong.** A divergence had in fact been observed before v0.3b was
+tagged --- E22's M09 mutation is exactly this reassociation, and it moved the
+witness digest --- and section 14.5 was simply never updated. Measured since
+(`docs/E25_RMSNORM_ASSOCIATION.md`): the two associations differ by one ULP on
+**231,014 of the 667,584** RMSNorm elements a section 13.1 decode produces,
+about 35%, and substituting the other association changes the witness digest
+from `d82743059d...` to `570c0bbb0d...`. The Rust clean-room verifier and the C
+reference implementation agree bit-for-bit on that non-conforming digest as
+well as on the conforming one.
+
+**What it should say:**
+
+> 14.5. **RMSNorm multiply order (section 8) is pinned, and its bit-level
+> necessity is measured.** `(x[i]*inv)*weight[i]` and `x[i]*(inv*weight[i])`
+> differ by one ULP on about 35% of the operand triples an actual decode
+> produces --- 231,014 of the 667,584 RMSNorm elements in the section 13.1
+> vector. Substituting the other association changes the section 13.1 witness
+> digest from `d82743059d...` to `570c0bbb0d...`. It does **not** change the
+> argmax digest or the generated token ids for this vector, so the violation is
+> invisible to any check that hashes only the model's outputs --- one of the
+> reasons section 12.1 hashes the full logit vector. See
+> `docs/E25_RMSNORM_ASSOCIATION.md`.
+
+The corrected text is applied in place in `docs/CIS2_SPEC_v0.3b.md` with an
+E-1 marker. Section 8 itself is unchanged; only the limitations note was wrong.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
