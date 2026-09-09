@@ -129,6 +129,51 @@ result, not the point of this experiment.
 
 ---
 
+### 2b. Extended over inputs: six prompts, four runs each (E30)
+
+§2 and §2a hold one input fixed. The obvious objection is that
+`"Once upon a time"` might simply be an input that never produces an
+intermediate where a reassociation would have been visible. That objection is
+answered the same way the others were — by running more cells, not by
+argument.
+
+Six prompt/length configurations were chosen to move the arithmetic around:
+different token counts, different context lengths, a digit-heavy prompt, a
+code prompt, and a single-token prompt with 32 generated tokens. All are
+ASCII, deliberately: §3.1.4's Unicode handling is still an open decision
+(§14.8), and a tokenization question would have confounded a codegen result.
+
+Each configuration was run **four** times — the same three binaries as §2
+(`c095d7f9…` generic, byte-identical on both hosts; `eaf8129c…` penguin AVX2
+`target-cpu=native`, 397 `%ymm`; `85df5f53…` box2 `target-cpu=native`, which
+on a Celeron N4020 is SSE only, 0 `%ymm`), with the generic binary run on
+both hosts. Twenty-four runs; six dump digests.
+
+| prompt | gen | dump sha256 (16) | bytes | witness | argmax |
+|---|---|---|---|---|---|
+| `Once upon a time` | 16 | `5386d3b0e529d981` | 51,750,154 | `d8274305` | `0b9c8f3a` |
+| `The quick brown fox jumps over the lazy dog` | 16 | `b5f70db17fd3589a` | 65,370,684 | `d385cef0` | `486f2b3a` |
+| `1234567890 + 9876543210 =` | 16 | `860bbffaf566dc78` | 103,508,168 | `4caad3f9` | `3d55e42e` |
+| `def f(x): return x * 2` | 16 | `88d45398a7b7763b` | 68,094,790 | `7675e353` | `0bb484df` |
+| `Once upon a time` | 64 | `44a65ccc90f63915` | 182,507,242 | `fa75e57e` | `8b59866e` |
+| `A` | 32 | `1b06bf6ba6bc63a1` | 87,163,532 | `84e4b87c` | `a28275bb` |
+
+Six configurations, six *different* dumps — the inputs do reach different
+arithmetic, which is what makes the comparison worth making — and within each
+configuration all four runs agree on every byte of every intermediate. The
+first row reproduces §2's and §2a's known values, which is the control that
+the harness is comparing what it claims to.
+
+Aggregate: 558,394,570 bytes of intermediate activations per sweep,
+bit-identical across two microarchitectures and three codegen targets.
+
+The same six runs also carry the §14.1 reach census, which is E27's result and
+is written up there: 18,892,800 `silu_pinned` calls and 2,355,480 softmax
+`exp_pinned` arguments across the six configurations, **0** in §6.2's clip
+band and **0** below `-88.0`.
+
+---
+
 ## 3. Why it holds: what the optimizer actually did
 
 This is the part that generalizes beyond these two machines.
@@ -262,8 +307,12 @@ not a tautology.
   two *code generation targets*, not two independent compilers. §13.4's
   matrix is the wider axis; the four-implementation convergence recorded in
   §0 is the independent-implementation axis.
-- **Not exhaustive over inputs.** One prompt, 19 positions, two models —
-  the same scope limit E28 carries.
+- **Not exhaustive over inputs**, though no longer a single input: §2b ran
+  six prompt/length configurations, each on three binaries across two
+  microarchitectures, and each configuration's four runs agree at every
+  intermediate. Six prompts on two models is still not a claim about all
+  inputs; the longest context measured is 64 generated tokens, and every
+  prompt is ASCII (§3.1.4 is an open decision, §14.8).
 - **Not exhaustive over optimizer settings**, though less narrow than it
   was: §2a re-ran all ten `{opt-level 0,1,2,3,s} × {generic, native}` cells
   of §13.4's matrix at intermediate granularity on x86_64. The aarch64 half
@@ -291,6 +340,7 @@ not a tautology.
 | Artifacts | SmolLM2 `model.safetensors` `80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1`; Qwen `88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342`; verified identical on both hosts before any run |
 | Binaries | baseline `c095d7f9…` (bit-identical on both hosts), penguin native `eaf8129c…`, box2 native `85df5f53…`; 0 FMA instructions in all three. §2a adds seven more penguin binaries across `opt-level 0,1,3,s`, also 0 FMA |
 | Opt-level sweep | `~/e29-sweep.sh`, log `~/e29-optlevel-sweep.log`, 10 cells, all reproducing dump `5386d3b0…` and the pinned digests |
+| Prompt sweep (§2b) | `scripts/e30_prompt_sweep.sh` (penguin) and `scripts/e30_prompt_sweep_box2.sh` (box2) over `scripts/e30_prompts.txt`; logs `~/e30-sweep.log`, `cm-box2:~/e30-box2.log`; 6 configurations × 4 runs, 6 dump digests, every configuration's four runs identical |
 | Dumps | SmolLM2 `5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` (4/4 runs), Qwen `5ccf65207a6638d7c2aa6111e0b08e867686b0efe5c07e4e9b2e6c6d048d550e` (4/4 runs) |
 | Digests reproduced by every run | SmolLM2 `witness d8274305…`, `argmax 0b9c8f3a…`; Qwen `witness c9dff099…`, `argmax 9619177f…` |
 | Negative control | flipped byte at offset 200,000,000, `0xcd → 0xcc`; witness `c459040f…`, argmax unchanged |

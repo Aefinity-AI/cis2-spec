@@ -105,10 +105,34 @@ SmolLM2-135M (`"Once upon a time"`, 16 generated tokens):
 | softmax arguments hitting the low guard (`< -88.0`) | **0** |
 
 The observed SiLU range stops 62 units short of the band on the left, so this
-model on this prompt is nowhere near it. That is one model and one prompt: it
-establishes that the pinned digests of §13.1 are not affected by the clip, and
-it does **not** establish that no model reaches it. The disposition above
-stands on the normative argument, not on this measurement.
+model on this prompt is nowhere near it.
+
+**Extended to six inputs (E30, 2026-09-09).** One prompt is a weak census, so
+the same instrumented build was run over six prompt/length configurations —
+different lengths, a digit-heavy prompt, a code prompt, and a single-token
+prompt with 32 generated tokens, all ASCII so that §3.1.4's open Unicode
+question (§14.8) could not confound the result:
+
+| prompt | gen | `silu_pinned` calls | SiLU argument range | in clip band | `< -88.0` | softmax `exp` args | softmax low guard |
+|---|---|---|---|---|---|---|---|
+| `Once upon a time` | 16 | 1,751,040 | [-25.979437, 49.15266] | **0** | **0** | 102,600 | **0** |
+| `The quick brown fox jumps over the lazy dog` | 16 | 2,211,840 | [-26.987856, 49.108852] | **0** | **0** | 162,000 | **0** |
+| `1234567890 + 9876543210 =` | 16 | 3,502,080 | [-22.085716, 49.034283] | **0** | **0** | 400,140 | **0** |
+| `def f(x): return x * 2` | 16 | 2,304,000 | [-23.441261, 48.924583] | **0** | **0** | 175,500 | **0** |
+| `Once upon a time` | 64 | 6,174,720 | [-31.406876, 49.15266] | **0** | **0** | 1,230,120 | **0** |
+| `A` | 32 | 2,949,120 | [-28.012724, 49.148216] | **0** | **0** | 285,120 | **0** |
+
+**18,892,800** SiLU calls and **2,355,480** softmax `exp_pinned` arguments,
+**none** in the clip band and none below `-88.0`. The most negative SiLU
+argument seen anywhere is `-31.406876`, still ~57 units short of the band's
+upper edge at `-88.0000076` — and it appears in the longest run, which is the
+direction the range would drift if length were the driver. The first row
+reproduces the single-prompt census above exactly, which is the control.
+
+That is six prompts on one model: it establishes that the pinned digests of
+§13.1 are not affected by the clip, and it does **not** establish that no
+model or input reaches it. The disposition above stands on the normative
+argument, not on this measurement.
 
 **The low guard is harmless, and the sweep proves it.** §6.2 step 3 returns
 `0.0` for `x < -88.0`. `exp(-88) = 6.05e-39`, which is below
@@ -385,10 +409,11 @@ to 9 of 26.
   break every published digest.
 - **Not a proof that the clip band is never entered.** It is unreachable
   through softmax by construction, and reachable in principle through SiLU
-  (§1). The §13.1 reference decode has now been instrumented and enters it
-  **0** times out of 1,751,040 SiLU calls, with an argument range that stops
-  62 units short of the band — but that is one model on one prompt. No claim
-  is made that a different model, prompt, or length cannot reach it.
+  (§1). The instrumented decode enters it **0** times out of 18,892,800 SiLU
+  calls across six prompt/length configurations (§1), with the most negative
+  argument seen anywhere stopping ~57 units short of the band — but that is
+  one model, six ASCII prompts, and at most 64 generated tokens. No claim is
+  made that a different model, prompt, or length cannot reach it.
 - **Not a claim about `silu_pinned` composition.** Two ULP is measured on the
   function in isolation, not on its accumulation through an FFN.
 
@@ -406,6 +431,7 @@ to 9 of 26.
 | Invocation | `cargo run --release --example exp_ln_exhaustive` |
 | Raw log | `~/e27-explnx.log` |
 | Reach census | `cargo run --release --offline --features census --example silu_reach -- ../weights`, same host and toolchain, `cis2-verify/examples/silu_reach.rs`; the instrumented build reproduced `witness-digest d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df` and `argmax-digest 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff` unchanged |
+| Reach census, six inputs (E30) | same `silu_reach` build, same host and toolchain, over `scripts/e30_prompts.txt` via `scripts/e30_prompt_sweep.sh`; raw log `~/e30-sweep.log`; each configuration's instrumented run reproduced that configuration's `witness-digest`/`argmax-digest` unchanged, and the `Once upon a time`/16 row reproduced the single-prompt values above exactly |
 | Oracle | host glibc f64 `exp`/`ln`, narrowed to f32, then §1.3-flushed on bits |
 | Arguments enumerated | 4,294,967,296 per function (asserted `checked == 2^32`) |
 | Cross-machine replication | The same release binary (sha256 `d436ba3e2588f8e612610b5225ad2e6a67eb6312ac2e559d804a4d8790f12fd3`) was copied to `cm-box2` (Celeron, 2 cores, **no AVX2**, Debian 13, glibc 2.41-12+deb13u3 — the same glibc as `penguin`, so the same f64 oracle) and re-run. The resulting log is **byte-identical** to `~/e27-explnx.log`: all 137 lines, every `max|ulp|`, every witness bit pattern, `checked=4294967296`. Raw log `~/e27-explnx-box2.log`. This rules out microarchitectural divergence (AVX2 vs scalar dispatch); it does **not** test a second compiler or a second libm, since the binary and the glibc are the same. |
