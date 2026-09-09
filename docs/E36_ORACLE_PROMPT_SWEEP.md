@@ -144,8 +144,14 @@ upward to 3.406e-05.
 **Does not establish.** Everything else in E28 §5 still stands unchanged, and
 E36 adds two limits of its own:
 
-- **Still one model.** All six cells are SmolLM2-135M. E28's Qwen-0.5B cell is
-  not re-run here, so "six cells" means six inputs, not six architectures.
+- **Still one model — CLOSED by E37.** All six cells here are SmolLM2-135M, so
+  "six cells" meant six inputs, not six architectures. `E37_QWEN_ORACLE_SWEEP.md`
+  reruns the identical six cells on Qwen2.5-0.5B (64,260 further tensors):
+  E28's Qwen `rel_l2` of 9.923e-05 *survives* as the six-cell maximum — so a
+  single-prompt figure is not reliably an underestimate, only unknown — while
+  its `rel_rms` is exceeded (2.883e-03, 1.07x). E37 also finds a third instance
+  of the same defect, this time in the published spec: §14.6's "0.73-1.18x" and
+  "4.07x / 3.22x" are per-prompt values (erratum E-9).
 - **Still not exhaustive.** Six prompts is more than one; it is not all
   prompts. The sweep is now cheap to extend — the script takes cells as
   `gen|prompt` lines — so the honest framing is that no cell tried so far
