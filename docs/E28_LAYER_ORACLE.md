@@ -93,6 +93,11 @@ intermediate rather than of the receipt.
 | logits `rel_l2` | ≤ 1.756e-5 | ≤ 5.320e-5 |
 | `embed` agreement | **exactly 0** | **exactly 0** |
 
+The two bolded worst-case figures are the maxima **over this run's single
+prompt**, not over the model. E36 (`E36_ORACLE_PROMPT_SWEEP.md`) reruns the
+SmolLM2 comparison over six prompts and finds 3.406e-05, 1.53x the 2.228e-5
+here. See §5.
+
 13,452 tensors, worst case 9.9e-5. `embed` is bit-identical on both, which is
 the sanity check that the two sides are reading the same weights in the same
 layout — a real mismatch there would be the first thing to show.
@@ -194,6 +199,17 @@ exclude is now excluded on the evidence, for these two models on this prompt.
 - **Not exhaustive over inputs.** One prompt, 19 positions, two models. A
   compensating pair that only appears at a context length or an activation
   pattern outside this run is not excluded.
+  **Widened by E36** (`E36_ORACLE_PROMPT_SWEEP.md`): the same comparison over
+  E30's six cells covers 80,565 tensors across six prompts and context lengths
+  19-67, all `TOKEN CHECK PASS`, 0 shape mismatches, and the cancellation
+  accounting of §3 holds in every one of the 180 (cell, layer) rows
+  (`max resid_l2 / (own_l2 x cancellation) = 0.848`, i.e. below 1 everywhere).
+  Two corrections follow. **The 2.228e-05 below is this cell's worst case, not
+  the verifier's:** cell 2 of E36 reaches 3.406e-05 at `p0.L11.attn_out`, 1.53x
+  higher, so the figure on this page must not be quoted as a bound. And the
+  context-length half of this bullet is closed by a controlled pair -- the same
+  prompt at 19 and at 67 positions has an *identical* worst case. The
+  "two models" half is not closed: E36 is SmolLM2 only.
 - **Not a check of §3.** The Qwen run supplies its prompt token ids from
   outside §3 — §14.8 / erratum E-3 — so it attests to §4–§11 only.
 - **Not a claim that the oracle is right.** `transformers` is an independent
