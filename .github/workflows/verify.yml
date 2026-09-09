@@ -13,6 +13,9 @@ env:
   EXPECTED_TABLE: 23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
   EXPECTED_INVFREQ: da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
   WEIGHTS_SHA256: 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+  # docs/CIS2_SPEC_v0.3b.md §13.5, docs/E29_OPTIMIZER_INVARIANCE.md — sha256 of
+  # the concatenated per-layer activation dump of the §13.1 reference decode.
+  EXPECTED_DUMP: 5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64
 
 jobs:
   # --- reference: src/, the Rust reference implementation the spec was
@@ -351,3 +354,88 @@ jobs:
           [ "$table" = "$EXPECTED_TABLE" ] || { echo "MISMATCH: table digest"; fail=1; }
           [ "$invfreq" = "$EXPECTED_INVFREQ" ] || { echo "MISMATCH: inv_freq_table digest"; fail=1; }
           exit $fail
+
+  # --- intermediates: §13.5 / E29 at CI granularity. Every other job here
+  # compares digests of the *output*. This one compares all 51,750,154 bytes
+  # of every intermediate activation — 7,467 tensors — against a pinned
+  # digest, on both ISAs and on real silicon rather than under emulation.
+  # A reassociation that the optimizer performed on one target and not the
+  # other would move these bytes long before it moved a logit enough to
+  # change a token (E29 §5: one flipped weight bit moved 570 tensors and
+  # zero argmax decisions).
+  intermediates:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+            rustflags: ""
+          - os: ubuntu-24.04
+            arch_label: x86_64
+            rustflags: "-C target-cpu=native"
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+            rustflags: ""
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+            rustflags: "-C target-cpu=native"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: uname (assert matches expected arch)
+        run: |
+          U=$(uname -m)
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
+          else
+            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+          fi
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Build layer_dump (release${{ matrix.rustflags && ', ' }}${{ matrix.rustflags }})
+        working-directory: cis2-verify
+        env:
+          RUSTFLAGS: ${{ matrix.rustflags }}
+        run: cargo build --release -j2 --features layerdump --example layer_dump
+
+      # Records what the compiler actually emitted, so a green run says which
+      # code generation the identity survived rather than only that it did.
+      - name: Report emitted vector width and assert zero FMA
+        run: |
+          set -euo pipefail
+          B=cis2-verify/target/release/examples/layer_dump
+          objdump -d "$B" > /tmp/disasm_ld.txt
+          echo "binary sha256: $(sha256sum "$B" | cut -d' ' -f1)"
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            echo "%ymm instructions: $(grep -c '%ymm' /tmp/disasm_ld.txt || true)"
+          else
+            echo "NEON vector instructions: $(grep -cE 'v[0-9]+\.(4s|2d|8h|16b)' /tmp/disasm_ld.txt || true)"
+          fi
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_ld.txt; then
+            echo "FMA-family instruction found in disassembly - spec 1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Dump every intermediate and compare against the pinned digest
+        run: |
+          set -euo pipefail
+          ./cis2-verify/target/release/examples/layer_dump \
+            weights /tmp/layers.bin "Once upon a time" 16 | tee /tmp/ld_out.txt
+          got=$(sha256sum /tmp/layers.bin | cut -d' ' -f1)
+          echo "dump: got=$got expected=$EXPECTED_DUMP"
+          [ "$got" = "$EXPECTED_DUMP" ] || { echo "MISMATCH: intermediate activation dump"; exit 1; }
+          witness=$(grep -oP '(?<=^LAYERDUMP witness-digest )[0-9a-f]+' /tmp/ld_out.txt | head -1 || true)
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
+          echo "PASS: intermediates (${{ matrix.arch_label }}${{ matrix.rustflags && ' ' }}${{ matrix.rustflags }}) - all 7,467 tensors bit-identical"
