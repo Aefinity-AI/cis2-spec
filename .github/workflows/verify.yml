@@ -201,6 +201,13 @@ jobs:
         with:
           toolchain: "1.98.0"
 
+      # src/unicode.rs is a generated file. Checking that it is still exactly
+      # what the generator produces is what makes "generated from the UCD" a
+      # verifiable statement rather than a comment. Needs only Python.
+      - name: Generated Unicode tables are current
+        working-directory: cis2-verify
+        run: python3 tools/gen_unicode.py
+
       # Runs before the 500 MB fetch on purpose: the unit tests and the
       # committed 2.8 kB fixture in tests/fixtures/tiny cover the whole
       # pipeline without any download, so an arithmetic or receipt-format
