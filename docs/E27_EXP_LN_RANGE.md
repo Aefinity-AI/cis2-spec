@@ -85,6 +85,31 @@ more faithful to `exp` and would move every published digest. E27 pins the
 current behaviour with op-level goldens at both edges (`0x42B00000`,
 `0x42B00001`, `0x42B17217`).
 
+**Measured: the §13.1 reference decode does not enter the band.** "Not
+structurally excluded" is not the same as "happens", and the difference is
+measurable, so it was measured. `cis2-verify/src/model.rs` and
+`cis2-verify/src/ops.rs` carry a read-only census behind the existing
+`census` cfg feature (`ops::census::note_silu`,
+`ops::census::note_softmax_exp_arg`); the default build is unchanged and the
+instrumented run reproduces the pinned `witness-digest` and `argmax-digest`
+exactly, which is the check that it only reads. Over the full §13.1 decode of
+SmolLM2-135M (`"Once upon a time"`, 16 generated tokens):
+
+| | |
+|---|---|
+| `silu_pinned` calls | 1,751,040 |
+| argument range | [-25.979437, 49.15266] = [`0xC1CFD5E3`, `0x42449C53`] |
+| arguments in the clip band [-88.7228317, -88.0000076] | **0** |
+| arguments `< -88.0` at all | **0** |
+| softmax `exp_pinned` arguments | 102,600 |
+| softmax arguments hitting the low guard (`< -88.0`) | **0** |
+
+The observed SiLU range stops 62 units short of the band on the left, so this
+model on this prompt is nowhere near it. That is one model and one prompt: it
+establishes that the pinned digests of §13.1 are not affected by the clip, and
+it does **not** establish that no model reaches it. The disposition above
+stands on the normative argument, not on this measurement.
+
 **The low guard is harmless, and the sweep proves it.** §6.2 step 3 returns
 `0.0` for `x < -88.0`. `exp(-88) = 6.05e-39`, which is below
 `f32::MIN_POSITIVE = 1.175e-38`, so every value the low guard destroys sits
@@ -256,6 +281,11 @@ directions:
 - `SILU_GOLDENS` (10): worst-error arguments, the `silu(x) == x` region, and
   both sides of the §6.2 clip discontinuity.
 
+`cis2-verify/examples/silu_reach.rs` (`--features census`) re-runs the
+reachability census on demand. It is an example, not a test: it needs the §0
+artifacts, so CI cannot run it, and it asserts nothing beyond printing the
+counts and the two digests.
+
 **The goldens must be structural, not coefficient-level, to be worth
 anything.** §6.6's `table_digest` already binds every published coefficient
 into `CIS2_REF`, so a wrong *coefficient* is already caught. What a digest
@@ -354,10 +384,11 @@ to 9 of 26.
   widens the guard to `ln(f32::MAX)` would be more faithful to `exp` and would
   break every published digest.
 - **Not a proof that the clip band is never entered.** It is unreachable
-  through softmax and reachable in principle through SiLU (§1). No decode of
-  either §0 model has been instrumented to check whether an FFN intermediate
-  ever lands in `[-88.7228317, -88.0000076]`; that measurement has not been
-  made and is not claimed here.
+  through softmax by construction, and reachable in principle through SiLU
+  (§1). The §13.1 reference decode has now been instrumented and enters it
+  **0** times out of 1,751,040 SiLU calls, with an argument range that stops
+  62 units short of the band — but that is one model on one prompt. No claim
+  is made that a different model, prompt, or length cannot reach it.
 - **Not a claim about `silu_pinned` composition.** Two ULP is measured on the
   function in isolation, not on its accumulation through an FFN.
 
@@ -374,6 +405,7 @@ to 9 of 26.
 | Sweep program | `cis2-verify/examples/exp_ln_exhaustive.rs` (571 lines, sha256 `1bb87ab29166b665784f0e92250784299d5469d32dc6f1657bde3752b9019229`) |
 | Invocation | `cargo run --release --example exp_ln_exhaustive` |
 | Raw log | `~/e27-explnx.log` |
+| Reach census | `cargo run --release --offline --features census --example silu_reach -- ../weights`, same host and toolchain, `cis2-verify/examples/silu_reach.rs`; the instrumented build reproduced `witness-digest d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df` and `argmax-digest 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff` unchanged |
 | Oracle | host glibc f64 `exp`/`ln`, narrowed to f32, then §1.3-flushed on bits |
 | Arguments enumerated | 4,294,967,296 per function (asserted `checked == 2^32`) |
 | Independent cross-checks | clip-band count and endpoints re-derived by binary search in Python; the 53,824,898-ULP silu figure and both `0x83354D..` values re-derived in Python; the 2^32 accounting summed by hand |

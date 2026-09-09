@@ -1351,9 +1351,15 @@ finite and representable. §10's softmax cannot reach this band --- it
 evaluates `exp_pinned(v - max_v)` with `max_v` the maximum over the same
 vector, so its argument is always `≤ 0` --- but §6.4's SiLU can: an FFN
 intermediate `x ∈ [-88.7228317, -88.0000076]` makes `exp_pinned(-x)` land
-inside it. This clip is **normative and MUST be reproduced**; a clean-room
-implementation that returns the finite value will not reproduce the pinned
-digests.
+inside it. A read-only census of the §13.1 reference decode (SmolLM2-135M,
+`"Once upon a time"`, 16 generated tokens) records **0** of its 1,751,040
+`silu_pinned` arguments in that band, with an observed argument range of
+[-25.979437, 49.15266], and **0** of its 102,600 softmax `exp_pinned`
+arguments below `-88.0`; the instrumented build reproduces the §13.1 pinned
+digests exactly. So §13.1's digests do not depend on the clip. That is one
+model and one prompt and does not establish unreachability in general. This
+clip is **normative and MUST be reproduced**; a clean-room implementation
+that returns the finite value will not reproduce the pinned digests.
 
 (b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value *this* guard
 destroys is subnormal and would be flushed by §1.3 in any case; the measured

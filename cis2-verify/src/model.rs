@@ -214,6 +214,9 @@ impl<'a> Model<'a> {
             let up = matvec(layer.up, &ln2, cfg.intermediate_size, h);
             let mut hid = vec![0.0f32; cfg.intermediate_size];
             for i in 0..cfg.intermediate_size {
+                // 14.1 reach census. Reads only; compiled out without the feature.
+                #[cfg(feature = "census")]
+                crate::ops::census::note_silu(gate[i]);
                 hid[i] = silu_pinned(gate[i]) * up[i];
             }
             let down = matvec(layer.down, &hid, h, cfg.intermediate_size);
