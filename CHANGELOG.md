@@ -138,6 +138,51 @@ sections 4-11 and nothing of section 3). A future version wanting a second
 normative tuple must generalize sections 3.1.3/3.1.4 from a pinned literal to a
 small enumerated set.
 
+### E-4 (2026-09-09) --- section 14.1 cautioned about the cold function, and did not know section 6.2's high guard is wrong
+
+**What v0.3b said.** Section 14.1: "`ln_pinned`'s validated domain is a finite,
+explicitly-tested set of `x` values (section 6.5), not a general accuracy
+proof. The two values that matter for this spec's models (`100_000.0`,
+`1_000_000.0`) are both tested to <=2e-6 relative tolerance against host
+`f64::ln` cast to f32 ... **PARTIALLY CLOSED**."
+
+**What is wrong with it.** Three things.
+
+1. The tolerance is two orders of magnitude loose. `ln_pinned` is **0 ULP** ---
+   bit-identical to the correctly-rounded f32 --- at both pinned thetas.
+2. It cautions about the wrong function. `ln_pinned` runs once per model load
+   (on `cfg.rope_theta`). `exp_pinned` runs twice per decode step: section 10's
+   softmax evaluates `exp_pinned(v - max_v)` for every attention score, and
+   section 6.4's SiLU calls `exp_pinned(-x)` for every FFN intermediate.
+   Section 14.1 said nothing about it.
+3. It did not know that section 6.2's high guard is wrong. Step 2 returns
+   `+Infinity` for `x > 88.0`, but `ln(f32::MAX) = 88.7228390520684`. Exactly
+   **94,743** f32 arguments in `[0x42B00001, 0x42B17217]` = [88.0000076,
+   88.7228317] are clipped to infinity although their true `exp` is finite and
+   exactly representable.
+
+**What was measured.** `exp_pinned`, `ln_pinned` and `silu_pinned` were each
+evaluated at all 2^32 f32 bit patterns under the section 1.3 pinned
+environment against an f64 accuracy oracle. Outside section 6.2's two guard
+bands, all 3,257,925,634 comparable `exp_pinned` arguments and all
+2,130,706,432 positive-normal `ln_pinned` arguments are within **one ULP**;
+both functions are exactly monotone over the whole finite domain;
+`silu_pinned` is within **two ULP** off the clip band. Evidence and method:
+`docs/E27_EXP_LN_RANGE.md`.
+
+**What changes.** Nothing normative. **Section 6.2's clip stays as written and
+is now stated to be normative**: no conforming decode reaches the affected
+band (section 10's softmax argument is always `<= 0`), and widening the guard
+would move every pinned digest for no reachable benefit. Section 14.1 is
+rewritten to state the exhaustive result, to record the clip and the
+`silu_pinned` discontinuity at `x = -88` as deliberate divergences that MUST
+be reproduced, and to record that section 1.3's DAZ makes `ln_pinned` return
+`-Infinity` for all 16,777,214 subnormal inputs. Section 6.5's carried-forward
+"no equivalent sweep has been run" caution and section 6.7's accuracy table
+are corrected to match. 48 op-level goldens with two structural mutation
+controls now enforce the behaviour in CI
+(`cis2-verify/src/mathpin.rs`, `mod exp_ln_range`).
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section

@@ -71,11 +71,14 @@ so a conforming implementation cannot drive it end-to-end at all — work on it
 is confined to §4–§11 with the prompt token ids supplied from outside §3. It does **not**
 claim:
 
-- General correctness of the pinned transcendental polynomials (`exp`,
-  `ln`) outside the input ranges actually exercised by the decodes checked
-  so far (§14.1 new-in-v0.2 for `ln_pinned`'s domain). `sin` and `cos` are
-  the exception: §14.4 (erratum E-2) now records an exhaustive accuracy
-  measurement over every f32 argument below `2^31`.
+- Correct rounding of the pinned transcendental polynomials. Accuracy
+  itself is no longer a gap: §14.1 (erratum E-4) records an exhaustive
+  measurement of `exp`, `ln` and `silu` over **every** f32 bit pattern, and
+  §14.4 (erratum E-2) the same for `sin` and `cos` over every f32 argument
+  below `2^31`. What is not claimed is that any of them is *correctly
+  rounded*, and §14.1(a) records one deliberate, normative divergence from
+  mathematical `exp`: §6.2's `x > 88.0` guard clips 94,743 arguments whose
+  true `exp` is finite and representable.
 - Cross-framework agreement (vs. PyTorch/`transformers`) as a conformance
   requirement — oracle comparisons (§13.3, `docs/E15b_m1p5_CORRECTNESS.md`,
   `docs/E15d_bc_RESULT.md`) are evidence of correctness, not a conformance
@@ -839,13 +842,16 @@ values that matter for this spec's actual pinned models are
 `rope_theta = 100_000.0` (SmolLM2-135M, §13's pinned test vector) and
 `rope_theta = 1_000_000.0` (Qwen2.5-0.5B, §0's informative second-model
 evidence, `docs/E15d_bc_RESULT.md`); **both are conformant** under this
-tolerance. This spec does **not** claim `ln_pinned` is correctly rounded or
-bit-exact against any oracle for arbitrary `x` outside the tested set above
-— a clean-room implementer targeting a `rope_theta` not in that set should
-not assume accuracy without its own validation (carried-forward caution;
-the corresponding caution for `sin`/`cos` was v0.1 §14.4, and has since been
-discharged by exhaustive measurement -- see §14.4 erratum E-2. No equivalent
-sweep has been run for `ln_pinned`, so this caution stands).
+tolerance. This spec does **not** claim `ln_pinned` is correctly rounded.
+It is, however, no longer restricted to the tested set above: `ln_pinned`
+has since been evaluated at **every** f32 bit pattern and is within one ULP
+of the f64 value narrowed to f32 at all 2,130,706,432 positive normals, and
+**0 ULP** — not merely within 2e-6 — at both pinned `rope_theta` values. See
+§14.1 erratum E-4 and `docs/E27_EXP_LN_RANGE.md`; the corresponding caution
+for `sin`/`cos` was v0.1 §14.4 and was discharged the same way (erratum
+E-2). A clean-room implementer targeting an arbitrary `rope_theta` should
+still note that §6.5 returns `-Infinity` for every subnormal input under
+§1.3's DAZ.
 
 #### 6.5.1 `frexp_exact(x)` — exact mantissa/exponent split
 
@@ -904,8 +910,9 @@ not change); `sin_pinned`/`cos_pinned` are re-measured below, over the full
 | function | domain measured | max ULP vs. correctly-rounded fp32 | max relative error |
 |---|---|---|---|
 | `rsqrt_cr` | all finite x>0 | 0 (correctly rounded by construction) | 0 |
-| `exp_pinned` | x∈[-40,40] | 1 | 1.19e-7 |
-| `ln_pinned` | x = rope_theta only | 0 at the two pinned values (100000.0, 1000000.0); ≤1 over a padded scan | 0 / 7.85e-8 |
+| `exp_pinned` | **all 2^32 f32** (E27) | **1** | **1.19e-7** (= 2^-23) |
+| `ln_pinned` | **all 2^32 f32** (E27) | **1** over all positive normals; **0** at both pinned thetas | **1.19e-7** / 0 at both thetas |
+| `silu_pinned` | **all 2^32 f32** (E27) | **2** off §6.2's clip band | **2.33e-7** |
 | `sin_pinned` (v0.3, Taylor, informative/superseded) | RoPE angle, pos ∈ [0, 8192) | up to 2813.5 raw (486.5 filtered) | 2.37e-4 |
 | `sin_pinned` (v0.3b, minimax, NORMATIVE) | same | **≤1.5** | **1.2e-7** |
 | `cos_pinned` (v0.3, Taylor, informative/superseded) | same | up to 407 raw (144.5 filtered) | 3.14e-5 |
@@ -1322,18 +1329,58 @@ same check (`docs/E15d_a_COMPILER_INVARIANCE.md`) targeted the old
 Renumbered from v0.1's §14; items resolved by v0.2 are marked **CLOSED**
 and kept for history, per §16's changelog discipline.
 
-14.1. **`ln_pinned`'s validated domain is a finite, explicitly-tested set
-of `x` values (§6.5), not a general accuracy proof.** The two values that
-matter for this spec's models (`100_000.0`, `1_000_000.0`) are both
-tested to ≤2e-6 relative tolerance against host `f64::ln` cast to f32; a
-`rope_theta` far outside the tested range (e.g. `< 0.001` or a value
-requiring `frexp_exact`'s domain guard to reject NaN/negative inputs) is
-unvalidated by this document. This is the direct successor to v0.1's
-"§14.1: rope_theta=100000.0-only" gap — **PARTIALLY CLOSED**: the
-literal-only restriction is gone, but "pinned for exactly one theta" has
-been replaced by "validated for a finite tested set of thetas," which is
-weaker than "proven general" but strictly broader than v0.1's single-value
-pin.
+14.1. **`exp_pinned` and `ln_pinned` accuracy is measured exhaustively, at
+every f32.** §6.2's `exp_pinned`, §6.5's `ln_pinned` and §6.4's `silu_pinned`
+have each been evaluated at *all 2^32 f32 bit patterns* under the §1.3 pinned
+environment against an f64 accuracy oracle. Outside §6.2's two guard bands,
+every one of the 3,257,925,634 comparable `exp_pinned` arguments and all
+2,130,706,432 positive-normal `ln_pinned` arguments are within **one ULP** of
+the f64 value narrowed to f32, with no degradation across the argument range.
+Both functions are exactly monotone over the whole finite domain.
+`ln_pinned` is **0 ULP** at both pinned `rope_theta` values (`100_000.0`,
+`1_000_000.0`), superseding the "≤2e-6 relative tolerance" figure quoted in
+§6.5 and in v0.3b's §14.1. `silu_pinned` is within **two ULP** everywhere it
+is not sitting on §6.2's clip band.
+
+Two deliberate divergences from mathematical `exp`, both pinned:
+
+(a) §6.2 step 2 clips at `x > 88.0`, but `ln(f32::MAX) = 88.7228390520684`.
+Exactly **94,743** arguments in `[0x42B00001, 0x42B17217]` =
+[88.0000076, 88.7228317] therefore return `+Infinity` where the true value is
+finite and representable. No conforming decode reaches them: §10's softmax
+evaluates `exp_pinned(v - max_v)` with `max_v` the maximum over the same
+vector, so the argument is always `≤ 0`. This clip is **normative and MUST be
+reproduced**; a clean-room implementation that returns the finite value will
+not reproduce the pinned digests.
+
+(b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value this destroys is
+subnormal and would be flushed by §1.3 in any case; the measured count of
+arguments where the guard returned zero and the oracle was nonzero is **0**.
+Its one visible consequence is a discontinuity in §6.4:
+`silu_pinned(-88.0)` is `0x83354DDC` (≈ -5.328e-37) while
+`silu_pinned(-88.0000076)` is `-0.0`.
+
+Under §1.3's DAZ, `ln_pinned` returns `-Infinity` for all 16,777,214
+subnormal inputs of both signs, because §6.5's `x == 0.0` guard is an SSE
+compare and DAZ makes a subnormal operand compare equal to zero. That is
+§1.3 acting on §6.5's guard, not a property of the polynomial;
+`frexp_exact` (§6.5.1) is bit manipulation and is unaffected.
+
+Tier-1 op-level goldens pinning all of this -- 48 `(input_bits,
+output_bits)` pairs, with two structural mutation controls -- are in
+`cis2-verify/src/mathpin.rs`, `mod exp_ln_range`.
+
+**ERRATUM E-4 (2026-09-09).** Through v0.3b as published, this clause read
+"`ln_pinned`'s validated domain is a finite, explicitly-tested set of `x`
+values (§6.5), not a general accuracy proof ... **PARTIALLY CLOSED**". That
+was accurate about what had been measured and wrong in three ways about what
+is true: the stated tolerance was two orders of magnitude looser than the
+truth; the clause cautioned about `ln_pinned`, which runs once per model
+load, while saying nothing about `exp_pinned`, which runs twice per decode
+step (§10 softmax and §6.4 SiLU); and it did not know that §6.2's high guard
+clips below the representable range. §6.2, §6.4 and §6.5 are unchanged; only
+this limitations note was. See CHANGELOG.md, "Errata against v0.3b", and
+docs/E27_EXP_LN_RANGE.md.
 
 14.2. **Digest byte encoding for artifact hashes: CLOSED.** v0.1 fed the
 64-character hex **string's** ASCII bytes into the witness hash, not the

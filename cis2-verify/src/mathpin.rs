@@ -340,6 +340,246 @@ mod op_level_goldens {
 }
 
 #[cfg(test)]
+mod exp_ln_range {
+    //! Spec 14.1 said `ln_pinned`'s "validated domain is a finite,
+    //! explicitly-tested set of `x` values (§6.5), not a general accuracy
+    //! proof", and §0's non-claims list said nothing was claimed for `exp` or
+    //! `ln` outside the input ranges the checked decodes happen to exercise.
+    //! E27 settled both exhaustively -- all 2^32 f32 bit patterns for
+    //! `exp_pinned`, `ln_pinned` and `silu_pinned`, against an f64 accuracy
+    //! oracle under the §1.3 pinned environment. Outside §6.2's two guard
+    //! bands every one of the 3,257,925,634 comparable `exp` arguments and
+    //! all 2,130,706,432 positive-normal `ln` arguments land within **one
+    //! ULP** of the f64 value narrowed to f32, both functions are exactly
+    //! monotone over the whole finite domain, and `silu_pinned` (§6.4) is
+    //! within two ULP everywhere it is not sitting on §6.2's clip.
+    //!
+    //! An exhaustive sweep is a measurement and cannot live in `cargo test`
+    //! (see `examples/exp_ln_exhaustive.rs`). What lives here is what a
+    //! conformance suite needs: bit goldens at the arguments that sweep found
+    //! worst and at every boundary of §6.2's and §6.5's guard logic, so a
+    //! reimplementation that regresses there fails loudly instead of quietly.
+    //!
+    //! Every operand is routed through `black_box` in both directions, per
+    //! the house rule (CONTRIBUTING §3): `exp_pinned(f32::from_bits(K))` on a
+    //! literal K is exactly the shape LLVM is entitled to fold, and a folded
+    //! constant reports the compiler's arithmetic, not the pinned runtime
+    //! FPU's.
+    use super::*;
+    use crate::fpenv;
+    use core::hint::black_box;
+
+    /// `(x, exp_pinned(x))` as bits. The first block is where E27's sweep
+    /// recorded its worst error; the second is every boundary §6.2's guard
+    /// logic has, including the two arguments either side of the `x > 88.0`
+    /// clip and the two either side of the `x < -88.0` flush.
+    const EXP_GOLDENS: &[(u32, u32)] = &[
+        (0x3380_0000, 0x3F80_0000), // 5.9604645e-8  worst |ulp|, all finite x
+        (0xB420_0001, 0x3F7F_FFFE), // -1.4901163e-7 worst |ulp|, softmax half
+        (0x42AE_AD6A, 0x7E80_46AE), // 87.3387       worst |abs| (1 ulp at 1e38)
+        (0x3F00_0005, 0x3FD3_0950), // 0.5000003
+        (0x3F80_0006, 0x402D_F85C), // 1.0000007
+        (0xC280_0003, 0x114B_4D72), // -64.00002
+        (0x3F80_0000, 0x402D_F854), // 1.0  -> e
+        (0xBF80_0000, 0x3EBC_5AB2), // -1.0 -> 1/e
+        // Spread across §6.2's reduction index `k`, so a reduction that is
+        // right near zero and wrong far from it cannot pass. These span
+        // k = +-7, +-14, +-29, +-58, +-115.
+        (0x40A0_0000, 0x4314_69C5), // 5.0
+        (0xC0A0_0000, 0x3BDC_C9FF), // -5.0
+        (0x4120_0000, 0x46AC_14EE), // 10.0
+        (0xC120_0000, 0x383E_6BCE), // -10.0
+        (0x41A0_0000, 0x4DE7_5844), // 20.0
+        (0xC1A0_0000, 0x310D_A433), // -20.0
+        (0x4220_0000, 0x5C51_106A), // 40.0
+        (0xC220_0000, 0x229C_BC92), // -40.0
+        (0x42A0_0000, 0x792A_BBCE), // 80.0
+        (0xC2A0_0000, 0x05BF_ECBA), // -80.0
+        // Guard boundaries, exact.
+        (0x0000_0000, 0x3F80_0000), // +0.0 -> 1.0 exactly: §7.1's inv_freq[0]
+        (0x8000_0000, 0x3F80_0000), // -0.0 -> 1.0 exactly: the one §7.1 calls
+        (0x0000_0001, 0x3F80_0000), // min subnormal: §1.3 DAZ makes it +0.0
+        (0x42B0_0000, 0x7EF8_82B7), // 88.0        last argument the poly sees
+        (0x42B0_0001, 0x7F80_0000), // 88.0000076  first clipped to +Inf
+        (0x42B1_7217, 0x7F80_0000), // 88.722832   last x whose true exp is finite
+        (0xC2B0_0000, 0x0000_0000), // -88.0       poly result underflows to 0
+        (0xC2B0_0001, 0x0000_0000), // -88.0000076 first flushed by the guard
+    ];
+
+    /// `(x, ln_pinned(x))` as bits.
+    const LN_GOLDENS: &[(u32, u32)] = &[
+        (0x0080_0186, 0xC2AE_AC4A), // 1.175549e-38  worst |ulp| and |abs|
+        (0x3F00_0841, 0xBF31_6196), // 0.50012594    worst inside the zero band
+        (0x47C3_5000, 0x4138_34F1), // 100000.0   §0 model 1's rope_theta
+        (0x4974_2400, 0x415D_0C55), // 1000000.0  §0 model 2's rope_theta
+        (0x3F80_0000, 0x0000_0000), // 1.0 -> +0.0 exactly
+        (0x4000_0000, 0x3F31_7218), // 2.0 -> ln 2
+        (0x0080_0000, 0xC2AE_AC50), // min normal
+        (0x7F7F_FFFF, 0x42B1_7218), // f32::MAX -> 88.72284, one ulp above the
+        // largest argument whose exp is finite: the two guards are consistent
+        // to within a rounding at the top of the range.
+        // Guard domain, exact.
+        (0x0000_0000, 0xFF80_0000), // +0.0 -> -Inf
+        (0x8000_0000, 0xFF80_0000), // -0.0 -> -Inf (it takes the `== 0` branch)
+        (0x0000_0001, 0xFF80_0000), // min subnormal -> -Inf, via §1.3's DAZ
+        (0xBF80_0000, 0x7FC0_0000), // -1.0 -> NaN
+    ];
+
+    /// `(x, silu_pinned(x))` as bits. §6.4 is what actually consumes
+    /// `exp_pinned`'s positive half, and a bound on `exp` is not by itself a
+    /// bound on `x / (1 + exp(-x))`.
+    const SILU_GOLDENS: &[(u32, u32)] = &[
+        (0x3F00_0002, 0x3E9F_5981), // 0.5000001
+        (0x3F80_0000, 0x3F3B_26A8), // 1.0
+        (0xBF80_0000, 0xBE89_B2B1), // -1.0
+        (0x4185_1592, 0x4185_1592), // 16.635532  worst |abs|; denom rounds to 1
+        (0x4280_0000, 0x4280_0000), // 64.0       silu(x) == x exactly from here
+        (0xC280_0000, 0x944B_4EA3), // -64.0
+        (0xC2B0_0000, 0x8335_4DDC), // -88.0        last argument the poly sees
+        (0xC2B0_0001, 0x8000_0000), // -88.0000076  §6.2's clip makes this -0.0
+        (0x0000_0000, 0x0000_0000), // +0.0
+        (0x8000_0000, 0x8000_0000), // -0.0
+    ];
+
+    fn at(f: fn(f32) -> f32, bits: u32) -> u32 {
+        let x = black_box(f32::from_bits(black_box(bits)));
+        black_box(f(x)).to_bits()
+    }
+
+    /// §6.2, §6.5 and §6.4 pinned at the arguments E27 found hardest and at
+    /// every guard boundary the three functions have.
+    #[test]
+    fn exp_ln_silu_goldens_hold_across_the_whole_f32_domain() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        for &(x, want) in EXP_GOLDENS {
+            assert_eq!(at(exp_pinned, x), want, "exp_pinned at 0x{x:08X}");
+        }
+        for &(x, want) in LN_GOLDENS {
+            assert_eq!(at(ln_pinned, x), want, "ln_pinned at 0x{x:08X}");
+        }
+        for &(x, want) in SILU_GOLDENS {
+            assert_eq!(at(silu_pinned, x), want, "silu_pinned at 0x{x:08X}");
+        }
+    }
+
+    /// The two exactness facts the rest of the specification quietly leans on.
+    /// §7.1 builds `inv_freq[i] = exp_pinned(-((2i/head_dim) * ln_pinned(theta)))`,
+    /// so `inv_freq[0] = exp_pinned(-0.0)`. E26's argument that "the largest
+    /// RoPE angle a decode evaluates is its sequence length" holds only if
+    /// that is exactly 1.0 and not one ULP below it.
+    #[test]
+    fn exp_of_signed_zero_is_exactly_one_and_ln_of_one_is_exactly_zero() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        assert_eq!(at(exp_pinned, 0x8000_0000), 0x3F80_0000, "7.1 needs inv_freq[0] == 1.0");
+        assert_eq!(at(exp_pinned, 0x0000_0000), 0x3F80_0000);
+        assert_eq!(at(ln_pinned, 0x3F80_0000), 0x0000_0000, "6.5 must return +0.0, not -0.0");
+    }
+
+    /// Mutation control. A golden table is only worth having if it would
+    /// actually fail on a wrong implementation, so this re-evaluates §6.2
+    /// with the one substitution §6.2's two-part `ln 2` split exists to
+    /// prevent -- a single-constant range reduction, `r = x - k*ln2` with
+    /// `ln2` as one f32 -- and requires the goldens to disagree. This is the
+    /// mutation §6.6's table digest cannot see: the coefficients are
+    /// untouched, so `CIS2_REF` would not move, and only an op-level golden
+    /// catches it. Without this test the table above could be vacuous and
+    /// nothing would say so. Measured at E27: the mutation moves 9 of the 26
+    /// `exp` goldens, and the bar is set at that number so a later edit that
+    /// thins the table out fails here rather than silently.
+    fn exp_with_single_constant_reduction(x: f32) -> f32 {
+        if x.is_nan() {
+            return x;
+        }
+        if x > 88.0 {
+            return f32::INFINITY;
+        }
+        if x < -88.0 {
+            return 0.0;
+        }
+        let t = black_box(x) * f(EXP_LOG2E);
+        let k = floor_f32(t + 0.5);
+        // The mutation: one rounded `ln 2` instead of §6.2's EXP_C1/EXP_C2 pair.
+        let ln2 = f(EXP_C1) + f(EXP_C2);
+        let r = x - k * ln2;
+        let r2 = r * r;
+        let mut poly = f(EXP_P[0]);
+        for i in 1..=5 {
+            poly = poly * r + f(EXP_P[i]);
+        }
+        let m1 = poly * r2;
+        let poly2 = m1 + r;
+        ldexp_exact(poly2 + 1.0, k as i32)
+    }
+
+    #[test]
+    fn a_single_constant_range_reduction_is_caught_by_the_goldens() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        let caught = EXP_GOLDENS
+            .iter()
+            .filter(|&&(x, want)| {
+                let m = black_box(exp_with_single_constant_reduction(black_box(
+                    f32::from_bits(x),
+                )));
+                m.to_bits() != want
+            })
+            .count();
+        assert!(
+            caught >= 9,
+            "the one-constant reduction moved only {caught} of the {} exp goldens; \
+             the table is too weak to be worth having",
+            EXP_GOLDENS.len()
+        );
+    }
+
+    /// The same control for §6.5. The mutation is the one an implementer
+    /// reaching for a textbook `log` writes: drop the `m < LOG_SQRTHF`
+    /// fix-up, which is what keeps the reduced mantissa in
+    /// `[sqrt(0.5)-1, sqrt(2)-1]` rather than `[-0.5, 0]`. The coefficients
+    /// are again untouched, so §6.6's table digest cannot see it. Measured at
+    /// E27: it moves 5 of the 12 `ln` goldens -- 5 of the 8 that are not
+    /// guard-domain entries, which the mutation does not reach.
+    fn ln_without_the_mantissa_fixup(x: f32) -> f32 {
+        if x.is_nan() || x < 0.0 {
+            return f32::NAN;
+        }
+        if x == 0.0 {
+            return f32::NEG_INFINITY;
+        }
+        let (mut m, e) = frexp_exact(black_box(x));
+        m -= 1.0; // the mutation: no `if m < LOG_SQRTHF` branch
+        let z = m * m;
+        let mut poly = f(LOG_P[0]);
+        for i in 1..=8 {
+            poly = poly * m + f(LOG_P[i]);
+        }
+        let mut y = poly * m;
+        y = y * z;
+        let fe = e as f32;
+        y = y + fe * f(LOG_Q1);
+        y = y - 0.5 * z;
+        m + y + fe * f(LOG_Q2)
+    }
+
+    #[test]
+    fn a_missing_mantissa_fixup_is_caught_by_the_ln_goldens() {
+        fpenv::pin_and_selftest().expect("1.3 pin");
+        let caught = LN_GOLDENS
+            .iter()
+            .filter(|&&(x, want)| {
+                let m = black_box(ln_without_the_mantissa_fixup(black_box(f32::from_bits(x))));
+                m.to_bits() != want
+            })
+            .count();
+        assert!(
+            caught >= 5,
+            "dropping the mantissa fix-up moved only {caught} of the {} ln goldens; \
+             the table is too weak to be worth having",
+            LN_GOLDENS.len()
+        );
+    }
+}
+
+#[cfg(test)]
 mod large_angle {
     //! Spec 14.4 said the trig polynomials were "only validated for
     //! `|x| ≲ 14`" and warned an implementer targeting a longer sequence not
