@@ -17,6 +17,7 @@
 
 extern crate alloc;
 
+pub mod check;
 pub mod config;
 pub mod fpenv;
 pub mod hex;

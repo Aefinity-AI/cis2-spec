@@ -76,16 +76,28 @@ Each is a hard error with a section citation, and each is a candidate erratum:
 ## Reproducing
 
 ```
-cargo test --release          # 34 tests
+cargo test --release          # 68 tests (55 lib, 7 tokenizer fixture, 6 end-to-end)
 cargo build --release
 tools/check_no_fma.sh
 ./target/release/cis2-verify selftest
 ./target/release/cis2-verify run ../weights -o receipt.txt
 ./target/release/cis2-verify verify ../weights receipt.txt
+./target/release/cis2-verify check receipt.txt          # no weights needed
 ```
 
 `selftest` needs no weights: it pins the floating-point environment, self-tests FTZ/DAZ against
 denormal inputs, and reproduces §6.6's `table_digest` from the pinned polynomials alone.
+
+`check` needs no weights either, and is the tier to reach for when the question is "is this receipt
+worth replaying". It audits canonical form and every field recomputable without the 270 MB
+checkpoint: §6.6's table from nothing at all, §7.2's `inv_freq` table from `config.json`, §3.3's
+prompt token ids from `tokenizer.json`, and — when the receipt names the three artifact hashes §2.1
+pins together with §3.2's prompt and §3.4's length — every remaining field, because §13.1 already
+fixes them. It then prints the **residual**: the fields it did not establish, and therefore what a
+subsequent `verify` would still buy. A skip is printed as loudly as a failure, so a receipt that
+passes with five fields skipped is visibly not the same as one that passes with none. What `check`
+can never establish, at any tier, is that the logits behind `witness-digest` came from running the
+model; only `verify` does that.
 
 No timing figures are published from this crate's runs on the development machine, which is a
 virtualized container (see the project's Rule A).
