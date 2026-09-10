@@ -133,6 +133,15 @@ pub mod census {
     // weaker than no denormal ever arose" -- and this counter is what closes
     // it. The arg range says how far a real decode lands from the window.
     static SOFTMAX_SUBNORM_BAND: AtomicU64 = AtomicU64::new(0);
+    // E39: the counters that measure where 1.3's FTZ is ACTUALLY decisive in
+    // 10's softmax --- the elementwise division, not the exp. `exp_pinned`
+    // cannot return a subnormal (ldexp_exact returns 0.0 whenever the
+    // reconstructed exponent field would be <= 0), so no FTZ decision is ever
+    // taken on its result. The quotient `exp / denom` can be subnormal.
+    static WEIGHT_N: AtomicU64 = AtomicU64::new(0);
+    static WEIGHT_TRUE_SUBNORM: AtomicU64 = AtomicU64::new(0);
+    static WEIGHT_FTZ_DECISIVE: AtomicU64 = AtomicU64::new(0);
+    static WEIGHT_MIN_NONZERO: AtomicI64 = AtomicI64::new(i64::MAX);
     static SOFTMAX_MIN: AtomicI64 = AtomicI64::new(i64::MAX);
     static SOFTMAX_MAX: AtomicI64 = AtomicI64::new(i64::MIN);
 
@@ -199,11 +208,56 @@ pub mod census {
         )
     }
 
+    /// One softmax weight, at the elementwise division of 10's final step.
+    /// `num` is `exp_pinned(v - max_v)`, `denom` the 5.1 sum. The exact
+    /// quotient is formed in f64 --- both operands widen exactly --- so the
+    /// census can see the value the f32 division *would* have produced before
+    /// 1.3's FTZ had a say.
+    ///
+    /// E39: this is the place 1.3 can be decisive in 10, and neither E35 nor
+    /// E38 counted it. They counted `exp_pinned` arguments whose *true* exp is
+    /// subnormal, which is a different thing: `exp_pinned` itself returns
+    /// either 0.0 or a NORMAL f32, never a subnormal, because `ldexp_exact`
+    /// returns 0.0 whenever the reconstructed exponent field would be <= 0.
+    pub fn note_softmax_weight(num: f32, denom: f32) {
+        WEIGHT_N.fetch_add(1, Relaxed);
+        let q = (num as f64) / (denom as f64);
+        let a = q.abs();
+        if q != 0.0 && a < f32::MIN_POSITIVE as f64 {
+            WEIGHT_TRUE_SUBNORM.fetch_add(1, Relaxed);
+            // Below half the smallest subnormal the f32 rounding is +0.0 with
+            // or without FTZ, so FTZ decides nothing. At or above it, the
+            // rounded value IS a nonzero subnormal and FTZ changes the bits.
+            const HALF_MIN_SUBNORM: f64 = 7.006492321624085e-46;
+            if a >= HALF_MIN_SUBNORM {
+                WEIGHT_FTZ_DECISIVE.fetch_add(1, Relaxed);
+            }
+        }
+        if q != 0.0 {
+            WEIGHT_MIN_NONZERO.fetch_min(a.to_bits() as i64, Relaxed);
+        }
+    }
+
+    /// `(weights, true_subnormal_quotients, ftz_decisive, min_nonzero_|q|)`.
+    /// `ftz_decisive > 0` is the only measurement that establishes 1.3 is
+    /// digest-relevant to 10 on this vector.
+    pub fn weight_counts() -> (u64, u64, u64, f64) {
+        (
+            WEIGHT_N.load(Relaxed),
+            WEIGHT_TRUE_SUBNORM.load(Relaxed),
+            WEIGHT_FTZ_DECISIVE.load(Relaxed),
+            {
+                let m = WEIGHT_MIN_NONZERO.load(Relaxed);
+                if m == i64::MAX { f64::NAN } else { f64::from_bits(m as u64) }
+            },
+        )
+    }
+
     /// `(calls, hit_low_guard, in_subnormal_band, min_arg, max_arg)` for 10's
-    /// softmax `exp_pinned`. `in_subnormal_band > 0` means this decode
-    /// produced a subnormal that FTZ flushed, so 1.3 is digest-relevant on
-    /// this vector; `== 0` with a `min_arg` far above -87.34 means it is not,
-    /// and now says so by measurement rather than by absence of a counter.
+    /// softmax `exp_pinned`. NOTE (E39): `in_subnormal_band` counts arguments
+    /// whose *true* exp is subnormal. It does NOT mean a subnormal was
+    /// computed and flushed --- `exp_pinned` never returns one. Use
+    /// `weight_counts` for the FTZ question.
     pub fn softmax_counts() -> (u64, u64, u64, f32, f32) {
         (
             SOFTMAX_N.load(Relaxed),
@@ -360,6 +414,8 @@ pub fn softmax_seq(scores: &mut [f32]) {
     }
     let denom = sum_seq(scores);
     for v in scores.iter_mut() {
+        #[cfg(feature = "census")]
+        census::note_softmax_weight(*v, denom);
         *v = *v / denom;
     }
 }

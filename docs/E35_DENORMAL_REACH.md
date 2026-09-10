@@ -16,8 +16,21 @@ Qwen2.5-0.5B, `"Once upon a time"`, 256 generated tokens, softmax argument reach
 prompts on this one checkpoint*, not of the models — §6 below said as much
 ("a checkpoint with a much wider logit spread would need re-measuring; the instrument now
 exists to do that in one run"), and that is precisely what happened. What E38 then found
-is that the denormal does **not** move the digest, so §1.3 still has no end-to-end
+is that the digest does **not** move, so §1.3 still has no end-to-end
 necessity witness — see E38 §4 and E22's updated M01 row.
+
+**FURTHER CORRECTION 2026-09-09 (erratum E-12).** This document's framing of
+`[-88.0, -87.33654)` as "the window where §1.3's FTZ/DAZ pin is digest-relevant"
+— the premise of its title and of the paragraph above — is **wrong**.
+`exp_pinned` ends in `ldexp_exact`, which returns exactly `+0.0` whenever the
+reconstructed exponent field would be `<= 0`, so it never returns a subnormal
+(verified over all 2^32 arguments) and §1.3 takes no decision on its output. The
+band is FTZ-*independent*. E35's zero counts are correct as measured and its
+reach numbers stand; what they measure is arguments whose *true* `exp` is
+subnormal, not denormals computed and flushed. The operation §1.3 can act on is
+§10's division — never counted before
+[E39](E39_FTZ_IS_NOT_WHERE_WE_SAID.md), which measures 0 FTZ-decisive quotients
+in 22,626,240 on the same cell.
 
 ## 1. What E22 left open, and why the existing counter could not close it
 

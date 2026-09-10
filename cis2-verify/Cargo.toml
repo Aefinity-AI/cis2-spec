@@ -56,6 +56,21 @@ opt-level = 2
 # tools/check_no_fma.sh.
 
 [[example]]
+name = "e39_band"
+path = "examples/e39_band.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e39_ctrl"
+path = "examples/e39_ctrl.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e39_exhaustive"
+path = "examples/e39_exhaustive.rs"
+required-features = ["census"]
+
+[[example]]
 name = "layer_dump"
 path = "examples/layer_dump.rs"
 required-features = ["layerdump"]

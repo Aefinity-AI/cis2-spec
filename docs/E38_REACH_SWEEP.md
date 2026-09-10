@@ -3,8 +3,19 @@
 **Status: complete. Result: two of §14.1(a)'s three scope limits close cleanly,
 and the third does not — it turns out to have been holding up a false negative.
 A 256-token Qwen2.5-0.5B decode puts real softmax arguments below §6.2's low
-guard and inside the FTZ-dependent subnormal band that E35 declared "not
-constructible".**
+guard and inside the subnormal band that E35 declared "not constructible".**
+
+**CORRECTION 2026-09-09 (erratum E-12).** This document calls that band
+"FTZ-dependent" and says the values in it are subnormals "that §1.3's FTZ
+flushes to zero" (§3.2, §4, §4.1). That mechanism is wrong. `exp_pinned` ends in
+`ldexp_exact`, which returns exactly `+0.0` whenever the reconstructed exponent
+field would be `<= 0`, so it can return `+0.0` or a normal f32 and **never a
+subnormal** — verified over all 2^32 arguments. The band counts arguments whose
+*true* `exp` is subnormal; §1.3 takes no decision on it. Every **measurement**
+below stands — the reach, the counts of 2, and M01's byte-identical digests —
+and so does the conclusion that §1.3 has no end-to-end necessity witness. What
+is withdrawn is "a denormal *did* arise" in §4: through §6.2, none did. See
+[E39](E39_FTZ_IS_NOT_WHERE_WE_SAID.md).
 
 Twenty cells across both §0 models, ten prompts each — Japanese, Cyrillic,
 Arabic, astral-plane emoji, accented Latin, mathematical symbols, two
@@ -74,8 +85,10 @@ and a 4x longer decode move that figure by 0.77.
 | **E38 Qwen, `"Once upon a time"`/256** | **22,626,240** | **-88.369385** | **2** | **2** |
 
 Two arguments fall past §6.2's low guard, and two more land in the band between
-`-88.0` and `ln(f32::MIN_POSITIVE)` where §6.2 *computes* rather than clamps and
-the result is a subnormal that §1.3's FTZ flushes to zero.
+`-88.0` and `ln(f32::MIN_POSITIVE)` where §6.2 *computes* rather than clamps.
+(This section originally added "and the result is a subnormal that §1.3's FTZ
+flushes to zero" — withdrawn by erratum E-12; `ldexp_exact` returns `+0.0`
+there and §1.3 is not consulted.)
 
 ### 3.3 It is a trend with decode length, not a freak cell
 
@@ -135,13 +148,24 @@ pinned   argmax  5991edc7b6176aeb4197d36da484c3ebdcd1ac3a435695d0bd6c12dd586b502
 M01      argmax  5991edc7b6176aeb4197d36da484c3ebdcd1ac3a435695d0bd6c12dd586b502e
 ```
 
-Bit-identical. **E22's two possibilities are now separated by measurement: a
-denormal *did* arise — twice — and it *did not* change the result.** That is
-strictly more than E22 could say, and it is the weaker of the two outcomes for
-§1.3: this decode is a witness that the band is reachable, not that the pin is
-necessary.
+Bit-identical.
+
+**This paragraph originally read: "E22's two possibilities are now separated by
+measurement: a denormal *did* arise — twice — and it *did not* change the
+result." That is withdrawn by erratum E-12.** No denormal arose through §6.2;
+`ldexp_exact` returns `+0.0` in that band. The digests above are real and the
+mutant was proven live, but they do not separate E22's two possibilities — E39
+does, at §10's division, and finds that on this vector no denormal arose there
+either. The surviving conclusion is unchanged and is the weaker of the two
+outcomes for §1.3: this decode is a witness that the band is reachable, not that
+the pin is necessary.
 
 ### 4.1 Why that is unsurprising, stated as a mechanism rather than a hope
+
+**(Erratum E-12: the premise of this section — that a subnormal numerator
+reaches the division — does not occur. `exp_pinned` returns `+0.0` in the band.
+The reasoning below is sound about what *would* happen and is retained for that;
+E39 §5 replaces it with a direct measurement of the quotients themselves.)**
 
 §10 subtracts the row maximum before exponentiating, so `exp(0) = 1` is always
 one of the terms and the denominator is always `>= 1`. A numerator in the

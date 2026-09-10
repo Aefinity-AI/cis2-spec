@@ -218,3 +218,21 @@ mod tests {
         }
     }
 }
+
+/// E39 measurement probe. Runs `f` with FTZ/DAZ temporarily cleared and
+/// restores the register after, so a caller can tell a *removed* guard from a
+/// guard whose effect FTZ hides. This is how E39 established that the
+/// `[-88.0, -87.33654)` band is FTZ-independent: every point in it reads
+/// `0x00000000` both pinned and unpinned.
+///
+/// Gated behind `census`: a conforming build (spec 1.3) must not contain a
+/// helper that clears the pin, and never does.
+#[cfg(feature = "census")]
+#[doc(hidden)]
+pub fn probe_unpinned<T>(f: impl FnOnce() -> T) -> T {
+    let cur = arch::read_control();
+    arch::write_control(cur & !arch::REQUIRED);
+    let r = f();
+    arch::write_control(cur);
+    r
+}
