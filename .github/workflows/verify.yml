@@ -325,6 +325,51 @@ jobs:
           fi
           echo "negative control: PASS (doctored receipt rejected)"
 
+      - name: Two receipts, no artifacts - the compare tier
+        run: |
+          set -euo pipefail
+          B="$GITHUB_WORKSPACE/cis2-verify/target/release/cis2-verify"
+          mkdir -p /tmp/cmp && cd /tmp/cmp
+          cp /tmp/cv_receipt.txt a.txt
+
+          # A receipt compared with itself: every field agrees, exit 0.
+          cp a.txt b_same.txt
+          "$B" compare a.txt b_same.txt | tee /tmp/cmp_same.txt
+          grep -qx 'CIS2-VERIFY COMPARE verdict=IDENTICAL' /tmp/cmp_same.txt \
+            || { echo "a receipt did not compare equal to itself"; exit 1; }
+
+          # Same inputs, one output nibble moved: at most one of these can
+          # be conforming, and compare must say so and exit 1 - with no
+          # weights, config or tokenizer anywhere on this path.
+          sed -E 's/^(witness-digest [0-9a-f]{63})0$/\11/; t; s/^(witness-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            a.txt > b_contra.txt
+          cmp -s a.txt b_contra.txt && { echo "mutation was a no-op"; exit 1; }
+          if "$B" compare a.txt b_contra.txt > /tmp/cmp_contra.txt; then
+            cat /tmp/cmp_contra.txt
+            echo "two receipts contradicting each other exited 0 - the tier is not binding"
+            exit 1
+          fi
+          grep -qx 'CIS2-VERIFY COMPARE verdict=CONTRADICTION' /tmp/cmp_contra.txt \
+            || { cat /tmp/cmp_contra.txt; echo "wrong verdict"; exit 1; }
+
+          # Different weights, same full-logit witness: the copied-header
+          # signature. Must be flagged, and must still offer the innocent
+          # reading rather than only the accusation.
+          sed -E 's/^(weights-sha256 [0-9a-f]{63})0$/\11/; t; s/^(weights-sha256 [0-9a-f]{63})[1-9a-f]$/\10/' \
+            a.txt > b_forged.txt
+          cmp -s a.txt b_forged.txt && { echo "mutation was a no-op"; exit 1; }
+          if "$B" compare a.txt b_forged.txt > /tmp/cmp_forged.txt; then
+            cat /tmp/cmp_forged.txt
+            echo "a witness collision under differing weights exited 0"
+            exit 1
+          fi
+          grep -qx 'CIS2-VERIFY COMPARE verdict=WITNESS-COLLISION' /tmp/cmp_forged.txt \
+            || { cat /tmp/cmp_forged.txt; echo "wrong verdict"; exit 1; }
+          grep -q 'serialise the same tensors' /tmp/cmp_forged.txt \
+            || { echo "the finding accuses without offering the innocent reading"; exit 1; }
+
+          echo "compare tier: PASS (3 verdicts, no artifacts on the path)"
+
   # --- verify3: C clean-room, gcc and clang ---
   verify3:
     strategy:

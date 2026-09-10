@@ -17,9 +17,15 @@
 //!       field recomputable from nothing, from config.json, or from the
 //!       values spec 13.1 pins. Reports what it could not establish.
 //!
+//!   cis2-verify compare <receipt-a> <receipt-b>
+//!       Ask whether two receipts can both be conforming. Needs no
+//!       artifacts. Fails only on a state that demands an explanation:
+//!       same inputs with different outputs, or different weights with a
+//!       matching full-logit witness.
+//!
 //! The exit status is 0 only when everything asked for passed.
 
-use cis2_verify::{check, fpenv, hex, mathpin, receipt::Receipt, spec, verify};
+use cis2_verify::{check, compare, fpenv, hex, mathpin, receipt::Receipt, spec, verify};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -41,12 +47,14 @@ fn main() -> ExitCode {
         "run" => cmd_run(rest),
         "verify" => cmd_verify(rest),
         "check" => cmd_check(rest),
+        "compare" => cmd_compare(rest),
         _ => {
             eprintln!(
                 "usage:\n  cis2-verify selftest\n  cis2-verify run <artifact-dir> \
                  [--prompt TEXT] [--gen-toks N] [-o FILE]\n  cis2-verify verify \
                  <artifact-dir> <receipt-file>\n  cis2-verify check <receipt-file> \
-                 [--config FILE] [--tokenizer FILE]"
+                 [--config FILE] [--tokenizer FILE]\n  cis2-verify compare <receipt-a> \
+                 <receipt-b>"
             );
             false
         }
@@ -288,6 +296,55 @@ fn cmd_check(args: &[String]) -> bool {
     let ok = check::passed(&checks);
     println!("CIS2-VERIFY CHECK {}", if ok { "PASS" } else { "FAIL" });
     ok
+}
+
+/// The two-document tier. Needs no artifacts at all, so it runs wherever
+/// the receipts do --- including on the desk of the party who does not
+/// have, and will never be given, the other side's weights.
+fn cmd_compare(args: &[String]) -> bool {
+    if args.len() != 2 {
+        return fail("compare needs two receipt files");
+    }
+    let load = |path: &String| -> Result<Receipt, String> {
+        let text = std::fs::read_to_string(path)
+            .map_err(|e| format!("cannot read {path}: {e}"))?;
+        // Parse strictly, exactly as `check` does: a document that is not a
+        // canonical receipt is not a party to a comparison.
+        Receipt::parse(&text).map_err(|e| format!("{path}: {e}"))
+    };
+    let a = match load(&args[0]) {
+        Ok(r) => r,
+        Err(e) => return fail(&e),
+    };
+    let b = match load(&args[1]) {
+        Ok(r) => r,
+        Err(e) => return fail(&e),
+    };
+
+    let c = compare::compare(&a, &b);
+    println!("CIS2-VERIFY COMPARE a={} b={}", args[0], args[1]);
+    for f in &c.fields {
+        if f.same {
+            println!(
+                "CIS2-VERIFY COMPARE same {} {}: {}",
+                f.part.label(),
+                f.name,
+                f.a
+            );
+        } else {
+            println!("CIS2-VERIFY COMPARE DIFF {} {}:", f.part.label(), f.name);
+            println!("CIS2-VERIFY COMPARE   a: {}", f.a);
+            println!("CIS2-VERIFY COMPARE   b: {}", f.b);
+        }
+    }
+    println!("CIS2-VERIFY COMPARE verdict={}", c.verdict.label());
+    println!("CIS2-VERIFY COMPARE finding: {}", c.finding);
+    let bad = compare::is_contradiction(&c);
+    println!(
+        "CIS2-VERIFY COMPARE {}",
+        if bad { "FAIL" } else { "PASS" }
+    );
+    !bad
 }
 
 fn report(r: &Receipt) {
