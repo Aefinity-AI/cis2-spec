@@ -16,8 +16,22 @@ pub fn dot_seq(a: &[f32], b: &[f32]) -> f32 {
     let mut acc = 0.0f32;
     for i in 0..a.len() {
         let p = a[i] * b[i];
+        // E40 census. Compiled out entirely without the `census` feature, and
+        // evaluated beside the f32 arithmetic, never in it, so no stored value
+        // can depend on it.
+        #[cfg(feature = "census")]
+        {
+            if census::maybe_tiny_mul(a[i], b[i]) {
+                census::note_matvec(census::widen_exact(a[i]) * census::widen_exact(b[i]));
+            }
+            if census::maybe_tiny_add(acc, p) {
+                census::note_matvec(census::widen_exact(acc) + census::widen_exact(p));
+            }
+        }
         acc = acc + p;
     }
+    #[cfg(feature = "census")]
+    census::note_matvec_bulk(2 * a.len() as u64);
     acc
 }
 
@@ -52,6 +66,8 @@ pub fn rmsnorm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
     let mut sq = vec![0.0f32; n];
     for i in 0..n {
         sq[i] = x[i] * x[i];
+        #[cfg(feature = "census")]
+        census::note_rms(census::widen_exact(x[i]) * census::widen_exact(x[i]));
     }
     let ss = sum_seq(&sq);
     let mean = ss / (n as f32);
@@ -60,6 +76,11 @@ pub fn rmsnorm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
     for i in 0..n {
         let scaled = x[i] * inv;
         out[i] = scaled * weight[i];
+        #[cfg(feature = "census")]
+        {
+            census::note_rms(census::widen_exact(x[i]) * census::widen_exact(inv));
+            census::note_rms(census::widen_exact(scaled) * census::widen_exact(weight[i]));
+        }
         // 14.5 census. Compiled out entirely unless the `census` feature is
         // on, so no shipping build carries it and no digest can depend on it.
         #[cfg(feature = "census")]
@@ -142,6 +163,16 @@ pub mod census {
     static WEIGHT_TRUE_SUBNORM: AtomicU64 = AtomicU64::new(0);
     static WEIGHT_FTZ_DECISIVE: AtomicU64 = AtomicU64::new(0);
     static WEIGHT_MIN_NONZERO: AtomicI64 = AtomicI64::new(i64::MAX);
+    // E40: the same question at 5.2/5.3/8, which no counter has ever reached.
+    // MATVEC_* count intermediates of `dot_seq` (each product and each partial
+    // sum); RMS_* count 8's `x*x`, `x*inv` and `scaled*weight`. `*_DECISIVE`
+    // is the only one that means 1.3 changed the stored bits.
+    static MV_N: AtomicU64 = AtomicU64::new(0);
+    static MV_TRUE_SUBNORM: AtomicU64 = AtomicU64::new(0);
+    static MV_FTZ_DECISIVE: AtomicU64 = AtomicU64::new(0);
+    static RMS_N: AtomicU64 = AtomicU64::new(0);
+    static RMS_TRUE_SUBNORM: AtomicU64 = AtomicU64::new(0);
+    static RMS_FTZ_DECISIVE: AtomicU64 = AtomicU64::new(0);
     static SOFTMAX_MIN: AtomicI64 = AtomicI64::new(i64::MAX);
     static SOFTMAX_MAX: AtomicI64 = AtomicI64::new(i64::MIN);
 
@@ -221,7 +252,7 @@ pub mod census {
     /// returns 0.0 whenever the reconstructed exponent field would be <= 0.
     pub fn note_softmax_weight(num: f32, denom: f32) {
         WEIGHT_N.fetch_add(1, Relaxed);
-        let q = (num as f64) / (denom as f64);
+        let q = widen_exact(num) / widen_exact(denom);
         let a = q.abs();
         if q != 0.0 && a < f32::MIN_POSITIVE as f64 {
             WEIGHT_TRUE_SUBNORM.fetch_add(1, Relaxed);
@@ -236,6 +267,123 @@ pub mod census {
         if q != 0.0 {
             WEIGHT_MIN_NONZERO.fetch_min(a.to_bits() as i64, Relaxed);
         }
+    }
+
+    /// Below half the smallest subnormal an f32 result rounds to `+0.0` with
+    /// or without FTZ, so FTZ decides nothing there (erratum E-11's trap).
+    pub const HALF_MIN_SUBNORM: f64 = 7.006492321624085e-46;
+
+    /// Widen an f32 to f64 **without an SSE conversion**, by decoding the bit
+    /// pattern with integer arithmetic and rebuilding the value from a normal
+    /// double.
+    ///
+    /// E40: `x as f64` is `cvtss2sd`, and §1.3's DAZ makes it read a subnormal
+    /// operand as zero — so a census built on `as f64` is blind to exactly the
+    /// DAZ cases it exists to count. Its positive control caught this: an
+    /// RMSNorm case whose stored bits differ pinned vs unpinned was scored 0.
+    /// Every input here is an integer or a normal double, so no MXCSR bit can
+    /// act on it.
+    #[inline]
+    pub fn widen_exact(x: f32) -> f64 {
+        let b = x.to_bits();
+        let sign = if b >> 31 == 1 { -1.0f64 } else { 1.0f64 };
+        let exp = ((b >> 23) & 0xFF) as i32;
+        let mant = (b & 0x007F_FFFF) as u64;
+        if exp == 0 {
+            // Subnormal (or zero): value = mant * 2^-149.
+            sign * (mant as f64) * 1.401_298_464_324_817_1e-45
+        } else if exp == 0xFF {
+            if mant == 0 { sign * f64::INFINITY } else { f64::NAN }
+        } else {
+            // Normal: (2^23 + mant) * 2^(exp - 150).
+            sign * ((mant + (1 << 23)) as f64) * exp2i(exp - 150)
+        }
+    }
+
+    /// `2^n` for the exponent range an f32 can carry, built by integer bit
+    /// assembly so it needs no `powi` and no table.
+    #[inline]
+    fn exp2i(n: i32) -> f64 {
+        // f32's normal exponents run [-126, 127]; minus 150 puts n in
+        // [-149, -23]... [104], all comfortably normal for f64.
+        f64::from_bits((((n + 1023) as u64) & 0x7FF) << 52)
+    }
+
+    /// Classify one exact intermediate value. `exact` must be computed in f64
+    /// from f32 operands, which is exact in the range that matters here, and
+    /// is itself far from the f64 subnormal range so MXCSR cannot flush it.
+    #[inline]
+    fn note_exact(exact: f64, n: &AtomicU64, sub: &AtomicU64, dec: &AtomicU64) {
+        n.fetch_add(1, Relaxed);
+        let a = exact.abs();
+        if exact != 0.0 && a < f32::MIN_POSITIVE as f64 {
+            sub.fetch_add(1, Relaxed);
+            if a >= HALF_MIN_SUBNORM {
+                dec.fetch_add(1, Relaxed);
+            }
+        }
+    }
+
+    /// Integer pre-filter: could `a * b` be subnormal or below? Returns a
+    /// conservative superset — never false when the product is subnormal.
+    ///
+    /// The product is at least `2^(ea + eb - 254)`, so `ea + eb >= 129`
+    /// guarantees a magnitude of at least `2^-125`, comfortably normal. A zero
+    /// exponent field (a subnormal or zero operand) always passes, so DAZ
+    /// cases are never filtered out. This is integer arithmetic on the bit
+    /// patterns and cannot itself be perturbed by MXCSR.
+    #[inline]
+    pub fn maybe_tiny_mul(a: f32, b: f32) -> bool {
+        let ea = (a.to_bits() >> 23) & 0xFF;
+        let eb = (b.to_bits() >> 23) & 0xFF;
+        ea == 0 || eb == 0 || ea + eb <= 130
+    }
+
+    /// Integer pre-filter for `a + b`. `|a + b| <= 2 * max(|a|, |b|)`, so a
+    /// subnormal sum requires the larger operand below `2^-125` — exponent
+    /// field at most 2. The margin is generous on purpose.
+    #[inline]
+    pub fn maybe_tiny_add(a: f32, b: f32) -> bool {
+        let ea = (a.to_bits() >> 23) & 0xFF;
+        let eb = (b.to_bits() >> 23) & 0xFF;
+        let m = if ea > eb { ea } else { eb };
+        m <= 4
+    }
+
+    /// Add `k` to the 5.1 intermediate total without classifying each one.
+    /// The classification is done only for intermediates the integer filter
+    /// admits, so the per-element cost of the census is two integer compares.
+    #[inline]
+    pub fn note_matvec_bulk(k: u64) {
+        MV_N.fetch_add(k, Relaxed);
+    }
+
+    /// One 5.1 intermediate: a product or a partial sum inside `dot_seq`.
+    #[inline]
+    pub fn note_matvec(exact: f64) {
+        let a = exact.abs();
+        if exact != 0.0 && a < f32::MIN_POSITIVE as f64 {
+            MV_TRUE_SUBNORM.fetch_add(1, Relaxed);
+            if a >= HALF_MIN_SUBNORM {
+                MV_FTZ_DECISIVE.fetch_add(1, Relaxed);
+            }
+        }
+    }
+
+    /// One 8 RMSNorm intermediate.
+    #[inline]
+    pub fn note_rms(exact: f64) {
+        note_exact(exact, &RMS_N, &RMS_TRUE_SUBNORM, &RMS_FTZ_DECISIVE);
+    }
+
+    /// `(intermediates, true_subnormal, ftz_decisive)` for 5.1 reductions.
+    pub fn matvec_counts() -> (u64, u64, u64) {
+        (MV_N.load(Relaxed), MV_TRUE_SUBNORM.load(Relaxed), MV_FTZ_DECISIVE.load(Relaxed))
+    }
+
+    /// `(intermediates, true_subnormal, ftz_decisive)` for 8 RMSNorm.
+    pub fn rms_counts() -> (u64, u64, u64) {
+        (RMS_N.load(Relaxed), RMS_TRUE_SUBNORM.load(Relaxed), RMS_FTZ_DECISIVE.load(Relaxed))
     }
 
     /// `(weights, true_subnormal_quotients, ftz_decisive, min_nonzero_|q|)`.
@@ -304,6 +452,67 @@ pub mod census {
     mod tests {
         use super::SUBNORM_TOP;
         use crate::mathpin::exp_pinned;
+
+        /// E40: the census must widen its operands without an SSE conversion.
+        /// `x as f64` is `cvtss2sd`, and 1.3's DAZ reads a subnormal operand
+        /// as zero, so a census built on it is blind to exactly the DAZ cases
+        /// it exists to count --- which is how E39's counter shipped able to
+        /// score a genuine FTZ-decisive RMSNorm case as zero.
+        ///
+        /// The assertion is on `widen_exact` alone and holds with or without
+        /// the pin in the harness thread, so it is a property of the decoder
+        /// rather than of the environment the test happens to run in.
+        #[test]
+        fn widen_exact_sees_subnormals_that_daz_would_hide() {
+            // Smallest subnormal: 1 * 2^-149.
+            let tiny = f32::from_bits(0x0000_0001);
+            let w = super::widen_exact(tiny);
+            assert!(w > 0.0, "widen_exact flattened the smallest subnormal");
+            assert!(
+                (w - 1.401_298_464_324_817_1e-45).abs() < 1e-60,
+                "widen_exact({tiny:e}) = {w:e}"
+            );
+            // A mid subnormal, and its sign.
+            let mid = f32::from_bits(0x0040_0000);
+            assert!((super::widen_exact(mid) - 5.877_471_754_111_438e-39).abs() < 1e-54);
+            assert!(super::widen_exact(-mid) < 0.0);
+            // Normals, zeros and the boundary must widen exactly as `as f64`
+            // does --- the two agree everywhere except on subnormal operands.
+            for b in [0x0000_0000u32, 0x8000_0000, 0x0080_0000, 0x3F80_0000, 0xC2AE_AC4F] {
+                let x = f32::from_bits(b);
+                assert_eq!(
+                    super::widen_exact(x).to_bits(),
+                    (x as f64).to_bits(),
+                    "widen_exact disagrees with `as f64` on the normal {b:#010x}"
+                );
+            }
+        }
+
+        /// The integer pre-filters must be conservative supersets: anything
+        /// they reject is provably not subnormal, so a filtered intermediate
+        /// can never be a missed FTZ-decisive one.
+        #[test]
+        fn tiny_filters_never_reject_a_subnormal_result() {
+            // Products that ARE subnormal must be admitted.
+            for (a, b) in [
+                (f32::MIN_POSITIVE, 1.0e-2f32),
+                (f32::MIN_POSITIVE, 1.0e-7f32),
+                (f32::from_bits(0x0000_0001), 1.0f32),
+                (1.0e-30f32, 1.0e-10f32),
+            ] {
+                assert!(super::maybe_tiny_mul(a, b), "filter rejected {a:e} * {b:e}");
+            }
+            // Sums that ARE subnormal must be admitted.
+            for (a, b) in [
+                (f32::MIN_POSITIVE, -f32::from_bits(0x007F_FFFF)),
+                (f32::from_bits(0x0000_0002), f32::from_bits(0x0000_0001)),
+            ] {
+                assert!(super::maybe_tiny_add(a, b), "filter rejected {a:e} + {b:e}");
+            }
+            // And the filter must actually filter, or it buys nothing.
+            assert!(!super::maybe_tiny_mul(1.0, 1.0));
+            assert!(!super::maybe_tiny_add(1.0, -1.0));
+        }
 
         /// The band's edge is pinned against `exp_pinned` itself, not against
         /// `libm`, because `exp_pinned` is what the digest runs. The assertion
