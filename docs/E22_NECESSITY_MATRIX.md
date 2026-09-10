@@ -79,6 +79,18 @@ M01's null is now *explained*: there was nothing for §1.3 to flush. That is the
 about this vector and a narrower one about §1.3, which is **untriggered here, not unnecessary** —
 a third of a binade more spread in one attention row would trigger it. §1.3 therefore still has **no
 end-to-end necessity witness**.
+
+**WIDENED 2026-09-09 by [E40](E40_MATVEC_RMSNORM_REACH.md) (erratum E-13).** E39's explanation
+covered §10 alone. E40 classifies every §5.1 product and partial sum, every §8 RMSNorm intermediate
+and every §10 softmax weight of both §0 checkpoints — **562,531,070,920** intermediates, **0**
+subnormal, **0** FTZ-decisive — after first scanning every §2.5 weight operand the decode reads
+(**628,547,776**, **0** subnormal), since DAZ acts on inputs. For the operations no counter reaches
+(§11 residual adds, §7 RoPE, §9.2 score scaling, §10 max-subtraction, §6.2/§6.3 polynomial
+internals) it runs the §14.6 layer dump twice, once with FTZ and DAZ cleared for the whole decode:
+**byte-identical** over all **7,467** named intermediate tensors of the normative vector, with **0**
+stored subnormals and **0** exact zeros in 38,775,808 f32 values. M01's null is therefore explained
+for the *whole decode*, not one operation. The necessity statement is unchanged: still untriggered
+rather than unnecessary, nearest approach still 1.32, still **no end-to-end necessity witness**.
 E38 also found that the FTZ half of §1.3's own self-test could not fail (erratum E-11).
 This row stays **SAME**; what changes is that it is no longer *unexercised*, and that its null is
 now attributed to the right cause.
@@ -191,13 +203,18 @@ Item 1 is therefore **closed positively** for *reach into the band*, and the M01
 (above) is what it buys. **Erratum E-12 narrows this:** reaching the band is not reaching a denormal
 — `ldexp_exact` returns `+0.0` there — so item 1's real question, whether a denormal ever arises,
 was still open after E38. E39 answers it for the §10 route on this vector: **no**, 0 of 22,626,240
-weights, nearest miss a factor of 1.32. It remains open for §8 matvec and §7 rmsnorm intermediates,
-which no counter reaches.
+weights, nearest miss a factor of 1.32. **E40 closes the remainder:** §5.1 reductions and §8 RMSNorm
+are now counted (562,531,070,920 intermediates, 0 subnormal over both checkpoints), the §2.5 weights
+are scanned (628,547,776 operands, 0 subnormal), and the operations no counter reaches are covered by
+a pinned-vs-unpinned §14.6 layer dump that is byte-identical over all 7,467 named intermediate
+tensors. **Item 1 is answered: no, on these two vectors, nowhere in the decode** — with the limits
+E40 §6 states (two vectors, one machine, one ISA, and a differential that sees tensor boundaries
+rather than individual operations).
 §1.3
 stays covered at op level, where `fpenv`'s `clearing_the_pin_changes_the_answers` already shows that
 clearing the pin moves every FTZ case and no inert one. The `exp` route is what E35 measures; a
-denormal arising in a matvec product or an rmsnorm intermediate remains covered only by M01's
-weaker "no denormal *changed a result*".
+denormal arising in a matvec product or an rmsnorm intermediate was covered only by M01's
+weaker "no denormal *changed a result*" until E40 counted both directly.
 
 All three are additive Tier-1 op-level goldens of the kind §15 already contemplates, so they extend
 the suite rather than break the frozen `CIS2_REF`.

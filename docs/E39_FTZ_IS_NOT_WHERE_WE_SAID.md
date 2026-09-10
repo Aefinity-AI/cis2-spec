@@ -240,10 +240,16 @@ The port was verified rather than assumed:
 1. **One vector, one model, one prompt.** §5 measures Qwen2.5-0.5B at 256
    tokens. §5.1's factor of 1.32 is the reason not to generalise from it.
 2. **§10 only.** `note_softmax_weight` counts the softmax division. Subnormals
-   arising inside §8 matvec accumulation, §7 RMSNorm, or §5.1 summation are
-   still uncounted by any experiment in this repository. §1.3 could be
-   digest-relevant at one of those and no counter would see it. E22 item 1 is
-   narrowed, not closed.
+   arising inside §5.1 reductions or §8 RMSNorm are still uncounted by any
+   experiment in this repository. §1.3 could be digest-relevant at one of those
+   and no counter would see it. E22 item 1 is narrowed, not closed.
+
+   > **CLOSED 2026-09-09 by E40.** Both are now counted, over both §0
+   > checkpoints: 562,531,070,920 intermediates, 0 subnormal and 0 FTZ-decisive,
+   > on top of 628,547,776 weight operands also all normal. The operations no
+   > counter reaches are covered by a pinned-vs-unpinned §14.6 layer dump that is
+   > byte-identical over all 7,467 named intermediate tensors of the normative
+   > vector. See docs/E40_MATVEC_RMSNORM_REACH.md and erratum E-13.
 3. **The SiLU route cannot produce subnormals either.** §6.4 evaluates
    `exp_pinned(-x)` and divides `x / (1 + e)` with a denominator `>= 1`; the
    numerator is the activation itself, so a subnormal quotient requires a
@@ -256,6 +262,20 @@ The port was verified rather than assumed:
    the f32 division *would have stored*, not an approximation of it. It is
    evaluated outside the f32 division, so the census cannot itself perturb the
    result — and the unchanged digests confirm it did not.
+
+   > **CORRECTION 2026-09-09 (E40 §3).** "Both f32 operands widen exactly" is
+   > true here but was implemented in a way that is **not** true in general. The
+   > widening was `x as f64`, which compiles to `cvtss2sd` — an SSE conversion —
+   > and §1.3's DAZ reads a **subnormal operand as zero**, so a census built on
+   > `as f64` is blind to exactly the DAZ cases it exists to count. It did not
+   > affect this measurement, because this call site's operands are an
+   > `exp_pinned` output (never subnormal, per §5.2 above) over a denominator of
+   > at least 1, so no subnormal operand was ever presented. Verified both ways:
+   > re-measuring with the corrected `census::widen_exact` reproduces
+   > `6.96465140988929e-25` at gen=16 and `1.5562307486661955e-38` at gen=256
+   > exactly. The defect was found by E40's positive control, before any E40
+   > number was published, and is fixed at all five hook sites. See
+   > docs/E40_MATVEC_RMSNORM_REACH.md §3.
 5. **`FTZ-DECISIVE` is a lower bound on §1.3's relevance, by construction.** It
    counts only quotients that FTZ would flush to a *different* stored value.
    DAZ — denormal *inputs* treated as zero — is not counted at all; on this

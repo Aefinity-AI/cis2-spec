@@ -619,6 +619,96 @@ through section 10 on this vector, which fully explains M01's null, and it is
 **untriggered, not unnecessary**. Section 14.1 carries this correction inline as
 **ERRATUM E-12**; the evidence is in `docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md`.
 
+### E-13 (2026-09-09) --- the rest of the decode counted: 562 billion intermediates, no subnormal anywhere, and a pinned-vs-unpinned layer dump that is byte-identical
+
+**What was left open.** E-12 closed one operation --- section 10's elementwise
+division --- and explicitly left section 5.1's reductions and section 8's
+RMSNorm intermediates uncounted by any experiment in this repository. E22 item 1
+("does a denormal ever arise in a real decode?") was therefore narrowed, not
+answered: the counters covered `exp_pinned`'s output and one division, and
+nothing else.
+
+**What is now measured.** Three things, in increasing order of how little they
+depend on a counter.
+
+1. **Inputs first.** Section 1.3's DAZ acts on *operands*, so a single
+   subnormal weight would mean DAZ acts on every product using it --- no decode
+   needed. Both checkpoints scanned as the decode sees them, after section 2.5
+   widening: **628,547,776** operands, **0** subnormal. Smallest nonzero
+   magnitudes `9.895302e-10` (SmolLM2) and `2.4883775e-9` (Qwen), both
+   comfortably normal.
+
+2. **Every intermediate, exactly.** Section 5.1's products and partial sums,
+   section 8's `x*x` / `x*inv` / `scaled*weight`, and section 10's weight
+   division, classified in exact f64 over both checkpoints at gen=16 and Qwen at
+   gen=256: **562,531,070,920** intermediates, **0** true subnormal and **0**
+   FTZ-decisive. The largest single cell is 514,639,978,496 section 5.1
+   intermediates in the Qwen gen=256 decode. Nearest approach to the boundary is
+   still E-12's factor of **1.32**, in a softmax weight. Both digests are
+   unchanged from E38's at every length, which is the check that the census is
+   observational.
+
+3. **A differential with no counter in it.** Some operations are not hooked by
+   anything --- section 11's residual adds, section 7's RoPE rotations, section
+   9.2's score scaling, section 10's max-subtraction, and the polynomial
+   internals of section 6.2/6.3 below `ldexp_exact`. These are covered instead by
+   running the section 14.6 layer dump twice, the second time with section 1.3's
+   FTZ and DAZ cleared for the whole decode and MXCSR restored after. The two
+   files are **byte-identical**: 14,934 records over **7,467** named
+   intermediate tensors for the normative SmolLM2 vector, 11,970 over 5,985 for
+   Qwen. Both runs reproduce the section 13.1 reference digests, so the tap is
+   still write-only. Across all 38,775,808 stored f32 values of the two dumps
+   there are **0** subnormals and **0** exact zeros.
+
+**Why the null results are evidence.** Each instrument is shown able to fire
+before its zero is reported. `e40_wscan` carries a detector control; `e40_ctrl`
+checks six cases against pinned-vs-unpinned ground truth, two of which are
+FTZ-decisive; and `e40_ldctrl` runs the whole differential --- `probe_unpinned`,
+`tap::emit`, file comparison --- on the RMSNorm input that does underflow, and
+asserts both that the files differ and that a subnormal is genuinely present in
+the unpinned file, so it fails the build rather than passing quietly. The layer
+dump additionally prints MXCSR read from *inside* the decode closure
+(`is_pinned=true` / `is_pinned=false`) and confirms the register is restored, so
+an identical pair of dumps cannot be explained by the unpinned arm never having
+taken effect.
+
+**A defect found in E39's own instrument, before any E40 number was published.**
+`e40_ctrl`'s RMSNorm case reported `DIFFER=true` with `d_ftz_decisive=0` --- the
+census had missed a case it was built to catch. Cause: the census widened
+operands with `x as f64`, which compiles to `cvtss2sd`, an SSE conversion, and
+section 1.3's **DAZ reads a subnormal operand as zero**. A census built on `as
+f64` is blind to exactly the DAZ cases it exists to count. Replaced with
+`census::widen_exact`, which decodes the f32 bit pattern with integer arithmetic
+and rebuilds the value from a normal double, at all five hook sites. E39's
+published number is unaffected and this was checked both ways: by construction
+(its operands are `exp_pinned` outputs, never subnormal, over a denominator at
+least 1) and by re-measurement (`6.96465140988929e-25` at gen=16 and
+`1.5562307486661955e-38` at gen=256, identical before and after). Two regression
+tests lock it down.
+
+**What changes.** Erratum E-13 in the specification widens E-12's "untriggered,
+not shown unnecessary" from section 10 alone to the whole decode. No digest,
+coefficient, guard or required behaviour changes, and section 1.3 is not
+relaxed: it exists so the *platform* cannot answer the question, and a conforming
+implementation must pin FTZ/DAZ whether or not its inputs exercise the pin. What
+is now measured rather than assumed is the statement a conformance tier can rely
+on --- **no conforming implementation's digest is hostage to FTZ/DAZ on this
+vector** --- together with the limits that statement carries: two vectors, one
+machine, one ISA, and a differential that sees tensor boundaries rather than
+individual operations.
+
+**Affected.** `docs/E40_MATVEC_RMSNORM_REACH.md` (new, the result);
+`docs/CIS2_SPEC_v0.3b.md` (erratum E-13); `docs/E22_NECESSITY_MATRIX.md` (item
+1); `docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md` (forward note on the widening
+defect); `cis2-verify/src/ops.rs` (`census::widen_exact`, the matvec and RMSNorm
+counters, the integer pre-filters, two regression tests);
+`cis2-verify/src/fpenv.rs` (`probe_unpinned` also available under `layerdump`);
+`cis2-verify/examples/layer_dump.rs` (`CIS2_E40_UNPINNED`);
+`cis2-verify/examples/{e40_wscan,e40_ctrl,e40_ldctrl}.rs` (new);
+`scripts/e40_dump_stats.py` (new). Gates: 53/53 default, 58/58 census,
+`layerdump` builds and `e40_ldctrl` passes both assertions, `check_no_fma.sh`
+PASS, `selftest` PASS, section 13.1 reference decode unchanged.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
