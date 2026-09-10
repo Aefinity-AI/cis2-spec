@@ -81,6 +81,11 @@ path = "examples/e40_ctrl.rs"
 required-features = ["census"]
 
 [[example]]
+name = "e40_ldctrl"
+path = "examples/e40_ldctrl.rs"
+required-features = ["layerdump"]
+
+[[example]]
 name = "layer_dump"
 path = "examples/layer_dump.rs"
 required-features = ["layerdump"]

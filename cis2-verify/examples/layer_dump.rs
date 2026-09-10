@@ -69,13 +69,40 @@ fn main() {
         ),
     }
 
+    // E40: with CIS2_E40_UNPINNED=1 in the environment, the whole decode runs
+    // with 1.3's FTZ/DAZ cleared, and MXCSR is restored afterwards. An
+    // environment variable rather than a positional argument so the flag can be
+    // set without disturbing the prompt / gen-toks / token-id arguments. Dumping both ways and
+    // comparing the two files answers "did 1.3 change ANY stored intermediate
+    // anywhere in the stack" at per-tensor granularity, rather than only at the
+    // two digests -- and it covers the operations no census counter reaches.
+    let unpinned = std::env::var("CIS2_E40_UNPINNED").is_ok_and(|v| v == "1");
+    println!(
+        "LAYERDUMP fp-env-for-decode={}",
+        if unpinned { "UNPINNED (1.3 cleared)" } else { "pinned" }
+    );
+
     tap::open(&out_path);
-    let out = match &ids {
+    let decode = || {
+        // Control for "a counter that reads zero must be shown able to fire":
+        // this reads MXCSR from *inside* the decode closure, so an identical
+        // pair of dumps cannot be explained by the unpinned mode never having
+        // taken effect. pin_and_selftest() is called once in main and never
+        // inside verify::run, so nothing re-establishes the pin under us.
+        println!("LAYERDUMP mxcsr-inside-decode is_pinned={}", fpenv::is_pinned());
+        match &ids {
         None => verify::run(&art, &prompt, gen_toks),
         Some(ids) => verify::run_with_token_ids(&art, &prompt, ids, gen_toks),
+        }
+    };
+    let out = if unpinned {
+        fpenv::probe_unpinned(decode)
+    } else {
+        decode()
     }
     .expect("decode");
     tap::close();
+    println!("LAYERDUMP pin-restored-after={}", fpenv::is_pinned());
 
     let bytes = std::fs::metadata(&out_path).expect("stat dump").len();
     println!("LAYERDUMP bytes={bytes}");

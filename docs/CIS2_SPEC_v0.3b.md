@@ -1612,6 +1612,35 @@ trigger it. §14's caveat that a SAME digest is weaker than "no denormal ever
 arose" therefore stands, now with the measurement that makes it precise. See
 CHANGELOG.md and docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md.
 
+**ERRATUM E-13 (2026-09-09).** E-12 closed one operation (§10's division) and
+left the rest of the pipeline uncounted, so "untriggered, not shown unnecessary"
+was stated for §10 alone. The remaining operations have now been counted, and
+the scope of that sentence widens to the whole decode.
+
+Every §5.1 product and partial sum, every §8 RMSNorm intermediate and every §10
+softmax weight of the §13.1 decode was classified exactly, on both §0
+checkpoints: **562,531,070,920** intermediates, **0** subnormal and **0** where
+FTZ would have changed the stored bits. Every §2.5 weight operand the decode
+reads was scanned first, since DAZ acts on inputs: **628,547,776** operands, **0**
+subnormal. The operations no counter reaches --- §11's residual adds, §7's RoPE
+rotations, §9.2's score scaling, §10's max-subtraction, and the polynomial
+internals of §6.2/§6.3 --- are covered instead by a differential: the §14.6 layer
+dump run twice, once with §1.3's FTZ and DAZ cleared for the whole decode, is
+**byte-identical** across all **7,467** named intermediate tensors of the
+normative vector (and 5,985 of the Qwen vector), and those dumps contain **0**
+stored subnormals and **0** exact zeros in 38,775,808 f32 values.
+
+So on the normative vector **§1.3 is not digest-relevant anywhere**, not merely
+through §10. The requirement stands unchanged and for the unchanged reason:
+§1.3 exists so that the *platform* cannot answer the question, and a conforming
+implementation must pin FTZ/DAZ whether or not its inputs exercise the pin. What
+is now measured rather than assumed is the weaker and more useful statement a
+conformance tier can rely on: **no conforming implementation's digest is hostage
+to FTZ/DAZ on this vector.** The nearest approach is still E-12's factor of
+1.32, so this remains untriggered rather than unnecessary. No digest,
+coefficient, guard or required behaviour changes. See CHANGELOG.md and
+docs/E40_MATVEC_RMSNORM_REACH.md.
+
 14.2. **Digest byte encoding for artifact hashes: CLOSED.** v0.1 fed the
 64-character hex **string's** ASCII bytes into the witness hash, not the
 32 raw digest bytes — an ambiguity only recoverable by reading
