@@ -394,6 +394,69 @@ so the "no matching vocab entry" branch is never taken for any input.
      U+010A `Ċ`). Decode uses the inverse map; both directions are
      computed once from this same construction, never independently
      hand-tuned per direction.
+
+     **ERRATUM E-14 (2026-09-09).** "Decode uses the inverse map" is the
+     only sentence in v0.3b about turning ids back into text, and it is
+     about the *byte* map alone. The step before it --- token id to token
+     string --- is specified nowhere: §3.4's "Decode protocol" names greedy
+     generation, not detokenization, and §12 pins a decode to token **ids**,
+     never to characters. A conforming verifier therefore never has to
+     produce text, and two conforming implementations can disagree about
+     what a receipt *says* while agreeing on every digest in it.
+
+     E41 measured what that leaves open on the two checkpoints §0 names.
+     The inverse is well defined in both --- 0 ids carrying two strings, no
+     gaps below the largest id, the 256-entry byte table a bijection --- so
+     this is a gap in the specification, not a defect in the artifacts. Three
+     cases the text does not reach:
+
+     1. **A codepoint can straddle a token boundary.** 313 of
+        `HuggingFaceTB/SmolLM2-135M`'s 49,152 vocabulary entries are not
+        valid UTF-8 on their own; they are fragments of one. An
+        implementation must concatenate the bytes of the whole id sequence
+        and validate once, never validate per token. Nothing in v0.3b says
+        so, and a per-token decoder is wrong on 0.64 % of this checkpoint's
+        vocabulary.
+     2. **Not every emittable id has a string.** §12.1's argmax ranges over
+        `config.vocab_size` logits. On `Qwen/Qwen2.5-0.5B` that is 151,936,
+        against 151,643 `model.vocab` entries plus 22 `added_tokens` at
+        ids 151,643..=151,664 --- leaving **271 ids the decode can emit with
+        no string in either table**. Their embedding rows are not zero and
+        not distinguishable by norm from real tokens (all 271 within
+        `[3.009416e-1, 3.009682e-1]`, against a smallest sampled mapped-token
+        norm of `2.999703e-1`), so they cannot be excluded by inspecting the
+        weights. On §13.1's vector they never win: best rank 115,765 of
+        151,936, the argmax logit ahead by 2.0655226e1. **Untriggered on
+        this vector, not shown impossible** --- the same standing E-12 and
+        E-13 record for FTZ/DAZ.
+     3. **Decoding is not the inverse of encoding on special tokens.**
+        §3.3 pins `add_special_tokens = false`, so §3 never *produces* a
+        special-token id; but §11.2's argmax can emit one. All 17 of
+        SmolLM2's `added_tokens` are ids 0..=16, and each decodes to its own
+        literal text --- id 2 to the ten characters `<|im_end|>`. Re-encoding
+        that text gives `[44, 108, 306, 79, 486, 108, 46]`, never `[2]`. So
+        `encode(decode(ids)) == ids` fails on exactly these 17 ids, and once a
+        decode has been rendered to text **a model-emitted control token is
+        indistinguishable from ordinary generated text that spells it**. Any
+        consumer that re-reads generated text --- which is every agent loop ---
+        must keep the ids, not only the string. v0.3b neither says this nor
+        gives a rendering that would avoid it.
+
+     v0.4 should either specify the id → text direction --- which table is
+     inverted, byte-level concatenation before UTF-8 validation, a defined
+     result for an id with no string, and whether a special token renders as
+     its literal text or is reserved --- or state that CIS-2 conformance is
+     over token ids only and that text rendering is out of scope. Either
+     resolves the gap; leaving it open does not.
+
+     `cis2-verify` implements the first reading as a **documented extension,
+     not a conformance requirement**: `Tokenizer::decode` inverts
+     `model.vocab` alone (total on the one checkpoint §3 accepts, since
+     SmolLM2's 17 `added_tokens` all overlap it), concatenates bytes across
+     the whole id sequence before validating UTF-8, and returns an error
+     rather than a substitution for an id with no string. See
+     `docs/E41_DETOKENIZATION_IS_UNSPECIFIED.md`.
+
   b. **Initial symbol sequence.** For each byte-remapped "word" string
      from §3.1.4.b: split it into individual Unicode characters (one
      character = one original input byte, by construction of 3.1.4.b/3.1.5.a);
