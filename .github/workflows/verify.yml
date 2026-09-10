@@ -13,6 +13,9 @@ env:
   EXPECTED_TABLE: 23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
   EXPECTED_INVFREQ: da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
   WEIGHTS_SHA256: 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+  # docs/CIS2_SPEC_v0.3b.md §13.5, docs/E29_OPTIMIZER_INVARIANCE.md — sha256 of
+  # the concatenated per-layer activation dump of the §13.1 reference decode.
+  EXPECTED_DUMP: 5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64
 
 jobs:
   # --- reference: src/, the Rust reference implementation the spec was
@@ -170,6 +173,203 @@ jobs:
           [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
           echo "PASS: verify2 (${{ matrix.arch_label }}) matches CIS2_REF"
 
+  # --- cis2-verify: fourth clean-room implementation, zero dependencies ---
+  # This crate had no CI job at all until now: it was built and tested only by
+  # hand. It is the standalone verifier a third party is meant to run, so it is
+  # the one implementation that most needs a green check next to it.
+  cis2-verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_label: x86_64
+          - os: ubuntu-24.04-arm
+            arch_label: aarch64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: uname (assert matches expected arch)
+        run: |
+          U=$(uname -m)
+          if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
+            [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
+          else
+            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+          fi
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      # src/unicode.rs is a generated file. Checking that it is still exactly
+      # what the generator produces is what makes "generated from the UCD" a
+      # verifiable statement rather than a comment.
+      #
+      # The UCD version has to be pinned here, not inherited from the runner:
+      # \p{L} is version-dependent (Unicode 15.1 added 622 codepoints,
+      # U+2EBF0..U+2EE5D, that 15.0 does not classify as letters), and these
+      # images ship a Python carrying 15.0.0 while the tables are generated
+      # from 15.1.0. Without the pin this step compares two different Unicode
+      # versions and fails for a reason that has nothing to do with the repo.
+      - name: Pin the Unicode Character Database
+        run: python3 -m pip install --quiet --break-system-packages unicodedata2==15.1.0
+      - name: Generated Unicode tables are current
+        working-directory: cis2-verify
+        run: python3 tools/gen_unicode.py
+
+      # Runs before the 500 MB fetch on purpose: the unit tests and the
+      # committed 2.8 kB fixture in tests/fixtures/tiny cover the whole
+      # pipeline without any download, so an arithmetic or receipt-format
+      # regression fails here in seconds rather than after the weights land.
+      - name: Test suite (no artifacts needed)
+        working-directory: cis2-verify
+        run: cargo test --release -j2
+
+      - name: Build cis2-verify (release)
+        working-directory: cis2-verify
+        run: cargo build --release -j2
+
+      - name: Self-test (fp environment, table digest, cancellation regression)
+        run: ./cis2-verify/target/release/cis2-verify selftest
+
+      - name: FMA gate (objdump, zero fused multiply-add on decode path)
+        run: |
+          objdump -d cis2-verify/target/release/cis2-verify > /tmp/disasm_cv.txt
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_cv.txt; then
+            echo "FMA-family instruction found in disassembly - spec 1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Run against the pinned test vector (spec 13.1)
+        run: |
+          set -euo pipefail
+          OUT=$(./cis2-verify/target/release/cis2-verify run weights -o /tmp/cv_receipt.txt | tee /tmp/cv_output.txt)
+          witness=$(echo "$OUT" | grep -oP '(?<=CIS2-VERIFY digest=)[0-9a-f]+' | head -1 || true)
+          echo "witness: got=$witness expected=$EXPECTED_WITNESS"
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
+          grep -q 'CIS2-VERIFY conformance=PASS' /tmp/cv_output.txt \
+            || { echo "conformance line missing or not PASS"; exit 1; }
+          echo "PASS: cis2-verify (${{ matrix.arch_label }}) matches CIS2_REF"
+
+      - name: Re-verify the receipt it just wrote (round trip on real artifacts)
+        run: |
+          set -euo pipefail
+          ./cis2-verify/target/release/cis2-verify verify weights /tmp/cv_receipt.txt | tee /tmp/cv_verify.txt
+          grep -q 'CIS2-VERIFY VERIFY PASS' /tmp/cv_verify.txt || { echo "round trip failed"; exit 1; }
+
+      - name: Weights-free check of the receipt it just wrote
+        run: |
+          set -euo pipefail
+          # `check` re-derives everything that does not need the checkpoint.
+          # On the spec 13.1 vector that is all thirteen fields, so the
+          # residual must be empty -- if a later change quietly narrows what
+          # the cheap tier establishes, this line stops being true.
+          ./cis2-verify/target/release/cis2-verify check /tmp/cv_receipt.txt | tee /tmp/cv_check.txt
+          grep -qx 'CIS2-VERIFY CHECK PASS' /tmp/cv_check.txt || { echo "check did not pass"; exit 1; }
+          grep -q 'residual=none' /tmp/cv_check.txt \
+            || { echo "check left a residual on the pinned vector"; exit 1; }
+          # The same verdict has to come back by the other route: recomputed
+          # from the supplied artifacts rather than read off the spec's pins.
+          ./cis2-verify/target/release/cis2-verify check /tmp/cv_receipt.txt \
+            --config weights/config.json --tokenizer weights/tokenizer.json | tee /tmp/cv_check2.txt
+          grep -qx 'CIS2-VERIFY CHECK PASS' /tmp/cv_check2.txt \
+            || { echo "check did not pass with artifacts supplied"; exit 1; }
+          grep -q 'residual=none' /tmp/cv_check2.txt \
+            || { echo "check left a residual with artifacts supplied"; exit 1; }
+          grep -q 'rebuilt from the supplied config.json' /tmp/cv_check2.txt \
+            || { echo "check ignored the supplied config.json"; exit 1; }
+          grep -q 'supplied tokenizer.json' /tmp/cv_check2.txt \
+            || { echo "check ignored the supplied tokenizer.json"; exit 1; }
+
+      - name: A forged witness must be rejected WITHOUT the weights (negative control)
+        run: |
+          set -euo pipefail
+          # The whole claim of the cheap tier is that on the pinned vector it
+          # is binding. A `check` that cannot fail here proves nothing, so the
+          # control runs from a directory with no artifacts in it at all.
+          sed -E 's/^(witness-digest [0-9a-f]{63})0$/\11/; t; s/^(witness-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            /tmp/cv_receipt.txt > /tmp/cv_forged.txt
+          cmp -s /tmp/cv_receipt.txt /tmp/cv_forged.txt && { echo "mutation was a no-op"; exit 1; }
+          mkdir -p /tmp/empty && cd /tmp/empty
+          if "$GITHUB_WORKSPACE/cis2-verify/target/release/cis2-verify" check /tmp/cv_forged.txt; then
+            echo "a forged witness passed the weights-free check - the tier is not binding"
+            exit 1
+          fi
+          echo "negative control: PASS (forged witness rejected with no artifacts present)"
+
+      - name: A doctored receipt must be rejected (negative control)
+        run: |
+          set -euo pipefail
+          # Without this, the step above would pass just as happily against a
+          # verifier that returned PASS unconditionally.
+          # Flip the last hex nibble of the argmax digest: 0 -> 1, anything
+          # else -> 0. Never a no-op, whatever the digest happens to start or
+          # end with. (The first draft of this replaced the leading nibble
+          # with 0; the real digest starts with 0, so it changed nothing and
+          # the control silently passed against an unmodified receipt.)
+          sed -E 's/^(argmax-digest [0-9a-f]{63})0$/\11/; t; s/^(argmax-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            /tmp/cv_receipt.txt > /tmp/cv_bad.txt
+          cmp -s /tmp/cv_receipt.txt /tmp/cv_bad.txt && { echo "mutation was a no-op"; exit 1; }
+          if ./cis2-verify/target/release/cis2-verify verify weights /tmp/cv_bad.txt; then
+            echo "a doctored receipt verified clean - the verifier is not binding"
+            exit 1
+          fi
+          echo "negative control: PASS (doctored receipt rejected)"
+
+      - name: Two receipts, no artifacts - the compare tier
+        run: |
+          set -euo pipefail
+          B="$GITHUB_WORKSPACE/cis2-verify/target/release/cis2-verify"
+          mkdir -p /tmp/cmp && cd /tmp/cmp
+          cp /tmp/cv_receipt.txt a.txt
+
+          # A receipt compared with itself: every field agrees, exit 0.
+          cp a.txt b_same.txt
+          "$B" compare a.txt b_same.txt | tee /tmp/cmp_same.txt
+          grep -qx 'CIS2-VERIFY COMPARE verdict=IDENTICAL' /tmp/cmp_same.txt \
+            || { echo "a receipt did not compare equal to itself"; exit 1; }
+
+          # Same inputs, one output nibble moved: at most one of these can
+          # be conforming, and compare must say so and exit 1 - with no
+          # weights, config or tokenizer anywhere on this path.
+          sed -E 's/^(witness-digest [0-9a-f]{63})0$/\11/; t; s/^(witness-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            a.txt > b_contra.txt
+          cmp -s a.txt b_contra.txt && { echo "mutation was a no-op"; exit 1; }
+          if "$B" compare a.txt b_contra.txt > /tmp/cmp_contra.txt; then
+            cat /tmp/cmp_contra.txt
+            echo "two receipts contradicting each other exited 0 - the tier is not binding"
+            exit 1
+          fi
+          grep -qx 'CIS2-VERIFY COMPARE verdict=CONTRADICTION' /tmp/cmp_contra.txt \
+            || { cat /tmp/cmp_contra.txt; echo "wrong verdict"; exit 1; }
+
+          # Different weights, same full-logit witness: the copied-header
+          # signature. Must be flagged, and must still offer the innocent
+          # reading rather than only the accusation.
+          sed -E 's/^(weights-sha256 [0-9a-f]{63})0$/\11/; t; s/^(weights-sha256 [0-9a-f]{63})[1-9a-f]$/\10/' \
+            a.txt > b_forged.txt
+          cmp -s a.txt b_forged.txt && { echo "mutation was a no-op"; exit 1; }
+          if "$B" compare a.txt b_forged.txt > /tmp/cmp_forged.txt; then
+            cat /tmp/cmp_forged.txt
+            echo "a witness collision under differing weights exited 0"
+            exit 1
+          fi
+          grep -qx 'CIS2-VERIFY COMPARE verdict=WITNESS-COLLISION' /tmp/cmp_forged.txt \
+            || { cat /tmp/cmp_forged.txt; echo "wrong verdict"; exit 1; }
+          grep -q 'serialise the same tensors' /tmp/cmp_forged.txt \
+            || { echo "the finding accuses without offering the innocent reading"; exit 1; }
+
+          echo "compare tier: PASS (3 verdicts, no artifacts on the path)"
+
   # --- verify3: C clean-room, gcc and clang ---
   verify3:
     strategy:
@@ -239,3 +439,92 @@ jobs:
           [ "$table" = "$EXPECTED_TABLE" ] || { echo "MISMATCH: table digest"; fail=1; }
           [ "$invfreq" = "$EXPECTED_INVFREQ" ] || { echo "MISMATCH: inv_freq_table digest"; fail=1; }
           exit $fail
+
+  # --- intermediates: §13.5 / E29 at CI granularity, over §13.4's full matrix.
+  # Every other job here compares digests of the *output*. This one compares
+  # all 51,750,154 bytes of every intermediate activation — 7,467 tensors —
+  # against a pinned digest, across all 20 cells of §13.4's compiler matrix:
+  # {x86_64, aarch64} × {opt-level 0,1,2,3,s} × {target-cpu generic, native},
+  # on real silicon of both ISAs rather than under emulation.
+  #
+  # The granularity is the point. E29 §5 measured that one flipped weight
+  # mantissa bit moves 570 of 7,467 tensors and *zero* argmax decisions, so a
+  # divergence this job catches is one an output-digest job would not.
+  intermediates:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        optlevel: ["0", "1", "2", "3", "s"]
+        targetcpu: [generic, native]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record architecture
+        id: arch
+        run: |
+          U=$(uname -m)
+          echo "label=$U" >> "$GITHUB_OUTPUT"
+          case "${{ matrix.os }}" in
+            *-arm) [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; } ;;
+            *)     [ "$U" = "x86_64" ]  || { echo "expected x86_64, got $U"; exit 1; } ;;
+          esac
+
+      - name: Install Rust (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.0"
+
+      # Keyed on the pinned artifact digest, so 20 cells fetch the 500 MB
+      # checkpoint once rather than twenty times.
+      - name: Cache pinned weights
+        id: wcache
+        uses: actions/cache@v4
+        with:
+          path: weights
+          key: weights-${{ env.WEIGHTS_SHA256 }}
+
+      - name: Fetch pinned weights (SmolLM2-135M)
+        if: steps.wcache.outputs.cache-hit != 'true'
+        run: |
+          chmod +x scripts/fetch_weights.sh
+          ./scripts/fetch_weights.sh weights
+
+      - name: Build layer_dump (opt-level ${{ matrix.optlevel }}, target-cpu ${{ matrix.targetcpu }})
+        working-directory: cis2-verify
+        env:
+          CARGO_PROFILE_RELEASE_OPT_LEVEL: ${{ matrix.optlevel }}
+          RUSTFLAGS: ${{ matrix.targetcpu == 'native' && '-C target-cpu=native' || '' }}
+        run: cargo build --release -j2 --features layerdump --example layer_dump
+
+      # Records what the compiler actually emitted, so a green cell says which
+      # code generation the identity survived rather than only that it did.
+      - name: Report emitted vector width and assert zero FMA
+        run: |
+          set -euo pipefail
+          B=cis2-verify/target/release/examples/layer_dump
+          objdump -d "$B" > /tmp/disasm_ld.txt
+          echo "binary sha256: $(sha256sum "$B" | cut -d' ' -f1)"
+          if [ "${{ steps.arch.outputs.label }}" = "x86_64" ]; then
+            echo "vector instructions (%ymm): $(grep -c '%ymm' /tmp/disasm_ld.txt || true)"
+          else
+            echo "vector instructions (NEON): $(grep -cE 'v[0-9]+\.(4s|2d|8h|16b)' /tmp/disasm_ld.txt || true)"
+          fi
+          if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_ld.txt; then
+            echo "FMA-family instruction found in disassembly - spec 1.4 violation"
+            exit 1
+          fi
+          echo "FMA gate: PASS (0 matches)"
+
+      - name: Dump every intermediate and compare against the pinned digest
+        run: |
+          set -euo pipefail
+          ./cis2-verify/target/release/examples/layer_dump \
+            weights /tmp/layers.bin "Once upon a time" 16 | tee /tmp/ld_out.txt
+          got=$(sha256sum /tmp/layers.bin | cut -d' ' -f1)
+          echo "dump: got=$got expected=$EXPECTED_DUMP"
+          [ "$got" = "$EXPECTED_DUMP" ] || { echo "MISMATCH: intermediate activation dump"; exit 1; }
+          witness=$(grep -oP '(?<=^LAYERDUMP witness-digest )[0-9a-f]+' /tmp/ld_out.txt | head -1 || true)
+          [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
+          echo "PASS: intermediates (${{ steps.arch.outputs.label }}, opt-level ${{ matrix.optlevel }}, target-cpu ${{ matrix.targetcpu }}) - all 7,467 tensors bit-identical"

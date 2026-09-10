@@ -62,20 +62,33 @@ This spec's primary pinned tuple is unchanged from v0.1: `HuggingFaceTB/SmolLM2-
 `"Once upon a time"`, 16 greedy-decoded tokens, fp32 compute, bf16-on-disk
 weights. §7's RoPE construction is now general (any `rope_theta`), so a
 second (model, prompt, decode-length) tuple — `Qwen/Qwen2.5-0.5B`,
-`rope_theta = 1_000_000` — is evidence-of-correctness (`docs/E15d_bc_RESULT.md`)
-but is **not** itself a pinned §13 test vector in this version; only the
-SmolLM2-135M tuple's digests are normative test vectors here. It does **not**
+`rope_theta = 1_000_000` — is evidence-of-correctness (`docs/E15d_bc_RESULT.md`,
+`docs/E25_RMSNORM_ASSOCIATION.md` §4) but is **not** itself a pinned §13 test
+vector in this version; only the SmolLM2-135M tuple's digests are normative
+test vectors here. §14.8 (erratum E-3) records a further consequence: §3 pins
+one exact `tokenizer.json` shape, which that second checkpoint does not have,
+so a conforming implementation cannot drive it end-to-end at all — work on it
+is confined to §4–§11 with the prompt token ids supplied from outside §3. It does **not**
 claim:
 
-- General correctness of the pinned transcendental polynomials (`exp`,
-  `sin`, `cos`, `ln`) outside the input ranges actually exercised by the
-  decodes checked so far (§14.4, carried from v0.1, and §14.1 new-in-v0.2 for
-  `ln_pinned`'s domain).
+- Correct rounding of the pinned transcendental polynomials. Accuracy
+  itself is no longer a gap: §14.1 (erratum E-4) records an exhaustive
+  measurement of `exp`, `ln` and `silu` over **every** f32 bit pattern, and
+  §14.4 (erratum E-2) the same for `sin` and `cos` over every f32 argument
+  below `2^31`. What is not claimed is that any of them is *correctly
+  rounded*, and §14.1(a) records one deliberate, normative divergence from
+  mathematical `exp`: §6.2's `x > 88.0` guard clips 94,743 arguments whose
+  true `exp` is finite and representable.
 - Cross-framework agreement (vs. PyTorch/`transformers`) as a conformance
-  requirement — oracle comparisons (§13.3, `docs/E15b_m1p5_CORRECTNESS.md`,
-  `docs/E15d_bc_RESULT.md`) are evidence of correctness, not a conformance
-  requirement; CIS-2 conformance is defined relative to this document's own
-  bits, not to any third-party framework's output.
+  requirement — oracle comparisons (§13.3, §14.6, `docs/E15b_m1p5_CORRECTNESS.md`,
+  `docs/E15d_bc_RESULT.md`, `docs/E28_LAYER_ORACLE.md`) are evidence of
+  correctness, not a conformance requirement; CIS-2 conformance is defined
+  relative to this document's own bits, not to any third-party framework's
+  output. That evidence now covers every intermediate activation of both §0
+  models and not only the stack's output (§14.6, erratum E-5), but ~1e-5
+  relative agreement with `transformers` is what it shows and all it could
+  show: bit-exactness is claimed between conforming implementations of this
+  document, never against a third-party framework.
 - Seeded/temperature sampling — decode is greedy-only (argmax every step),
   matching CIS-1's own non-goal (CIS-1 §10).
 - Anything about `verify/` or `cis2-verify2` (independently-written
@@ -126,6 +139,22 @@ arithmetic runs:**
      optimization barrier — e.g. Rust's `std::hint::black_box` — so the
      compiler cannot fold the arithmetic away and mask a broken pin.)
 
+   **ERRATUM E-11 (2026-09-09).** The first half of that self-test, as
+   published, **cannot fail**. `f32::MIN_POSITIVE * 1.0e-10` is
+   `1.18e-48`, which is below *half* the smallest positive subnormal
+   (`7.0e-46`), so it rounds to `+0.0` under RNE whether or not FTZ is set.
+   Measured directly, in a build with the pin deliberately gutted and proven
+   gutted (`is_pinned() == false`): the probe still reads `0x00000000`. The
+   multiplier `1.0e-10` is therefore **REPLACED by `0.5`**:
+   `f32::MIN_POSITIVE * 0.5` is `5.88e-39`, a genuine subnormal, which reads
+   `0x00000000` when FTZ is pinned and `0x00400000` when it is not. The DAZ
+   half of the self-test (`0x00000001 + 0.0`) always did discriminate, and the
+   readback assertion above always did enforce the pin, so no digest anywhere
+   in this specification changes and no implementation whose pin is correct is
+   affected --- the corrected probe newly fails exactly those implementations
+   whose FTZ was in fact broken, which is what the self-test exists to catch.
+   See docs/E38_REACH_SWEEP.md §5.
+
 1.4. **No FMA contraction, anywhere, in the reference.** Every
 multiply-then-add in this spec is defined as **two separate, separately
 RNE-rounded operations**: compute the product, round to `f32`; then add,
@@ -147,7 +176,13 @@ any flag that licenses reassociating floating-point expressions, assuming
 no NaN/Inf, or substituting approximate reciprocal/rsqrt hardware
 instructions (e.g. `-ffast-math`, `-Ofast`, `-freciprocal-math`). This
 spec's reduction orders (§5) are only bit-determining if the compiler
-computes exactly the sequence of operations stated, in the stated order.
+computes exactly the sequence of operations stated, in the stated order. This
+is a prohibition on *licensing* reassociation, not a prohibition on
+optimization: §13.5 measures that `--release -C target-cpu=native` emits
+8-wide AVX2 for the elementwise work and leaves every §5 reduction scalar,
+with every intermediate activation bit-identical to a non-vectorized
+build. An optimizer denied fast-math can only act where acting does not
+move the bits.
 
 1.6. **Division and sqrt**: ordinary IEEE-754 `/` and `sqrt` (both
 mandatory-correctly-rounded operations under IEEE-754), never a
@@ -359,6 +394,69 @@ so the "no matching vocab entry" branch is never taken for any input.
      U+010A `Ċ`). Decode uses the inverse map; both directions are
      computed once from this same construction, never independently
      hand-tuned per direction.
+
+     **ERRATUM E-14 (2026-09-09).** "Decode uses the inverse map" is the
+     only sentence in v0.3b about turning ids back into text, and it is
+     about the *byte* map alone. The step before it --- token id to token
+     string --- is specified nowhere: §3.4's "Decode protocol" names greedy
+     generation, not detokenization, and §12 pins a decode to token **ids**,
+     never to characters. A conforming verifier therefore never has to
+     produce text, and two conforming implementations can disagree about
+     what a receipt *says* while agreeing on every digest in it.
+
+     E41 measured what that leaves open on the two checkpoints §0 names.
+     The inverse is well defined in both --- 0 ids carrying two strings, no
+     gaps below the largest id, the 256-entry byte table a bijection --- so
+     this is a gap in the specification, not a defect in the artifacts. Three
+     cases the text does not reach:
+
+     1. **A codepoint can straddle a token boundary.** 313 of
+        `HuggingFaceTB/SmolLM2-135M`'s 49,152 vocabulary entries are not
+        valid UTF-8 on their own; they are fragments of one. An
+        implementation must concatenate the bytes of the whole id sequence
+        and validate once, never validate per token. Nothing in v0.3b says
+        so, and a per-token decoder is wrong on 0.64 % of this checkpoint's
+        vocabulary.
+     2. **Not every emittable id has a string.** §12.1's argmax ranges over
+        `config.vocab_size` logits. On `Qwen/Qwen2.5-0.5B` that is 151,936,
+        against 151,643 `model.vocab` entries plus 22 `added_tokens` at
+        ids 151,643..=151,664 --- leaving **271 ids the decode can emit with
+        no string in either table**. Their embedding rows are not zero and
+        not distinguishable by norm from real tokens (all 271 within
+        `[3.009416e-1, 3.009682e-1]`, against a smallest sampled mapped-token
+        norm of `2.999703e-1`), so they cannot be excluded by inspecting the
+        weights. On §13.1's vector they never win: best rank 115,765 of
+        151,936, the argmax logit ahead by 2.0655226e1. **Untriggered on
+        this vector, not shown impossible** --- the same standing E-12 and
+        E-13 record for FTZ/DAZ.
+     3. **Decoding is not the inverse of encoding on special tokens.**
+        §3.3 pins `add_special_tokens = false`, so §3 never *produces* a
+        special-token id; but §11.2's argmax can emit one. All 17 of
+        SmolLM2's `added_tokens` are ids 0..=16, and each decodes to its own
+        literal text --- id 2 to the ten characters `<|im_end|>`. Re-encoding
+        that text gives `[44, 108, 306, 79, 486, 108, 46]`, never `[2]`. So
+        `encode(decode(ids)) == ids` fails on exactly these 17 ids, and once a
+        decode has been rendered to text **a model-emitted control token is
+        indistinguishable from ordinary generated text that spells it**. Any
+        consumer that re-reads generated text --- which is every agent loop ---
+        must keep the ids, not only the string. v0.3b neither says this nor
+        gives a rendering that would avoid it.
+
+     v0.4 should either specify the id → text direction --- which table is
+     inverted, byte-level concatenation before UTF-8 validation, a defined
+     result for an id with no string, and whether a special token renders as
+     its literal text or is reserved --- or state that CIS-2 conformance is
+     over token ids only and that text rendering is out of scope. Either
+     resolves the gap; leaving it open does not.
+
+     `cis2-verify` implements the first reading as a **documented extension,
+     not a conformance requirement**: `Tokenizer::decode` inverts
+     `model.vocab` alone (total on the one checkpoint §3 accepts, since
+     SmolLM2's 17 `added_tokens` all overlap it), concatenates bytes across
+     the whole id sequence before validating UTF-8, and returns an error
+     rather than a substitution for an id with no string. See
+     `docs/E41_DETOKENIZATION_IS_UNSPECIFIED.md`.
+
   b. **Initial symbol sequence.** For each byte-remapped "word" string
      from §3.1.4.b: split it into individual Unicode characters (one
      character = one original input byte, by construction of 3.1.4.b/3.1.5.a);
@@ -834,11 +932,16 @@ values that matter for this spec's actual pinned models are
 `rope_theta = 100_000.0` (SmolLM2-135M, §13's pinned test vector) and
 `rope_theta = 1_000_000.0` (Qwen2.5-0.5B, §0's informative second-model
 evidence, `docs/E15d_bc_RESULT.md`); **both are conformant** under this
-tolerance. This spec does **not** claim `ln_pinned` is correctly rounded or
-bit-exact against any oracle for arbitrary `x` outside the tested set above
-— a clean-room implementer targeting a `rope_theta` not in that set should
-not assume accuracy without its own validation (carried-forward caution,
-same spirit as v0.1 §14.4 for `sin`/`cos`).
+tolerance. This spec does **not** claim `ln_pinned` is correctly rounded.
+It is, however, no longer restricted to the tested set above: `ln_pinned`
+has since been evaluated at **every** f32 bit pattern and is within one ULP
+of the f64 value narrowed to f32 at all 2,130,706,432 positive normals, and
+**0 ULP** — not merely within 2e-6 — at both pinned `rope_theta` values. See
+§14.1 erratum E-4 and `docs/E27_EXP_LN_RANGE.md`; the corresponding caution
+for `sin`/`cos` was v0.1 §14.4 and was discharged the same way (erratum
+E-2). A clean-room implementer targeting an arbitrary `rope_theta` should
+still note that §6.5 returns `-Infinity` for every subnormal input under
+§1.3's DAZ.
 
 #### 6.5.1 `frexp_exact(x)` — exact mantissa/exponent split
 
@@ -897,8 +1000,9 @@ not change); `sin_pinned`/`cos_pinned` are re-measured below, over the full
 | function | domain measured | max ULP vs. correctly-rounded fp32 | max relative error |
 |---|---|---|---|
 | `rsqrt_cr` | all finite x>0 | 0 (correctly rounded by construction) | 0 |
-| `exp_pinned` | x∈[-40,40] | 1 | 1.19e-7 |
-| `ln_pinned` | x = rope_theta only | 0 at the two pinned values (100000.0, 1000000.0); ≤1 over a padded scan | 0 / 7.85e-8 |
+| `exp_pinned` | **all 2^32 f32** (E27) | **1** | **1.19e-7** (= 2^-23) |
+| `ln_pinned` | **all 2^32 f32** (E27) | **1** over all positive normals; **0** at both pinned thetas | **1.19e-7** / 0 at both thetas |
+| `silu_pinned` | **all 2^32 f32** (E27) | **2** off §6.2's clip band | **2.33e-7** |
 | `sin_pinned` (v0.3, Taylor, informative/superseded) | RoPE angle, pos ∈ [0, 8192) | up to 2813.5 raw (486.5 filtered) | 2.37e-4 |
 | `sin_pinned` (v0.3b, minimax, NORMATIVE) | same | **≤1.5** | **1.2e-7** |
 | `cos_pinned` (v0.3, Taylor, informative/superseded) | same | up to 407 raw (144.5 filtered) | 3.14e-5 |
@@ -1300,6 +1404,12 @@ A second, independently-run oracle comparison against Qwen2.5-0.5B
 diff ≈4.4e-6) is informative evidence for §7's theta-general RoPE, not a
 §13.1 test vector.
 
+This clause compares only the *output* of the layer stack. §14.6 (erratum
+E-5) records the corresponding comparison of every *intermediate* activation
+— 7,467 tensors on the first model and 5,985 on the second, worst relative L2
+error 9.923e-5, with no layer diverging from or compensating for the oracle
+(`docs/E28_LAYER_ORACLE.md`).
+
 13.4. **Compiler-invariance matrix (NEW in v0.2, informative but
 strongly evidential)**: the pinned SmolLM2-135M test vector's `CIS2_REF`
 and `inv_freq_table_digest` reproduce bit-for-bit across a 20-cell matrix
@@ -1310,23 +1420,289 @@ Preregistered digest values and the full per-cell table are recorded in
 same check (`docs/E15d_a_COMPILER_INVARIANCE.md`) targeted the old
 `ba88708b...` digest and is superseded by the v0.2 rerun.
 
+13.5. **Optimizer-invariance at every intermediate (NEW in v0.3b,
+informative but strongly evidential).** §13.4 compares two digests across a
+compiler matrix. This clause compares *every intermediate activation*
+across code generation targets. Three binaries built from one source tree —
+a default `--release` build, a `-C target-cpu=native` build on an AVX2 part
+(397 `%ymm` instructions emitted), and a `-C target-cpu=native` build on a
+part without AVX2 (none) — produce, on both of §0's models, dumps that are
+identical byte for byte: 7,467 tensors / 51,750,154 B for SmolLM2-135M and
+5,985 tensors / 103,942,814 B for Qwen2.5-0.5B, over eight runs on two
+microarchitectures. Zero FMA instructions in all three binaries (§1.4).
+
+The same check then covers all ten `{opt-level 0,1,2,3,s} × {target-cpu
+generic, native}` cells of §13.4's matrix on x86_64: **ten distinct
+binaries, one dump**, every cell reproducing
+`5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64` and the
+pinned §13.1 digests, with zero FMA instructions throughout. The emitted
+AVX2 instruction count rises with optimization pressure — 286 at
+`opt-level s`, 344 at 1, 397 at 2, 529 at 3 — while `dot_seq`'s
+multiply/add stay scalar in every cell, varying only in unroll factor,
+which changes the instruction count without changing the order of the
+additions.
+
+The mechanism is the point, and it is a property of this specification
+rather than of these builds. §5.1's `acc = acc + p` is a serial
+floating-point dependency, so an optimizer denied fast-math (§1.5) cannot
+vectorize the reduction: `matvec` is scalar in all three binaries,
+including the AVX2 one. §8's sum-of-squares splits into an elementwise map
+and §5.3's fold, and the AVX2 build vectorizes the map 8-wide while
+emitting the fold as a scalar `vaddss` chain. **This spec pins exactly
+those operations whose order changes the result and leaves free exactly
+those whose order does not**, so an optimizer can act only where acting is
+a no-op on the bits. A conforming implementation therefore need not ship an
+unoptimized build; `--release -C target-cpu=native` was measured to be
+conforming.
+
+Two controls accompany the result, because an invariance claim is empty
+without them. (a) The AVX2 vector loop is on the executed path: replacing
+one of its `vmulps` instructions with `ud2` in a copy of the binary
+terminates the run with SIGILL. (b) The dump is sensitive: flipping one
+low-order mantissa bit of one weight in the 269 MB artifact moves 570 of
+the 7,467 tensors — entering at `L27.down_proj` in a single element,
+saturating L28 and L29, and moving all 19 `logits` vectors — while changing
+**no** argmax decision. That last observation is the measured form of
+§12.1's requirement to hash the full logit vector rather than the emitted
+token ids: the corruption was visible in 100 % of the logit vectors and 0 %
+of the decisions. Full method, disassembly and provenance in
+`docs/E29_OPTIMIZER_INVARIANCE.md`; the per-tensor comparison tool is
+`scripts/diff_dumps.py`.
+
+The same comparison was then extended over *inputs*. Six prompt/length
+configurations (different lengths, a digit-heavy prompt, a code prompt, a
+single-token prompt with 32 generated tokens; all ASCII, so §3.1.4's open
+question could not confound the result) were each run four times — the
+generic binary on both hosts, plus each host's `target-cpu=native` build.
+The six configurations produce six *different* dumps, totalling 558,394,570
+bytes of intermediate activations, and within each configuration all four
+runs agree on every byte.
+
+The remaining half of §13.4's matrix has since been closed, and closed as a
+standing gate rather than a measurement: the `intermediates` job in
+`.github/workflows/verify.yml` runs **all twenty cells** —
+`{x86_64, aarch64} × {opt-level 0,1,2,3,s} × {target-cpu generic, native}` —
+on GitHub-hosted runners of both ISAs, and fails the build if any cell's
+dump digest moves. Twenty distinct binaries, one dump. On aarch64 the
+identity does not rest on the code having stayed scalar: NEON is
+architecturally baseline there, and every cell, `-O0` included, emits
+875–936 vector instructions. Zero FMA-family instructions in all twenty.
+
+Scope limits, stated so this is not over-read: every cell ran the same
+`rustc`/LLVM, so this widens the ISA and code-generation axes and not the
+compiler axis (`verify3`'s four `{x86_64, aarch64} × {gcc, clang}` cells are
+the independent-compiler axis, and §0's four-implementation convergence is
+the independent-implementation axis, though neither compares
+intermediates); six ASCII prompts, at most 64 generated tokens, on two
+models; and of the remaining codegen flags, `lto=fat`, `lto=thin` and
+`codegen-units=1` have since been measured over eight further cells (same
+dump, same digests, zero FMA — thin LTO with `target-cpu=native` emits 1,539
+AVX2 instructions, 3.9× the plain native build, and computes the same bits),
+and profile-guided optimization over eight further cells (E33: instrumented
+`profile-generate` builds, `profile-use` at both `target-cpu` settings, and
+the same combined with thin and fat LTO — same dump, same digests, zero FMA,
+including cells whose profile was trained on a *different* prompt than the
+one verified, and where the profile names `ops::matvec` as 86 % of all
+counted activity). Every codegen flag named here is now measured; any flag
+outside `{opt-level, target-cpu, lto, codegen-units, profile-use}` remains
+untested, and only `opt-level` and `target-cpu` are continuously gated.
+
 ## 14. Known gaps and internal inconsistencies (informative — read before treating this as complete)
 
 Renumbered from v0.1's §14; items resolved by v0.2 are marked **CLOSED**
 and kept for history, per §16's changelog discipline.
 
-14.1. **`ln_pinned`'s validated domain is a finite, explicitly-tested set
-of `x` values (§6.5), not a general accuracy proof.** The two values that
-matter for this spec's models (`100_000.0`, `1_000_000.0`) are both
-tested to ≤2e-6 relative tolerance against host `f64::ln` cast to f32; a
-`rope_theta` far outside the tested range (e.g. `< 0.001` or a value
-requiring `frexp_exact`'s domain guard to reject NaN/negative inputs) is
-unvalidated by this document. This is the direct successor to v0.1's
-"§14.1: rope_theta=100000.0-only" gap — **PARTIALLY CLOSED**: the
-literal-only restriction is gone, but "pinned for exactly one theta" has
-been replaced by "validated for a finite tested set of thetas," which is
-weaker than "proven general" but strictly broader than v0.1's single-value
-pin.
+14.1. **`exp_pinned` and `ln_pinned` accuracy is measured exhaustively, at
+every f32.** §6.2's `exp_pinned`, §6.5's `ln_pinned` and §6.4's `silu_pinned`
+have each been evaluated at *all 2^32 f32 bit patterns* under the §1.3 pinned
+environment against an f64 accuracy oracle. Outside §6.2's two guard bands,
+every one of the 3,257,925,634 comparable `exp_pinned` arguments and all
+2,130,706,432 positive-normal `ln_pinned` arguments are within **one ULP** of
+the f64 value narrowed to f32, with no degradation across the argument range.
+Both functions are exactly monotone over the whole finite domain.
+`ln_pinned` is **0 ULP** at both pinned `rope_theta` values (`100_000.0`,
+`1_000_000.0`), superseding the "≤2e-6 relative tolerance" figure quoted in
+§6.5 and in v0.3b's §14.1. `silu_pinned` is within **two ULP** everywhere it
+is not sitting on §6.2's clip band.
+
+Two deliberate divergences from mathematical `exp`, both pinned:
+
+(a) §6.2 step 2 clips at `x > 88.0`, but `ln(f32::MAX) = 88.7228390520684`.
+Exactly **94,743** arguments in `[0x42B00001, 0x42B17217]` =
+[88.0000076, 88.7228317] therefore return `+Infinity` where the true value is
+finite and representable. §10's softmax cannot reach this band --- it
+evaluates `exp_pinned(v - max_v)` with `max_v` the maximum over the same
+vector, so its argument is always `≤ 0` --- but §6.4's SiLU can: an FFN
+intermediate `x ∈ [-88.7228317, -88.0000076]` makes `exp_pinned(-x)` land
+inside it. A read-only census of SmolLM2-135M decodes over six
+prompt/length configurations (the §13.1 reference decode
+`"Once upon a time"`/16 among them, plus a 43-character prompt, a
+digit-heavy prompt, a code prompt, `"Once upon a time"`/64 and `"A"`/32)
+records **0** of its **18,892,800** `silu_pinned` arguments in that band —
+the most negative argument seen anywhere is -31.406876, some 57 units short
+of the band — and **0** of its **2,355,480** softmax `exp_pinned` arguments
+below `-88.0`; the instrumented build reproduces each configuration's pinned
+digests exactly. So §13.1's digests do not depend on the clip. That is one
+model, six ASCII prompts and at most 64 generated tokens, and does not
+establish unreachability in general. This
+clip is **normative and MUST be reproduced**; a clean-room implementation
+that returns the finite value will not reproduce the pinned digests.
+
+(b) §6.2 step 3 returns `0.0` for `x < -88.0`. Every value *this* guard
+destroys is subnormal and would be flushed by §1.3 in any case; the measured
+count of arguments where it returned zero and the oracle was nonzero is **0**.
+The visible discontinuity in §6.4 comes from (a), not from this guard:
+`silu_pinned(-88.0)` is `0x83354DDC` (≈ -5.328e-37) while
+`silu_pinned(-88.0000076)` is `-0.0`, because `exp_pinned(88.0000076)` is
+clipped to `+Infinity`. Note that `5.328e-37` is a **normal** f32 (about 45×
+`f32::MIN_POSITIVE`), so §1.3's FTZ does not flush it. The error is
+numerically negligible and, being produced identically by every conforming
+implementation, does not affect bit-exact agreement.
+
+Under §1.3's DAZ, `ln_pinned` returns `-Infinity` for all 16,777,214
+subnormal inputs of both signs, because §6.5's `x == 0.0` guard is an SSE
+compare and DAZ makes a subnormal operand compare equal to zero. That is
+§1.3 acting on §6.5's guard, not a property of the polynomial;
+`frexp_exact` (§6.5.1) is bit manipulation and is unaffected.
+
+Tier-1 op-level goldens pinning all of this -- 48 `(input_bits,
+output_bits)` pairs, with two structural mutation controls -- are in
+`cis2-verify/src/mathpin.rs`, `mod exp_ln_range`.
+
+**ERRATUM E-4 (2026-09-09).** Through v0.3b as published, this clause read
+"`ln_pinned`'s validated domain is a finite, explicitly-tested set of `x`
+values (§6.5), not a general accuracy proof ... **PARTIALLY CLOSED**". That
+was accurate about what had been measured and wrong in three ways about what
+is true: the stated tolerance was two orders of magnitude looser than the
+truth; the clause cautioned about `ln_pinned`, which runs once per model
+load, while saying nothing about `exp_pinned`, which runs twice per decode
+step (§10 softmax and §6.4 SiLU); and it did not know that §6.2's high guard
+clips below the representable range. §6.2, §6.4 and §6.5 are unchanged; only
+this limitations note was. See CHANGELOG.md, "Errata against v0.3b", and
+docs/E27_EXP_LN_RANGE.md.
+
+**ERRATUM E-10 (2026-09-09).** The reach census quoted in (a) and the
+zero count quoted in (b) were both taken on **one model, six ASCII prompts and
+at most 64 generated tokens**, and the clause said so. Extending the same
+instrument to **20 cells across both §0 models** --- ten per model, adding
+Japanese, Cyrillic, Arabic, emoji, accented-Latin and mathematical-symbol
+prompts, a 32-character repeat, a punctuation repeat, and a 256-token decode ---
+censused **145,385,472** `silu_pinned` arguments and **43,523,148** softmax
+`exp_pinned` arguments, against the 18,892,800 and 2,355,480 quoted above.
+
+Two of the numbers above therefore need correcting, and one claim needs
+retracting:
+
+* The SiLU side is **strengthened, not changed**: still **0** arguments in
+  §6.2's clip band, on either model, in any of the 20 cells. The deepest
+  `silu_pinned` argument seen anywhere is now **-32.173088** (SmolLM2, Japanese
+  prompt) rather than -31.406876 --- still some 56 units short of the band.
+* "**0** of its 2,355,480 softmax `exp_pinned` arguments below `-88.0`" is
+  **false in the wider scope.** Qwen2.5-0.5B decoding `"Once upon a time"` for
+  256 tokens produces a softmax argument of **-88.369385**, and **2** of that
+  cell's 22,626,240 arguments fall below `-88.0` and so trip (b)'s LOW guard.
+  It is a monotone trend in decode length on that one prompt and model, not a
+  freak: 16 tokens reaches -55.623780, 128 reaches -80.235170, 192 reaches
+  -82.705530, 256 reaches -88.369385.
+* (b)'s "the measured count of arguments where it returned zero and the oracle
+  was nonzero is **0**" is likewise **now 2**. (b)'s *substance* is unaffected,
+  though not for the reason given here: the true `exp(-88.369385)` is about
+  4.2e-39, a subnormal, and the guard destroys it --- but §1.3 never sees it.
+  See erratum **E-12**.
+
+A second counter, absent when this clause was written, records arguments in
+`[-88.0, -87.33654022216797)`, where no guard fires and `exp_pinned` is
+evaluated. The same Qwen cell puts **2** arguments there. E22's M01 mutant ---
+§1.3's pin gutted, and instrumented to prove the pin is really absent --- was
+re-run on that cell: the witness and argmax digests are **byte-identical to the
+pinned build**.
+
+> **This paragraph originally called that band the FTZ-*dependent* window and
+> said "the result is a subnormal that §1.3 flushes", concluding that "a
+> denormal genuinely arises in a real decode". That is wrong and is withdrawn
+> by erratum E-12 below. The band and its count of 2 are real; the mechanism
+> attributed to them is not.**
+
+Nothing normative changes. The clip in (a) and the guard in (b) are unaltered,
+and every digest in §13 is unaffected. What changes is the scope of the
+supporting measurement and the retraction of a count. The clause's own caveat
+--- "does not establish unreachability in general" --- was right to be there.
+See CHANGELOG.md and docs/E38_REACH_SWEEP.md.
+
+**ERRATUM E-12 (2026-09-09).** (b) says every value §6.2's low guard destroys
+"would be flushed by §1.3 in any case", and erratum E-10 above extended that
+reading to the band `[-88.0, -87.33654022216797)`, calling it the window where
+§1.3's FTZ/DAZ pin is digest-relevant. **Both statements name the wrong
+mechanism, and `exp_pinned` cannot reach the state they describe.**
+
+§6.2's final step is `ldexp_exact(result, k)`, which is bit manipulation, not a
+floating-point operation, and returns exactly `+0.0` whenever the reconstructed
+exponent field would be `<= 0`. `result` always carries exponent field 126 or
+127, so `exp_pinned` returns either `+0.0` or a **normal** f32. Evaluating
+`exp_pinned` on **all 4,294,967,296** f32 bit patterns yields **0** subnormal
+outputs; the smallest nonzero magnitude it can produce anywhere is `0x00800026`
+(exponent field 1, at `x = 0xc2aeac4f`). **No FTZ decision is ever taken on
+`exp_pinned`'s output.** Direct measurement agrees: with the pin cleared and
+restored around each evaluation, every point in the band returns `0x00000000`
+both ways.
+
+The consequences are confined to the stated reason:
+
+* (b)'s conclusion --- the guard is harmless --- is **correct**. Its reason is
+  not: the values are destroyed by `ldexp_exact`'s zero branch, before §1.3 is
+  consulted. §1.3 does not participate.
+* The band counter measures arguments **whose true `exp` is subnormal**, not
+  subnormals computed and flushed. It is FTZ-*independent*, like the guarded
+  side it was introduced to contrast with.
+* "A denormal genuinely arises in a real decode" is **withdrawn**. Through
+  §6.2, on the measured vector, none did.
+* E-10's *reach* result is untouched: the softmax argument really does reach
+  -88.369385, and (a)'s and (b)'s counts really are 2.
+* No digest, coefficient, guard or required behaviour changes.
+
+Where §1.3 **can** change bits in this pipeline is §10's elementwise division
+`w[i] = exp_i / denom`: `exp_pinned` yields a normal, `denom >= 1` because
+max-subtraction puts `exp(0) = 1` in the sum, and a smallest-normal numerator
+over a denominator above 1 is subnormal --- an SSE operation FTZ governs. That
+quantity had never been counted. Measured over the same Qwen cell,
+**22,626,240** softmax weights produced **0** subnormal quotients and **0**
+where FTZ would have changed the stored bits; the smallest nonzero weight is
+`1.5562307486661955e-38`, a factor of **1.32** above the subnormal boundary. So
+on this vector §1.3 is not digest-relevant through §10 --- which fully explains
+E-10's byte-identical M01 digests --- and it is **untriggered, not shown
+unnecessary**: a third of a binade more spread in one attention row would
+trigger it. §14's caveat that a SAME digest is weaker than "no denormal ever
+arose" therefore stands, now with the measurement that makes it precise. See
+CHANGELOG.md and docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md.
+
+**ERRATUM E-13 (2026-09-09).** E-12 closed one operation (§10's division) and
+left the rest of the pipeline uncounted, so "untriggered, not shown unnecessary"
+was stated for §10 alone. The remaining operations have now been counted, and
+the scope of that sentence widens to the whole decode.
+
+Every §5.1 product and partial sum, every §8 RMSNorm intermediate and every §10
+softmax weight of the §13.1 decode was classified exactly, on both §0
+checkpoints: **562,531,070,920** intermediates, **0** subnormal and **0** where
+FTZ would have changed the stored bits. Every §2.5 weight operand the decode
+reads was scanned first, since DAZ acts on inputs: **628,547,776** operands, **0**
+subnormal. The operations no counter reaches --- §11's residual adds, §7's RoPE
+rotations, §9.2's score scaling, §10's max-subtraction, and the polynomial
+internals of §6.2/§6.3 --- are covered instead by a differential: the §14.6 layer
+dump run twice, once with §1.3's FTZ and DAZ cleared for the whole decode, is
+**byte-identical** across all **7,467** named intermediate tensors of the
+normative vector (and 5,985 of the Qwen vector), and those dumps contain **0**
+stored subnormals and **0** exact zeros in 38,775,808 f32 values.
+
+So on the normative vector **§1.3 is not digest-relevant anywhere**, not merely
+through §10. The requirement stands unchanged and for the unchanged reason:
+§1.3 exists so that the *platform* cannot answer the question, and a conforming
+implementation must pin FTZ/DAZ whether or not its inputs exercise the pin. What
+is now measured rather than assumed is the weaker and more useful statement a
+conformance tier can rely on: **no conforming implementation's digest is hostage
+to FTZ/DAZ on this vector.** The nearest approach is still E-12's factor of
+1.32, so this remains untriggered rather than unnecessary. No digest,
+coefficient, guard or required behaviour changes. See CHANGELOG.md and
+docs/E40_MATVEC_RMSNORM_REACH.md.
 
 14.2. **Digest byte encoding for artifact hashes: CLOSED.** v0.1 fed the
 64-character hex **string's** ASCII bytes into the witness hash, not the
@@ -1353,33 +1729,171 @@ a verifier wanting to localize a mismatch should still compare
 five are still printed, §12.3), not rely on `CIS2_REF` alone to diagnose
 *why* it differs.
 
-14.4. **Trig polynomial accuracy is only validated for `|x| ≲ 14`** (unit
-tests sweep `x = i * 0.7` for `i` in `-20..=20`). RoPE angles in this
-spec's fixed 20-position decode stay small (`pos < 20`, `inv_freq ≤ 1.0`
-for `rope_theta=100000`; for `rope_theta=1000000`, `inv_freq` values are
-smaller still, since `inv_freq[i] = theta^(-2i/64)` shrinks faster for
-larger theta at fixed `i`, so angles stay in-range there too), so this is
-adequate for §13's test vectors, but the two-part-π reduction (§6.3) has
-not been stress-tested at larger magnitudes where it could lose more
-precision. A clean-room implementer targeting a longer sequence than this
-spec's 20 positions should not assume this polynomial's accuracy holds
-unchanged. **Unchanged from v0.1 (was §14.4 there too).**
+14.4. **Trig polynomial accuracy is measured, exhaustively, to `|x| <
+2^31`.** §6.3's Cody-Waite reduction has been evaluated at *every* f32 bit
+pattern `x` with `0 <= x < 2^31` -- 1,325,400,064 arguments, subnormals
+included -- against an f64 accuracy oracle under the §1.3 pinned
+environment. The worst absolute error is **9.4218e-8 for `|x| < 2^20`** and
+**2.0925e-7 for `|x| < 2^31`**: 0.790 and 1.756 ULP at 1.0 respectively.
+Relative (ULP) error is much larger near the zeros of `sin` and `cos` --
+2617 ULP at worst -- but there the absolute error is *smaller*, by four to
+five orders of magnitude, because the f32 grid is finer near zero; ULP is
+not a meaningful figure of merit for these functions and absolute error is.
 
-14.5. **RMSNorm multiply order (§8) is pinned but its bit-level necessity
-is unconfirmed.** `(x[i]*inv)*weight[i]` vs. `x[i]*(inv*weight[i])` are
-not provably identical for arbitrary fp32 operands under rounding, but no
-divergence between the two orders has actually been observed on either
-model tested. **Unchanged from v0.1 (was §14.5 there too).**
+Because §7.1 makes `inv_freq[0]` exactly `1.0` and every later entry
+smaller, the largest RoPE angle a decode evaluates is its sequence length.
+The `|x| < 2^20` figure therefore covers **every RoPE angle any context up
+to 1,048,576 positions can produce**, for any `rope_theta`. Direct
+enumeration of the angle multiset for both §0 models at `L = 131,072`
+agrees: max absolute error 9.3815e-8.
 
-14.6. **The oracle correctness checks (§13.3) are defensible spot-checks,
-not exhaustive.** They confirm greedy token-id agreement and one step's
-full-vocab logit agreement to ~4e-6 relative on two model families now
-(SmolLM2-135M, Qwen2.5-0.5B) — neither checks every intermediate layer's
-activations against the oracle, so a compensating pair of errors elsewhere
-in the layer stack that happens to preserve step-0's output and all
-argmax decisions cannot be completely ruled out by this evidence alone.
-**Unchanged in kind from v0.1 (was §14.6 there); now covers two models
-instead of one.**
+`sin_pinned` is exactly odd and `cos_pinned` exactly even *in value* over
+every f32 with `2^-126 <= |x| < 2^31`. Two exceptions are documented, and
+neither affects any reachable RoPE angle: on the zero/subnormal class
+§1.3's DAZ makes `sin_pinned` return `+0.0` for both signs, and at three
+arguments above `2^29` (620046660, 1175634300, 1240093300) the reduced
+argument underflows and only the sign of a zero result fails to mirror.
+
+Tier-1 op-level goldens pinning this behaviour at the worst-case arguments
+are in `cis2-verify/src/mathpin.rs`, `mod large_angle`.
+
+**ERRATUM E-2 (2026-09-09).** Through v0.3b as published, this clause read
+"Trig polynomial accuracy is only validated for `|x| ≲ 14` ... A clean-room
+implementer targeting a longer sequence than this spec's 20 positions
+should not assume this polynomial's accuracy holds unchanged," carried
+unchanged from v0.1. That was accurate about what had been measured and
+badly misleading about what is true: the reduction does not degrade at all
+across nine orders of magnitude of argument. §6.3 is unchanged; only this
+limitations note was. See CHANGELOG.md, "Errata against v0.3b", and
+docs/E26_TRIG_RANGE.md.
+
+14.5. **RMSNorm multiply order (§8) is pinned, and its bit-level necessity
+is measured.** `(x[i]*inv)*weight[i]` and `x[i]*(inv*weight[i])` are not
+provably identical for arbitrary fp32 operands under rounding, and they in
+fact differ by one ULP on about 35 % of the operand triples an actual decode
+produces — 231,014 of the 667,584 RMSNorm elements in the §13.1 vector.
+Substituting the other association changes the §13.1 witness digest from
+`d82743059d…` to `570c0bbb0d…`. It does **not** change the argmax digest or
+the generated token ids for this vector, so the violation is invisible to any
+check that hashes only the model's outputs — one of the reasons §12.1 hashes
+the full logit vector. The second model §0 names behaves the same way:
+`Qwen/Qwen2.5-0.5B` on the same prompt and decode length diverges on 287,859
+of its 834,176 RMSNorm elements (34.51 %), moves its witness
+digest from `c9dff099d9…` to `4df2b260ee…`, and leaves its argmax digest and
+all sixteen generated token ids unchanged. (That run supplies its prompt token
+ids rather than deriving them; see §14.8.) See
+`docs/E25_RMSNORM_ASSOCIATION.md`.
+**ERRATUM E-1 (2026-09-09).** Through v0.3b as published, this clause read
+"…its bit-level necessity is unconfirmed… no divergence between the two
+orders has actually been observed on either model tested," carried unchanged
+from v0.1. That was wrong: E22's M09 mutation is this exact reassociation and
+had already moved the digest. §8 is unchanged; only this limitations note was.
+See CHANGELOG.md, "Errata against v0.3b".
+
+14.6. **Every intermediate activation has been compared against the oracle,
+on both models. CLOSED.** §13.3's checks look only at the two ends of the
+pipe --- greedy token ids and one step's full-vocab logit vector. That left a
+compensating pair of errors inside the layer stack, one layer diverging and a
+later one bringing the result back, outside the reach of the evidence. It is
+now inside it.
+
+Every named intermediate of the forward pass --- `embed`, and per layer
+`ln1`, `q_proj`, `k_proj`, `v_proj`, `attn_out`, `o_proj`, `resid_attn`,
+`ln2`, `gate_proj`, `up_proj`, `mlp_act`, `down_proj`, `resid_mlp`, and
+`final_norm`/`logits` --- has been dumped at every position of a full decode
+of **both** §0 models and compared against the same tensors taken from a
+`transformers` fp32 forward pass by module hook:
+
+| | SmolLM2-135M | Qwen2.5-0.5B |
+|---|---|---|
+| tensors compared | 7,467 | 5,985 |
+| worst relative L2 error, any tensor | **2.228e-5** | **9.923e-5** |
+| `embed` agreement | exactly 0 | exactly 0 |
+| worst amplification of the carried-in error by any layer | **4.07x** | **3.22x** |
+
+The last row is the one that closes the clause. A divergent layer shows its
+own tensors far above the error it was handed; a compensating layer shows the
+opposite. Measured, **every layer's first computed tensor is within
+0.73-1.18x of the error handed to it**, on all 30 layers of the first model
+and all 24 of the second, with the worst whole-layer amplification bounded by
+4.07x and uniform with depth. There is no divergent layer and no compensating
+layer.
+
+The residual stream shows apparent spikes (8.79x at layer 9 of the first
+model) which are **cancellation, not divergence**: there the two addends have
+norms 486.5 and 414.1 and their sum has norm 105.6, so a 4.6x cancellation
+inflates the relative measure by 4.6x while every input to the add sits at
+1-3e-6. Evidence and method: `docs/E28_LAYER_ORACLE.md`. Instrumentation:
+`cis2-verify` `--features layerdump`, plus `scripts/oracle_layers.py` and
+`scripts/compare_layers.py`.
+
+Scope, unchanged by this: agreement with `transformers` is ~1e-5 relative and
+**must not** be bit-exact --- the oracle uses different kernels and a
+different summation order. CIS-2's bit-exactness claim is between conforming
+implementations of *this document*, not between this document and PyTorch.
+This is one prompt and 19 positions on each model, so a compensating pair
+that appears only at some other context length or activation pattern is not
+excluded; and the Qwen run supplies its prompt token ids from outside §3
+(§14.8), so it attests to §4-§11 only.
+
+**ERRATUM E-5 (2026-09-09).** Through v0.3b as published, and unchanged in
+kind since v0.1, this clause read:
+
+> The oracle correctness checks (§13.3) are defensible spot-checks, not
+> exhaustive. They confirm greedy token-id agreement and one step's
+> full-vocab logit agreement to ~4e-6 relative on two model families now
+> (SmolLM2-135M, Qwen2.5-0.5B) --- neither checks every intermediate layer's
+> activations against the oracle, so a compensating pair of errors elsewhere
+> in the layer stack that happens to preserve step-0's output and all argmax
+> decisions cannot be completely ruled out by this evidence alone.
+> **Unchanged in kind from v0.1 (was §14.6 there); now covers two models
+> instead of one.**
+
+That statement was correct when written, and the measurement it asked for has
+now been made. Nothing normative changes: no digest, coefficient, or required
+behaviour is affected. What changes is the strength of the evidence behind
+§13.3, and the fact that this clause is no longer an open gap.
+
+**ERRATUM E-9 (2026-09-09).** Three numbers above are **per-prompt maxima
+quoted as general bounds**. As published they read "every layer's first
+computed tensor is within **0.73-1.18x** of the error handed to it" and "the
+worst whole-layer amplification bounded by **4.07x**" (SmolLM2) / **3.22x**
+(Qwen). Each is the value measured on the single prompt E28 ran. Re-measuring
+the identical instrument over six prompt/length cells on each model
+(`docs/E36_ORACLE_PROMPT_SWEEP.md`, `docs/E37_QWEN_ORACLE_SWEEP.md`; 144,825
+tensors, 312 (cell, layer) ratio rows) gives:
+
+| | as published | measured over six cells per model |
+|---|---|---|
+| first-computed-tensor / carried-in ratio | 0.73-1.18x | **0.51-1.70x** |
+| worst whole-layer amplification, SmolLM2 | 4.07x | **6.48x** |
+| worst whole-layer amplification, Qwen | 3.22x | **4.83x** |
+
+E28's own cell reproduces 4.07x, 3.22x and the 0.73 low end exactly, so these
+are that prompt's values and not a transcription error. The table earlier in
+this clause is likewise per-prompt: SmolLM2's worst relative L2 error rises to
+**3.406e-5** across six prompts (E36), while Qwen's **9.923e-5** turns out to be
+the six-cell maximum already.
+
+**The conclusion of this clause is unchanged, and now rests on a better test.**
+The width of the ratio interval was never the evidence; whether an extreme is a
+property of the *weights* is. A divergent or compensating layer must appear at
+the same layer, in the same direction, on every input. Measured, it does not:
+Qwen's layer 22 hands back 0.73x the error it was given on one prompt and 1.61x
+on another, and SmolLM2's layer 3 spans 0.68x to 1.48x — activation-dependent
+scatter in a ratio of two small relative errors, not a layer that creates or
+destroys error. The compensating pair is excluded instead by the residual-stream
+test, run on all 324 (cell, layer) rows of both sweeps: a compensating pair would
+show a residual spike larger than that layer's own-tensor error times its
+cancellation factor, and `max resid_l2 / (own_l2 x cancellation)` is **0.848**
+on SmolLM2 and **0.557** on Qwen — every row below 1, none unexplained. Read the
+row above as: *no layer's own tensors depart from the error handed to it by more
+than about 1.7x in either direction, and no layer's departure reproduces across
+inputs.* The "one prompt and 19 positions on each model" scope note below is
+correspondingly widened to six prompts and up to 67 fed positions on each; it is
+still not exhaustive, and the Qwen half still attests to §4-§11 only (§14.8).
+Nothing normative changes: no digest, coefficient, or required behaviour is
+affected. See CHANGELOG.md, "Errata against v0.3b".
 
 14.7. **This spec's own history.** Carried forward from v0.1: earlier
 states of the reference computed `inv_freq` via unpinned host `f64::powf`,
@@ -1398,6 +1912,27 @@ time, the exact failure mode §14.3 (now closed) used to warn about: a
 `CIS2_REF`-only comparison cannot localize *which* internal change moved
 the digest without also comparing the finer-grained digests
 individually.
+
+14.8. **§3 admits exactly one `tokenizer.json`, and §0's second model is not
+it. ERRATUM E-3 (2026-09-09).** §3.1.3 pins `normalizer: null` and §3.1.4 pins
+the `pre_tokenizer` value `Sequence[Digits(individual_digits = true),
+ByteLevel(add_prefix_space = false, use_regex = true)]` — the shape
+`HuggingFaceTB/SmolLM2-135M` ships. `Qwen/Qwen2.5-0.5B`, which §0 names as the
+second model and `docs/E15d_bc_RESULT.md` uses as evidence of correctness,
+ships an NFC normalizer and `Sequence[Split(<GPT-4-style regex>, Isolated),
+ByteLevel(use_regex = false)]`. A conforming implementation of §3 therefore
+**must refuse that checkpoint's tokenizer**, and cannot run that model
+end-to-end from its artifacts. This was always true of the text; it was never
+written down, and a reader could reasonably have taken §0's second-model
+sentence to mean otherwise. The scope is unchanged — §13.1 was and is the only
+normative test vector, and §0 already said the Qwen tuple is not one — but the
+boundary is now stated. Work on such a checkpoint is confined to §4–§11 and
+must supply the prompt token ids from outside §3, saying so; a receipt produced
+that way attests to §4–§11 and nothing of §3. A future version that wants a
+second normative tuple has to generalize §3.1.3/§3.1.4 from a pinned literal to
+a small enumerated set, with the same "refuse rather than reinterpret"
+discipline for anything outside it. See `docs/E25_RMSNORM_ASSOCIATION.md` §4.1
+and CHANGELOG.md, "Errata against v0.3b".
 
 ## 15. Conformance (normative)
 

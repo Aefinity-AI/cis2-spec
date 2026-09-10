@@ -1,0 +1,105 @@
+[package]
+name = "cis2-verify"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.98"
+license = "Apache-2.0"
+description = "Standalone, zero-dependency verifier for CIS-2 v0.3b receipts. Written from the specification text alone; shares no code with the reference implementation."
+
+# Deliberately empty. This crate re-derives SHA-256, JSON parsing,
+# safetensors parsing, byte-level BPE tokenization, the pinned
+# floating-point environment, the pinned transcendental polynomials, a
+# correctly-rounded software sqrt, the full fp32 transformer forward pass,
+# and the witness chain from CIS2_SPEC_v0.3b.md. See CLEANROOM.md.
+[dependencies]
+
+# This crate is deliberately standalone: it is not a member of the
+# reference implementation's package at the repository root, so that
+# "shares no code with the reference" is enforced by the build and not
+# only by discipline.
+[workspace]
+
+[features]
+default = ["std"]
+std = []
+# Spec 14.5 measurement only. A `census` build instruments RMSNorm and can
+# run the decode in the non-conforming multiply order; it is not a
+# conforming verifier and is never enabled by default or in CI.
+census = ["std"]
+# Spec 14.6 measurement only. A `layerdump` build writes every intermediate
+# activation of the forward pass to a file for comparison against an
+# independent oracle. The tap is write-only; a layerdump build is not a
+# conforming verifier and is never enabled by default or in CI.
+layerdump = ["std"]
+
+[[bin]]
+name = "cis2-verify"
+path = "src/bin/cis2-verify.rs"
+required-features = ["std"]
+
+[[example]]
+name = "assoc_census"
+path = "examples/assoc_census.rs"
+required-features = ["census"]
+
+[[example]]
+name = "silu_reach"
+path = "examples/silu_reach.rs"
+required-features = ["census"]
+
+[profile.release]
+opt-level = 2
+# CIS-2 v0.3b 1.5: no flag anywhere that licenses reassociation, fast-math,
+# or approximate reciprocal/rsqrt substitution. rustc provides none by
+# default and this crate adds none. 1.4's no-FMA rule is satisfied at
+# source level (never `f32::mul_add`) and checked mechanically by
+# tools/check_no_fma.sh.
+
+[[example]]
+name = "e39_band"
+path = "examples/e39_band.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e39_ctrl"
+path = "examples/e39_ctrl.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e39_exhaustive"
+path = "examples/e39_exhaustive.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e40_wscan"
+path = "examples/e40_wscan.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e40_ctrl"
+path = "examples/e40_ctrl.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e41_detok_probe"
+path = "examples/e41_detok_probe.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e41_unmapped_logits"
+path = "examples/e41_unmapped_logits.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e41_detok_real"
+path = "examples/e41_detok_real.rs"
+
+[[example]]
+name = "e40_ldctrl"
+path = "examples/e40_ldctrl.rs"
+required-features = ["layerdump"]
+
+[[example]]
+name = "layer_dump"
+path = "examples/layer_dump.rs"
+required-features = ["layerdump"]

@@ -1,0 +1,56 @@
+{
+  "decoder": {
+    "type": "ByteLevel"
+  },
+  "model": {
+    "byte_fallback": false,
+    "continuing_subword_prefix": null,
+    "dropout": null,
+    "end_of_word_suffix": null,
+    "fuse_unk": false,
+    "ignore_merges": false,
+    "merges": [
+      "a b",
+      "b c",
+      "ab c"
+    ],
+    "type": "BPE",
+    "unk_token": null,
+    "vocab": {
+      "a": 0,
+      "ab": 13,
+      "abc": 15,
+      "b": 1,
+      "bc": 14,
+      "c": 2,
+      "d": 3,
+      "e": 4,
+      "f": 5,
+      "g": 6,
+      "h": 7,
+      "i": 8,
+      "j": 9,
+      "k": 10,
+      "l": 11,
+      "m": 12
+    }
+  },
+  "normalizer": null,
+  "post_processor": null,
+  "pre_tokenizer": {
+    "pretokenizers": [
+      {
+        "individual_digits": true,
+        "type": "Digits"
+      },
+      {
+        "add_prefix_space": false,
+        "trim_offsets": true,
+        "type": "ByteLevel",
+        "use_regex": true
+      }
+    ],
+    "type": "Sequence"
+  },
+  "version": "1.0"
+}
