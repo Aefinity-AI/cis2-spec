@@ -81,6 +81,20 @@ path = "examples/e40_ctrl.rs"
 required-features = ["census"]
 
 [[example]]
+name = "e41_detok_probe"
+path = "examples/e41_detok_probe.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e41_unmapped_logits"
+path = "examples/e41_unmapped_logits.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e41_detok_real"
+path = "examples/e41_detok_real.rs"
+
+[[example]]
 name = "e40_ldctrl"
 path = "examples/e40_ldctrl.rs"
 required-features = ["layerdump"]

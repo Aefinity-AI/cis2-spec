@@ -295,9 +295,37 @@ struct Symbol {
 
 pub struct Tokenizer {
     vocab: BTreeMap<String, u32>,
+    /// The inverse of `vocab`, built and checked in `from_json`. See
+    /// `decode` and erratum E-14: v0.3b specifies the id -> text direction
+    /// only for the *byte* map (3.1.5.a), not for the id -> token string
+    /// step, so this crate's behaviour here is a documented extension.
+    by_id: BTreeMap<u32, String>,
     /// `(left_id, right_id) -> (rank, merged_id)`.
     merges: BTreeMap<(u32, u32), (u32, u32)>,
     byte_table: [char; 256],
+    /// Inverse of `byte_table`: codepoint -> the single byte it stands for.
+    byte_inverse: BTreeMap<char, u8>,
+}
+
+/// Why a token-id sequence could not be turned back into text.
+///
+/// Every variant is a case CIS-2 v0.3b does not specify (erratum E-14). They
+/// are returned rather than papered over so that an unspecified input is
+/// visible to the caller instead of silently becoming plausible text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DetokError {
+    /// The id has no string in `model.vocab`. A decode can emit it: 12.1's
+    /// argmax ranges over `config.vocab_size` logits, which on
+    /// `Qwen/Qwen2.5-0.5B` is 151936 against 151643 vocab entries plus 22
+    /// `added_tokens`, leaving 271 emittable ids with no string at all.
+    UnmappedId(u32),
+    /// A token string contains a codepoint that is not in the 3.1.5.a byte
+    /// table, so it does not stand for any byte.
+    UnmappedChar(u32, char),
+    /// The concatenated bytes are not valid UTF-8. Note this is decided on
+    /// the *concatenation*, never per token: a single codepoint can straddle
+    /// a token boundary, so per-token validation would reject valid output.
+    NotUtf8,
 }
 
 impl Tokenizer {
@@ -424,10 +452,32 @@ impl Tokenizer {
             merges.entry((lid, rid)).or_insert((rank, mid));
         }
 
+        // The id -> string inverse. E41 measured 0 collisions in both
+        // checkpoints 0 names, but a vocab in which two strings share an id
+        // has no inverse at all, and a decoder that silently picked one would
+        // be choosing where the spec is silent. Refuse the file instead.
+        let mut by_id: BTreeMap<u32, String> = BTreeMap::new();
+        for (s, &id) in &vocab {
+            if let Some(prev) = by_id.insert(id, s.clone()) {
+                return Err(alloc::format!(
+                    "tokenizer.json: model.vocab maps both {prev:?} and {s:?} to id {id}, so the \
+                     id -> token string map is not a function and cannot be inverted"
+                ));
+            }
+        }
+
+        let byte_table = bytes_char();
+        let mut byte_inverse: BTreeMap<char, u8> = BTreeMap::new();
+        for (b, &c) in byte_table.iter().enumerate() {
+            byte_inverse.insert(c, b as u8);
+        }
+
         Ok(Tokenizer {
             vocab,
+            by_id,
             merges,
-            byte_table: bytes_char(),
+            byte_table,
+            byte_inverse,
         })
     }
 
@@ -522,6 +572,44 @@ impl Tokenizer {
             ids.extend(self.encode_word(&word)?);
         }
         Ok(ids)
+    }
+
+    /// The token string an id stands for, or `None` if the id has none.
+    pub fn token_str(&self, id: u32) -> Option<&str> {
+        self.by_id.get(&id).map(|s| s.as_str())
+    }
+
+    /// Token ids back to the byte string they stand for.
+    ///
+    /// **This is an extension, not a v0.3b conformance requirement.** 3.1.5.a
+    /// says decoding uses the inverse of the *byte* map and 3.4 "Decode
+    /// protocol" is about greedy generation; nothing in v0.3b specifies
+    /// id -> token string -> text. Erratum E-14 records the gap. The
+    /// construction here is the only one consistent with 3.1.5: invert
+    /// `model.vocab`, invert the 3.1.5.a byte table, concatenate.
+    ///
+    /// Bytes, not text, because a UTF-8 codepoint can straddle a token
+    /// boundary -- `decode` validates the concatenation, which is why the two
+    /// are separate entry points.
+    pub fn decode_bytes(&self, ids: &[u32]) -> Result<Vec<u8>, DetokError> {
+        let mut out = Vec::new();
+        for &id in ids {
+            let tok = self.by_id.get(&id).ok_or(DetokError::UnmappedId(id))?;
+            for ch in tok.chars() {
+                let b = *self
+                    .byte_inverse
+                    .get(&ch)
+                    .ok_or(DetokError::UnmappedChar(id, ch))?;
+                out.push(b);
+            }
+        }
+        Ok(out)
+    }
+
+    /// `decode_bytes` plus UTF-8 validation of the whole concatenation.
+    pub fn decode(&self, ids: &[u32]) -> Result<String, DetokError> {
+        let bytes = self.decode_bytes(ids)?;
+        String::from_utf8(bytes).map_err(|_| DetokError::NotUtf8)
     }
 }
 

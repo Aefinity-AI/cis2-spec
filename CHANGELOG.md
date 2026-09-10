@@ -619,6 +619,72 @@ through section 10 on this vector, which fully explains M01's null, and it is
 **untriggered, not unnecessary**. Section 14.1 carries this correction inline as
 **ERRATUM E-12**; the evidence is in `docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md`.
 
+### E-14 (2026-09-09) --- CIS-2 pins a decode to token ids and never says how to read them
+
+**The gap.** v0.3b specifies text to ids completely (sections 3.1.3-3.1.5) and
+specifies ids to text nowhere. Section 3.1.5.a's "Decode uses the inverse map"
+is about the 256-entry *byte* table alone; section 3.4's "Decode protocol"
+means greedy generation, not detokenization; section 12 hashes token **ids**. A
+conforming verifier never has to produce a character, so two conforming
+implementations can disagree about what a receipt says while agreeing on every
+digest in it.
+
+**Why it is not pedantic.** Three cases, all measured on the two checkpoints
+section 0 names, none of them reachable from the spec text:
+
+1. **A codepoint can straddle a token boundary.** **313** of SmolLM2-135M's
+   49,152 vocabulary entries are not valid UTF-8 on their own --- they are
+   fragments of one. Bytes must be concatenated across the whole id sequence
+   and validated once. A per-token decoder is wrong on 0.64 % of a shipped
+   conformance checkpoint's vocabulary.
+
+2. **Not every emittable id has a string.** Section 12.1's argmax ranges over
+   `config.vocab_size` logits. Qwen2.5-0.5B's tied embedding is `[151936, 896]`
+   against 151,643 `model.vocab` entries plus 22 `added_tokens`, leaving **271
+   ids the decode can emit that nothing maps**. Their embedding rows are not
+   zero and not separable by norm from real tokens (all 271 within
+   `[3.009416e-1, 3.009682e-1]`; the smallest sampled mapped row is
+   `2.999703e-1`), so they cannot be excluded by inspecting the weights. On
+   section 13.1's vector they never win --- best rank 115,765 of 151,936, the
+   argmax ahead by 2.0655226e1. Untriggered on this vector, not shown
+   impossible, stated the same way E-12 and E-13 state it.
+
+3. **Decoding is not the inverse of encoding on special tokens.** Section 3.3
+   pins `add_special_tokens = false`, so section 3 never *produces* a special
+   token id, but section 11.2's argmax can emit one. All **17** of SmolLM2's
+   `added_tokens` (ids 0..=16) decode to their own literal text and none
+   re-encodes to itself: id 2 gives `<|im_end|>`, which re-encodes to
+   `[44, 108, 306, 79, 486, 108, 46]`. Once a decode has been rendered to text,
+   **a model-emitted control token is indistinguishable from generated text
+   that spells it** --- so any consumer that re-reads generated text must carry
+   the ids, not only the string. The digest chain is over ids and is
+   unaffected, which is exactly why this can sit behind a passing conformance
+   run unnoticed.
+
+**Not a defect in the artifacts.** The inverse is well defined in both: 0 ids
+carrying two strings, no gaps below the largest id, the byte table a 256-way
+bijection. The gap is in the specification.
+
+**What v0.4 must do.** Either specify the id-to-text direction --- which table
+is inverted, byte-level concatenation before UTF-8 validation, a defined result
+for an id with no string, and whether a special token renders as its literal
+text or is reserved --- or state that CIS-2 conformance is over token ids only
+and text rendering is out of scope. Either resolves it; silence does not.
+
+**Implementation.** `Tokenizer::decode` / `decode_bytes` / `token_str` land as
+a **documented extension, not a conformance requirement**: invert
+`model.vocab`, concatenate bytes across the sequence, validate UTF-8 once, and
+return `DetokError` rather than a substitution. `from_json` now also refuses a
+`model.vocab` that maps two strings to one id, since such a vocab has no
+inverse. Seven tests in `tests/detokenize.rs`, and three mutants of the
+implementation each killed by the intended test. The section 13.1 reference
+decode is unchanged (`witness d8274305...`, `argmax 0b9c8f3a...`,
+`conformance=PASS`) and now renders as
+`", there was a little girl named Lily. She lived in a big house with"`,
+re-encoding to the same ids.
+
+Full write-up: `docs/E41_DETOKENIZATION_IS_UNSPECIFIED.md`.
+
 ### E-13 (2026-09-09) --- the rest of the decode counted: 562 billion intermediates, no subnormal anywhere, and a pinned-vs-unpinned layer dump that is byte-identical
 
 **What was left open.** E-12 closed one operation --- section 10's elementwise
