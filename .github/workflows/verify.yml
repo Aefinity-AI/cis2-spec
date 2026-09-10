@@ -266,6 +266,46 @@ jobs:
           ./cis2-verify/target/release/cis2-verify verify weights /tmp/cv_receipt.txt | tee /tmp/cv_verify.txt
           grep -q 'CIS2-VERIFY VERIFY PASS' /tmp/cv_verify.txt || { echo "round trip failed"; exit 1; }
 
+      - name: Weights-free check of the receipt it just wrote
+        run: |
+          set -euo pipefail
+          # `check` re-derives everything that does not need the checkpoint.
+          # On the spec 13.1 vector that is all thirteen fields, so the
+          # residual must be empty -- if a later change quietly narrows what
+          # the cheap tier establishes, this line stops being true.
+          ./cis2-verify/target/release/cis2-verify check /tmp/cv_receipt.txt | tee /tmp/cv_check.txt
+          grep -qx 'CIS2-VERIFY CHECK PASS' /tmp/cv_check.txt || { echo "check did not pass"; exit 1; }
+          grep -q 'residual=none' /tmp/cv_check.txt \
+            || { echo "check left a residual on the pinned vector"; exit 1; }
+          # The same verdict has to come back by the other route: recomputed
+          # from the supplied artifacts rather than read off the spec's pins.
+          ./cis2-verify/target/release/cis2-verify check /tmp/cv_receipt.txt \
+            --config weights/config.json --tokenizer weights/tokenizer.json | tee /tmp/cv_check2.txt
+          grep -qx 'CIS2-VERIFY CHECK PASS' /tmp/cv_check2.txt \
+            || { echo "check did not pass with artifacts supplied"; exit 1; }
+          grep -q 'residual=none' /tmp/cv_check2.txt \
+            || { echo "check left a residual with artifacts supplied"; exit 1; }
+          grep -q 'rebuilt from the supplied config.json' /tmp/cv_check2.txt \
+            || { echo "check ignored the supplied config.json"; exit 1; }
+          grep -q 'supplied tokenizer.json' /tmp/cv_check2.txt \
+            || { echo "check ignored the supplied tokenizer.json"; exit 1; }
+
+      - name: A forged witness must be rejected WITHOUT the weights (negative control)
+        run: |
+          set -euo pipefail
+          # The whole claim of the cheap tier is that on the pinned vector it
+          # is binding. A `check` that cannot fail here proves nothing, so the
+          # control runs from a directory with no artifacts in it at all.
+          sed -E 's/^(witness-digest [0-9a-f]{63})0$/\11/; t; s/^(witness-digest [0-9a-f]{63})[1-9a-f]$/\10/' \
+            /tmp/cv_receipt.txt > /tmp/cv_forged.txt
+          cmp -s /tmp/cv_receipt.txt /tmp/cv_forged.txt && { echo "mutation was a no-op"; exit 1; }
+          mkdir -p /tmp/empty && cd /tmp/empty
+          if "$GITHUB_WORKSPACE/cis2-verify/target/release/cis2-verify" check /tmp/cv_forged.txt; then
+            echo "a forged witness passed the weights-free check - the tier is not binding"
+            exit 1
+          fi
+          echo "negative control: PASS (forged witness rejected with no artifacts present)"
+
       - name: A doctored receipt must be rejected (negative control)
         run: |
           set -euo pipefail
