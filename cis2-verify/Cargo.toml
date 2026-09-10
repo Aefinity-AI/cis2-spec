@@ -71,6 +71,16 @@ path = "examples/e39_exhaustive.rs"
 required-features = ["census"]
 
 [[example]]
+name = "e40_wscan"
+path = "examples/e40_wscan.rs"
+required-features = ["census"]
+
+[[example]]
+name = "e40_ctrl"
+path = "examples/e40_ctrl.rs"
+required-features = ["census"]
+
+[[example]]
 name = "layer_dump"
 path = "examples/layer_dump.rs"
 required-features = ["layerdump"]

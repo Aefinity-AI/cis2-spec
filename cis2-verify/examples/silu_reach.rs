@@ -138,6 +138,18 @@ fn main() {
          1.3 is not digest-relevant through 10 on this vector)"
     );
 
+    // E40: the two operations E39 left uncounted --- 5.1's reduction (every
+    // product and every partial sum inside `dot_seq`, so all of 5.2 matvec)
+    // and 8's RMSNorm.
+    let (mn, msub, mftz) = census::matvec_counts();
+    println!(
+        "REACH matvec 5.1 INTERMEDIATES n={mn} true-subnormal={msub} FTZ-DECISIVE={mftz}          (products and partial sums; >0 FTZ-DECISIVE means 1.3 changed stored bits inside a reduction)"
+    );
+    let (rn, rsub, rftz) = census::rms_counts();
+    println!(
+        "REACH rmsnorm 8 INTERMEDIATES n={rn} true-subnormal={rsub} FTZ-DECISIVE={rftz}"
+    );
+
     // The census only reads, so these must be the pinned values.
     println!("REACH witness-digest {}", hex::encode(&out.witness_digest));
     println!("REACH argmax-digest {}", hex::encode(&out.argmax_digest));
