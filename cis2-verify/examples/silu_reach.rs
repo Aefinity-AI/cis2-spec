@@ -40,6 +40,21 @@ fn main() {
     let dir = Path::new(&dir);
 
     fpenv::pin_and_selftest().expect("1.3 pin");
+    {
+        // E39 2x2 build-identity probe. Printed BEFORE the decode, and the
+        // register is restored, so nothing below is affected.
+        use cis2_verify::mathpin::exp_pinned;
+        use std::hint::black_box;
+        let a = black_box(-88.369385f32); // the argument the Qwen/256 cell reaches
+        let ftz = black_box(black_box(f32::MIN_POSITIVE) * black_box(0.5f32));
+        let daz = black_box(black_box(f32::from_bits(1)) + black_box(0.0f32));
+        let as_is = black_box(exp_pinned(black_box(a))).to_bits();
+        let unpinned = fpenv::probe_unpinned(|| black_box(exp_pinned(black_box(a))).to_bits());
+        println!(
+            "E39 PROBE pin={} ftz_bits={:#010x} daz_bits={:#010x} exp(-88.369385)_asis={:#010x} exp(-88.369385)_unpinned={:#010x} pin_after={}",
+            fpenv::is_pinned(), ftz.to_bits(), daz.to_bits(), as_is, unpinned, fpenv::is_pinned()
+        );
+    }
     println!("REACH fp-env=pinned control={}", fpenv::control_name());
     println!("REACH build=instrumented (NOT a conforming verifier)");
     println!("REACH artifacts={} prompt={prompt:?} gen_toks={gen_toks}", dir.display());
@@ -104,10 +119,23 @@ fn main() {
     println!("REACH softmax arg range=[{smin:e}, {smax:e}]");
     println!(
         "REACH softmax IN SUBNORMAL BAND [-88.0, {top}) n={subn} \
-         (>0 means this decode computed a subnormal exp that 1.3's FTZ flushed \
-         to zero, so FTZ/DAZ is digest-relevant here and E22's M01 mutant \
-         should move the digest; =0 means it is not, which is what E22 item 1 \
-         asks and no counter previously answered)"
+         (E39 CORRECTION: this counts arguments whose TRUE exp is subnormal. \
+         exp_pinned never RETURNS a subnormal --- ldexp_exact returns 0.0 \
+         whenever the reconstructed exponent field would be <= 0 --- so no \
+         FTZ decision is taken here. See the WEIGHT line below for the \
+         counter that does answer E22 item 1.)"
+    );
+
+    // E39: the elementwise division in 10's final step is where 1.3 can
+    // actually change bits. Exact f64 quotient, so the census sees the value
+    // the f32 division would have produced before FTZ had a say.
+    let (wn, wsub, wftz, wmin) = census::weight_counts();
+    println!(
+        "REACH softmax WEIGHTS n={wn} true-subnormal-quotients={wsub} \
+         FTZ-DECISIVE={wftz} min-nonzero-|q|={wmin:e} \
+         (FTZ-DECISIVE>0 means the f32 division would have stored a nonzero \
+         subnormal and 1.3 flushed it, so M01 must move the digest; =0 means \
+         1.3 is not digest-relevant through 10 on this vector)"
     );
 
     // The census only reads, so these must be the pinned values.

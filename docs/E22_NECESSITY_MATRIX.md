@@ -55,21 +55,33 @@ vector does not contain.
 did not move because **no tie occurs** in any of the 16 argmaxes over a 49152-wide fp32 logit vector.
 The clause is correct and necessary in general; this vector simply never reaches the branch.
 
-**M01 — precision. UPDATED 2026-09-09 by [E38](E38_REACH_SWEEP.md): the two readings are now
-separated by measurement.** "SAME digest" is evidence that no denormal *changed a result*, which is
-slightly weaker than "no denormal ever arose"; the mutant was not instrumented to tell those apart.
-E38 found a decode that does produce denormals — Qwen2.5-0.5B, `"Once upon a time"`, 256 generated
-tokens, 2 of 22,626,240 softmax `exp_pinned` arguments in the FTZ-dependent band
-`[-88.0, -87.33654)` — rebuilt M01 with probes that *prove the pin is really gone*
-(`is_pinned()==false`, `f32::MIN_POSITIVE*0.5` reading `0x00400000` instead of `0x00000000`,
-`f32::from_bits(1)+0.0` reading `0x00000001`), and ran it on that cell. Witness and argmax digests
-are byte-identical to the pinned build. **So a denormal did arise, and it did not change the
-receipt** — the weaker of the two readings, established rather than assumed. §10's max-subtraction
-puts `exp(0)=1` in the denominator, so a numerator below `1.18e-38` contributes a term under the
-accumulator's ulp; that is the mechanism, and it does not cover an accumulator driven near zero by
-cancellation, which E38 did not test. §1.3 therefore still has **no end-to-end necessity witness**.
+**M01 — precision. UPDATED 2026-09-09 by [E38](E38_REACH_SWEEP.md), then CORRECTED the same day by
+[E39](E39_FTZ_IS_NOT_WHERE_WE_SAID.md) (erratum E-12).** "SAME digest" is evidence that no denormal
+*changed a result*, which is slightly weaker than "no denormal ever arose"; the mutant was not
+instrumented to tell those apart.
+
+E38 rebuilt M01 with probes that *prove the pin is really gone* (`is_pinned()==false`,
+`f32::MIN_POSITIVE*0.5` reading `0x00400000` instead of `0x00000000`, `f32::from_bits(1)+0.0`
+reading `0x00000001`) and ran it on the deepest cell it found — Qwen2.5-0.5B, `"Once upon a time"`,
+256 generated tokens, 2 of 22,626,240 softmax `exp_pinned` arguments in `[-88.0, -87.33654)`.
+Witness and argmax digests are byte-identical to the pinned build. **That measurement stands.**
+
+E38's *reading* of it does not. It concluded "a denormal did arise, and it did not change the
+receipt". `exp_pinned` ends in `ldexp_exact`, which returns exactly `+0.0` whenever the reconstructed
+exponent field would be `<= 0`, so it never returns a subnormal — checked over all 2^32 arguments —
+and that band is FTZ-*independent*. **No denormal arose through §6.2, and the claim is withdrawn.**
+
+E39 pointed a counter at the operation §1.3 can actually act on, §10's `w[i] = exp_i / denom`, gave
+it pinned-vs-unpinned ground truth on four boundary rows and through the real `softmax_seq`, and ran
+it on the same cell: **0** subnormal quotients and **0** FTZ-decisive ones in 22,626,240, smallest
+nonzero weight `1.5562307486661955e-38` — a factor of **1.32** above the subnormal boundary. So
+M01's null is now *explained*: there was nothing for §1.3 to flush. That is the stronger statement
+about this vector and a narrower one about §1.3, which is **untriggered here, not unnecessary** —
+a third of a binade more spread in one attention row would trigger it. §1.3 therefore still has **no
+end-to-end necessity witness**.
 E38 also found that the FTZ half of §1.3's own self-test could not fail (erratum E-11).
-This row stays **SAME**; what changes is that it is no longer *unexercised*.
+This row stays **SAME**; what changes is that it is no longer *unexercised*, and that its null is
+now attributed to the right cause.
 It is also worth stating that this clause is **not** left unguarded by the spec: §15 item 4 requires
 §1.3's adversarial self-test to pass independently of the §13.1 digest, and M01 gutted that self-test
 too. A conforming implementation cannot make M01's edit and still claim conformance. The gap is in
@@ -163,8 +175,9 @@ digest-visibility gap rather than an unguarded clause.
 
 Item 1 (a denormal-bearing decode vector) is **closed by measurement, negatively** — see
 [E35](E35_DENORMAL_REACH.md). §6.2's low guard clamps `a < -88.0` before `exp` runs, so that side is
-FTZ-independent; the side where §1.3 is digest-relevant is the unguarded band
-`[-88.0, -87.33654022216797)`, which no counter had measured. E35 added counters for that band and
+FTZ-independent; the side E35 took to be where §1.3 is digest-relevant is the unguarded band
+`[-88.0, -87.33654022216797)`, which no counter had measured. (Erratum E-12: that band is
+FTZ-independent too — see the M01 paragraph above.) E35 added counters for that band and
 for §6.4's mirrored one, gave them positive controls that fire on constructed arguments, and swept
 the same six prompts E30 used: zero of 21,248,280 `exp_pinned` evaluations land in either window,
 with a nearest approach of 26.79 in ln-space. So M01's null result above is explained rather than
@@ -174,7 +187,12 @@ denormal-bearing *decode* vector is not obtainable from ordinary prompts on this
 across both §0 models including non-ASCII prompts and a 256-token decode, and the Qwen 256-token cell
 puts 2 arguments in that band. E35's negative result stands for SmolLM2 and for every decode of 192
 tokens or fewer that was tried; what it cannot support is the general phrase "not constructible".
-Item 1 is therefore **closed positively**, and the M01 re-run on that cell (above) is what it buys.
+Item 1 is therefore **closed positively** for *reach into the band*, and the M01 re-run on that cell
+(above) is what it buys. **Erratum E-12 narrows this:** reaching the band is not reaching a denormal
+— `ldexp_exact` returns `+0.0` there — so item 1's real question, whether a denormal ever arises,
+was still open after E38. E39 answers it for the §10 route on this vector: **no**, 0 of 22,626,240
+weights, nearest miss a factor of 1.32. It remains open for §8 matvec and §7 rmsnorm intermediates,
+which no counter reaches.
 §1.3
 stays covered at op level, where `fpenv`'s `clearing_the_pin_changes_the_answers` already shows that
 clearing the pin moves every FTZ case and no inert one. The `exp` route is what E35 measures; a

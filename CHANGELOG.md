@@ -571,6 +571,54 @@ and `argmax_digest = 0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f
 `selftest` passes, and the suite is 53/53 green. Section 1.3 carries this
 correction inline as **ERRATUM E-11**.
 
+### E-12 (2026-09-09) --- `exp_pinned` cannot return a subnormal, so E-10 named the wrong mechanism; the operation section 1.3 can actually act on had never been counted
+
+**What was said.** Section 14.1(b) says the values section 6.2's low guard
+destroys "would be flushed by section 1.3 in any case". Erratum E-10, published
+earlier the same day, extended that reading and introduced a counter for the
+band `[-88.0, -87.33654022216797)`, describing it as the FTZ-*dependent* window
+where "the result is a subnormal that section 1.3 flushes", and concluded from
+2 arguments in that band that "a denormal genuinely arises in a real decode".
+E29 introduced the counter with that gloss, E35 built its headline on it, and
+E38 carried it into the spec.
+
+**What is wrong with it.** Section 6.2's final step is `ldexp_exact(result, k)`,
+which is bit manipulation, not a floating-point operation, and returns exactly
+`+0.0` whenever the reconstructed exponent field would be `<= 0`. `result`
+always carries exponent field 126 or 127, so `exp_pinned` returns `+0.0` or a
+**normal** f32 --- never a subnormal --- and no FTZ decision is ever taken on
+its output. Evaluated over **all 4,294,967,296** f32 bit patterns: 0 subnormal
+outputs, smallest nonzero magnitude `0x00800026` (exponent field 1). Measured
+with the pin cleared and restored around each evaluation, every point in the
+band returns `0x00000000` both ways. The band counts arguments *whose true
+`exp` is subnormal*; it is FTZ-**independent**, exactly like the guarded side it
+was introduced to contrast with.
+
+**What survives.** Every conclusion; only the reason falls. 14.1(b)'s guard is
+still harmless (`ldexp_exact` destroys those values before section 1.3 is
+consulted). E-10's reach result is untouched --- the softmax argument really
+does reach -88.369385 and the counts really are 2. E38's M01 digests
+(`ab76b80b...`, `5991edc7...`, byte-identical pinned and unpinned on a mutant
+proven live) stand as measured. E-11 is unrelated and stands. No digest,
+coefficient, guard or required behaviour changes. "A denormal genuinely arises
+in a real decode" is **withdrawn**.
+
+**Correction, with the measurement the old counter could not make.** Where
+section 1.3 can change bits is section 10's elementwise division
+`w[i] = exp_i / denom`: `exp_pinned` yields a normal, `denom >= 1` because
+max-subtraction puts `exp(0) = 1` in the sum, and a smallest-normal numerator
+over a denominator above 1 is subnormal --- an SSE operation FTZ governs. A new
+counter forms the exact quotient in f64 and flags those at or above half the
+smallest subnormal, where FTZ changes the stored bits; it is shown able to fire
+against pinned-vs-unpinned ground truth on four boundary rows and through the
+real `softmax_seq` before it is believed. Over the same Qwen2.5-0.5B / 256-token
+cell, **22,626,240** weights gave **0** subnormal quotients and **0**
+FTZ-decisive ones, smallest nonzero weight `1.5562307486661955e-38` --- a factor
+of **1.32** above the subnormal boundary. So section 1.3 is not digest-relevant
+through section 10 on this vector, which fully explains M01's null, and it is
+**untriggered, not unnecessary**. Section 14.1 carries this correction inline as
+**ERRATUM E-12**; the evidence is in `docs/E39_FTZ_IS_NOT_WHERE_WE_SAID.md`.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
