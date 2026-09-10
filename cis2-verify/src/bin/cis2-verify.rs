@@ -12,9 +12,14 @@
 //!       Re-derive the run from the artifacts and check every field of the
 //!       receipt against it.
 //!
+//!   cis2-verify check <receipt-file> [--config FILE] [--tokenizer FILE]
+//!       Audit the receipt without the weights: canonical form, and every
+//!       field recomputable from nothing, from config.json, or from the
+//!       values spec 13.1 pins. Reports what it could not establish.
+//!
 //! The exit status is 0 only when everything asked for passed.
 
-use cis2_verify::{fpenv, hex, mathpin, receipt::Receipt, spec, verify};
+use cis2_verify::{check, fpenv, hex, mathpin, receipt::Receipt, spec, verify};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -35,11 +40,13 @@ fn main() -> ExitCode {
         "selftest" => selftest(),
         "run" => cmd_run(rest),
         "verify" => cmd_verify(rest),
+        "check" => cmd_check(rest),
         _ => {
             eprintln!(
                 "usage:\n  cis2-verify selftest\n  cis2-verify run <artifact-dir> \
                  [--prompt TEXT] [--gen-toks N] [-o FILE]\n  cis2-verify verify \
-                 <artifact-dir> <receipt-file>"
+                 <artifact-dir> <receipt-file>\n  cis2-verify check <receipt-file> \
+                 [--config FILE] [--tokenizer FILE]"
             );
             false
         }
@@ -202,6 +209,85 @@ fn cmd_verify(args: &[String]) -> bool {
         }
         false
     }
+}
+
+/// The weights-free tier. Exit status is 0 when nothing failed; a skip is
+/// not a failure, which is exactly why the residual is printed too.
+fn cmd_check(args: &[String]) -> bool {
+    let mut receipt_path: Option<String> = None;
+    let mut config_path: Option<String> = None;
+    let mut tokenizer_path: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--config" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => config_path = Some(v.clone()),
+                    None => return fail("--config needs a filename"),
+                }
+            }
+            "--tokenizer" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => tokenizer_path = Some(v.clone()),
+                    None => return fail("--tokenizer needs a filename"),
+                }
+            }
+            other if receipt_path.is_none() => receipt_path = Some(other.to_string()),
+            other => return fail(&format!("unexpected argument {other:?}")),
+        }
+        i += 1;
+    }
+    let receipt_path = match receipt_path {
+        Some(p) => p,
+        None => return fail("check needs a receipt file"),
+    };
+    let text = match std::fs::read_to_string(&receipt_path) {
+        Ok(t) => t,
+        Err(e) => return fail(&format!("cannot read {receipt_path}: {e}")),
+    };
+    let read_opt = |p: &Option<String>| -> Result<Option<Vec<u8>>, String> {
+        match p {
+            None => Ok(None),
+            Some(p) => std::fs::read(p)
+                .map(Some)
+                .map_err(|e| format!("cannot read {p}: {e}")),
+        }
+    };
+    let config = match read_opt(&config_path) {
+        Ok(v) => v,
+        Err(e) => return fail(&e),
+    };
+    let tokenizer = match read_opt(&tokenizer_path) {
+        Ok(v) => v,
+        Err(e) => return fail(&e),
+    };
+    let ev = check::Evidence {
+        config: config.as_deref(),
+        tokenizer: tokenizer.as_deref(),
+    };
+
+    let checks = check::check(&text, &ev);
+    for k in &checks {
+        println!("CIS2-VERIFY CHECK {} {}: {}", k.status.label(), k.name, k.detail);
+    }
+    let residual = check::residual(&checks);
+    if residual.is_empty() {
+        println!("CIS2-VERIFY CHECK residual=none (every field established without the weights)");
+    } else {
+        println!(
+            "CIS2-VERIFY CHECK residual={} field(s) not established here: {}",
+            residual.len(),
+            residual.join(",")
+        );
+        println!(
+            "CIS2-VERIFY CHECK to establish them: cis2-verify verify <artifact-dir> {receipt_path}"
+        );
+    }
+    let ok = check::passed(&checks);
+    println!("CIS2-VERIFY CHECK {}", if ok { "PASS" } else { "FAIL" });
+    ok
 }
 
 fn report(r: &Receipt) {
