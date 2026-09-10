@@ -18,6 +18,7 @@
 extern crate alloc;
 
 pub mod check;
+pub mod compare;
 pub mod config;
 pub mod fpenv;
 pub mod hex;

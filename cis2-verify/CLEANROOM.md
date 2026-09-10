@@ -76,13 +76,14 @@ Each is a hard error with a section citation, and each is a candidate erratum:
 ## Reproducing
 
 ```
-cargo test --release          # 68 tests (55 lib, 7 tokenizer fixture, 6 end-to-end)
+cargo test --release          # 76 tests (55 lib, 8 compare, 7 tokenizer fixture, 6 end-to-end)
 cargo build --release
 tools/check_no_fma.sh
 ./target/release/cis2-verify selftest
 ./target/release/cis2-verify run ../weights -o receipt.txt
 ./target/release/cis2-verify verify ../weights receipt.txt
 ./target/release/cis2-verify check receipt.txt          # no weights needed
+./target/release/cis2-verify compare a.txt b.txt        # no artifacts at all
 ```
 
 `selftest` needs no weights: it pins the floating-point environment, self-tests FTZ/DAZ against
@@ -98,6 +99,37 @@ subsequent `verify` would still buy. A skip is printed as loudly as a failure, s
 passes with five fields skipped is visibly not the same as one that passes with none. What `check`
 can never establish, at any tier, is that the logits behind `witness-digest` came from running the
 model; only `verify` does that.
+
+`compare` needs no artifacts at all --- not even `config.json` --- because it answers a question
+about two documents rather than about a run. CIS-2's fields split into the **inputs** that name the
+computation (the three artifact hashes, the prompt, `gen-toks`, `dtype`, `spec-version`), the
+**derived** fields that are functions of those inputs alone (§3.3's prompt token ids, §6.6's table,
+§7.2's `inv_freq` table), and the **outputs** that only a forward pass produces
+(`generated-token-ids`, `argmax-digest`, `witness-digest`). §1.4 then does the work: identical
+inputs must give identical outputs on any conforming target, so two receipts that agree on every
+input and disagree on any output cannot both be conforming. `compare` reports that as
+`CONTRADICTION` and exits 1.
+
+It is as careful about the verdicts it will not reach:
+
+- **`DIFFERENT-RUN`** when any input differs --- the outputs were never required to agree, so no
+  contradiction is established, and the exit status is 0. When `weights-sha256` is the *only*
+  input that moved, the finding names it as the model-substitution signature, while saying plainly
+  that whether the substitution was permitted is a contract question the receipts cannot answer.
+- **`WITNESS-COLLISION`** when the receipts name different weights and carry the same
+  `witness-digest`. §12.1 digests the full logit stream, so this is not two models coinciding. The
+  finding gives both readings --- two safetensors files can serialise the same tensors and hash
+  differently, since `weights-sha256` hashes the file rather than the parameters --- and names the
+  discriminator, rather than asserting the accusatory one.
+- **No verdict at all** from an agreeing `generated-token-ids` or `argmax-digest` under differing
+  weights. Those fields carry the argmax stream; two related checkpoints agreeing on a short greedy
+  continuation is ordinary. It is surfaced as an observation, never as a finding. `tests/compare.rs`
+  holds that case as a negative control, because a tool that accuses falsely is worth nothing in
+  the dispute it exists to serve.
+
+What `compare` cannot do is say *which* of two contradicting receipts is honest. That needs the
+weights, and the answer is `verify` on each; what `compare` buys is knowing which field the dispute
+turns on, and whether paying for a replay would settle anything.
 
 No timing figures are published from this crate's runs on the development machine, which is a
 virtualized container (see the project's Rule A).
