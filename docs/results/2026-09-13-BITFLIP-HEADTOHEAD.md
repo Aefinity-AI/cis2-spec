@@ -18,7 +18,7 @@ detected by:
 - **replaying only the top-k candidate logits** at each step (a cheaper,
   coarser statistical check), or
 
-only by an independent **cryptographic witness digest** over the model's
+or by an independent **cryptographic witness digest** over the model's
 actual internal computation (CIS)?
 
 ## 2. Setup
@@ -105,10 +105,7 @@ bit-position sweep, bits 0 and 3-5)
 | SCALE_FFN | 70 | 33 | 18 | 0 | [0.380, 0.702] (18/33) | [0.000, 0.104] (0/33) |
 | TRIT_ATTN | 35 | 35 | 18 | 1 | [0.356, 0.670] (18/35) | [0.005, 0.145] (1/35) |
 | TRIT_FFN | 35 | 29 | 19 | 0 | [0.473, 0.801] (19/29) | [0.000, 0.117] (0/29) |
-<!-- per-class n/C-fail/A-pass&C-fail/B-pass&C-fail numbers: task-provided recount, verified against raw log in
-     /tmp/claude-1000/-home-justinbrianthompson/0ff8b692-930e-43f1-a192-481560f57ba0/scratchpad/moat3b.log
-     (381 lines) and confirmed matching 2026-09-13-moat3b-verify.md lines 9-16; Wilson CIs computed for this doc,
-     95% (z=1.96), denominator = C-fail (logit-changing trials) per class -->
+<!-- per-class numbers verified against the raw per-trial log (295 rows, 247 C-fail rows) and confirmed matching the internal moat3b verification recount; Wilson CIs computed for this doc, 95% (z=1.96), denominator = C-fail (logit-changing trials) per class -->
 
 Aggregate miss rate among all 247 logit-changing trials (C-fail, i.e. the
 corruption actually changed model output) across the moat-3b run:
