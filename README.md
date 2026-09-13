@@ -201,6 +201,12 @@ scripts/self_check.sh     local build + digest reproduction check
                                fails on any digest mismatch
 ```
 
+## Results
+
+- [Single-weight corruption: text replay vs top-k logit check vs witness
+  digest](docs/results/2026-09-13-BITFLIP-HEADTOHEAD.md) — moat-3/moat-3b
+  bitflip experiments on a pruned BitNet-2B checkpoint.
+
 ## Build and run the reference implementation (`src/`)
 
 ```sh
