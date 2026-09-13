@@ -46,7 +46,7 @@ Overall: v1 = 57/60 PASS, **3/4 tampers caught**. v2 = 56/60 PASS, **4/4
 tampers caught**.
 <!-- state/reports/2026-09-13-safe2-verified-evals-box1.md, state/reports/2026-09-13-safe2c-ctx-binding-box1.md -->
 
-**The fix (v2, `AEGIS-TRACE` format 4):** `item-ctx = sha256(item_id ||
+**The fix (v2, `AEGIS-TRACE` v3):** `item-ctx = sha256(item_id ||
 prompt_bytes || session_nonce)` is folded into trace genesis itself,
 binding a receipt to the item/session it was generated for. `gen
 --item-id/--nonce` sets it; `verify --expect-ctx <hex>` (or
