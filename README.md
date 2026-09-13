@@ -206,6 +206,10 @@ scripts/self_check.sh     local build + digest reproduction check
 - [Single-weight corruption: text replay vs top-k logit check vs witness
   digest](docs/results/2026-09-13-BITFLIP-HEADTOHEAD.md) — moat-3/moat-3b
   bitflip experiments on a pruned BitNet-2B checkpoint.
+- [Receipt-verified EVAL-60 and tamper
+  detection](docs/results/2026-09-13-RECEIPT-VERIFIED-EVAL60.md) — 60/60
+  receipts verify, tamper detection improves from 3/4 to 4/4 caught after
+  adding receipt/item context binding.
 
 ## Build and run the reference implementation (`src/`)
 
