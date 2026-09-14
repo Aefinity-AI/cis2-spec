@@ -158,4 +158,28 @@ be dishonest if it implied otherwise.
 
 ## Residual limits
 
-- **Verification scale on the enforcement host.** The 2B-model receipt path (20 live episodes, four deny classes) was proven on the single-box gateway on the stronger machine. The two-box demonstration above used a small model on the weaker enforcement host, because a full 2B replay there takes minutes and the daemon serves one request at a time. A production enforcement host needs comparable compute to the agent host, or asynchronous verification.
+- **Verification scale on a weaker enforcement host — solved with asynchronous verification.** The 2B-model receipt path (20 live episodes, four deny classes) was proven on the single-box gateway on the stronger machine; the two-box demonstration above used a small model on the weaker enforcement host, because the daemon originally served one request at a time and a full 2B replay there took minutes. The gateway now supports asynchronous verification (`--verify-workers N`) so this is no longer a live limitation: a client sends the usual `RECEIPT/ACTION/SESSION/COUNTER` request; instead of blocking for the full replay, the gateway immediately returns `PENDING ticket=<id>` and hands the request to a background worker pool, which runs the real (possibly slow) `agent_trace verify` replay off the accept loop. The client then sends `POLL ticket=<id>` requests until it gets back `ALLOW` or `DENY`.
+
+  The freshness key (session, counter, action-hash) is reserved synchronously at enqueue time, under the same lock that decides whether to hand out a ticket at all — not at completion. So a second request replaying the identical (session, counter, action) while the first is still `PENDING` gets an immediate `DENY` (freshness), closing the gap that a purely async, resolve-time-only freshness check would leave open: without this, two connections racing the same replayed receipt while the real one is mid-verify could both look "not yet denied." Concurrent-replay fuzzing (25 groups of 12 threads each submitting the identical (session, counter) simultaneously) confirmed this is structural, not probabilistic — the accept loop is single-threaded and the freshness key is reserved before the connection is even replied to, so exactly one live outcome (`PENDING`) and eleven `DENY` (freshness) replies came back in every group, with zero double-live-outcomes.
+
+  The ticket table is bounded, not free to grow without limit: it caps at 4096 entries and evicts the oldest already-resolved (`Done`) entries first once over that cap; a still-`Pending` ticket is never evicted, so an in-flight verify's eventual answer can never be silently discarded. This bound was not a design guess — mutation fuzzing of the new async protocol (6072 cases across five classes: malformed decide requests, malformed poll requests, mass enqueue without polling, concurrent replay, and worker-process crash mid-verify) found the ticket table growing without bound as a real defect during the mass-enqueue class, which is now fixed and pinned by a regression test; the other four classes produced zero findings — every case resolved to a valid `PENDING`/`ALLOW`/`DENY` reply with the daemon still alive afterward, including full recovery to a clean `DENY` when the worker process backing a still-`PENDING` ticket was killed outright.
+
+  A real end-to-end round trip against the live daemon, driving one of the 20-episode receipts through the real 2B-model artifacts on the weaker enforcement host (timing/wall-clock figures omitted; polling continued across multiple attempts, each returning `PENDING`, until the worker's replay finished):
+
+  ```
+  PENDING ticket=T1
+
+  attempt 1: PENDING
+  ...
+  attempt 11: PENDING
+
+  attempt 12: ALLOW idx=2 cap=47b6ebe35fa7b61521519d3b3916a5dc451842bec3851a38e09559fd67c51f71 exp=1789386534
+  ```
+
+  Replaying the identical (session, counter, action) after that ticket resolved:
+
+  ```
+  DENY freshness: (session, counter, action-hash) already seen
+  ```
+
+  This does not remove the need for a production enforcement host to have adequate compute — a worker pool still has to do the real replay work eventually — but it decouples client-visible latency from verify latency, and removes the "the daemon serves one request at a time" constraint entirely.
