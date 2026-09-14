@@ -20,13 +20,21 @@ Five cases: (1) a **compromised agent fabricates a plausible tool call** whose r
 
 ## 3. What the gateway does NOT stop
 
+<<<<<<< HEAD
+=======
+- A **compromised gateway host** — an attacker who controls the gateway process itself can allow anything and rewrite or suppress its own decision log; nothing in §2 stops this by itself, which is why §5's independent second-verifier replay exists as a separate, out-of-band check rather than a property of the gateway.
+>>>>>>> origin/main
 A **rogue process that bypasses the gateway entirely** is not caught — no mechanism here addresses it. Stopping it needs OS-level enforcement: the tool's entry point reachable only through the gateway's own process/credentials (socket-only tool daemon, seccomp/namespace confinement, a reverse proxy with no other network path). A receipt-gateway is a userspace policy layer in front of a decision; if anything can reach the tool without going through it, the gate is decorative for that path — least-privilege process isolation is separate infrastructure, not something to bolt onto the gateway.
 
 A **wrong-but-well-formed model output** is also not caught: the gateway gates on receipt validity and verify-execute binding, not output correctness. A model legitimately tricked into deciding to call a dangerous tool produces a receipt that verifies cleanly — the chain proves the call happened as claimed, not that calling it was a good idea. A model that fabricates an argument and then honestly, self-consistently reports on it does not trip the WARNING mechanism (self-generated text is excluded from the grounding check by design) — verified is not the same claim as safe.
 
 ## 4. End-to-end decision table (one gateway process, 25 decisions)
 
+<<<<<<< HEAD
 Twenty live-episode receipts plus four constructed cases exercising each required deny scenario, all against one long-lived gateway process (freshness state persists across calls, as in a real deployment). **20 ALLOW**, no false denies: `CALC`-only, `FILE-READ`-only, `LOOKUP`-only, chained `LOOKUP`→`FILE-READ`, chained `LOOKUP`→`LOOKUP`, and mixed `LOOKUP`+`CALC` episodes — the full live-episode corpus, lenient policy. **4 DENY**, one per required scenario: (1) **replay** — resubmitting an already-allowed episode's exact receipt/action under the same session and counter, message `freshness: (session, counter, action-hash) already seen`; (2) **ungrounded argument under strict grounding** — a known ungrounded tool-call argument verified against a strict-mode gateway, denied on verify failure/strict-grounding warning; (3) **weights digest not on allowlist** — allowlist signed with a one-bit-flipped model-artifact hash while the receipt declares the real, correct hash, mismatch, message `artifact triple not on allowlist`; (4) **tampered forwarded bytes** — one bit flipped in the action bytes actually dispatched, after verification, versus what the receipt's own last step says happened, message `verify-execute binding failed: action hash != receipt final-step hash`.
+=======
+Twenty live-episode receipts plus four constructed cases exercising each required deny scenario, all against one long-lived gateway process (freshness state persists across calls, as in a real deployment). **20 ALLOW**, no false denies: `CALC`-only, `FILE-READ`-only, `LOOKUP`-only, chained `LOOKUP`→`FILE-READ`, chained `LOOKUP`→`LOOKUP`, and mixed `LOOKUP`+`CALC` episodes — the full live-episode corpus, lenient policy. **4 DENY**, one per required scenario: (1) **replay** — resubmitting an already-allowed episode's exact receipt/action under the same session and counter, message `freshness: (session, counter, action-hash) already seen`; (2) **ungrounded argument under strict grounding** — a known ungrounded tool-call argument verified against a strict-mode gateway, message `agent_trace verify: VERIFY FAIL or strict-grounding WARNING present`; (3) **weights digest not on allowlist** — allowlist signed with a one-bit-flipped model-artifact hash while the receipt declares the real, correct hash, mismatch, message `artifact triple not on allowlist`; (4) **tampered forwarded bytes** — one bit flipped in the action bytes actually dispatched, after verification, versus what the receipt's own last step says happened, message `verify-execute binding failed: action hash != receipt final-step hash`.
+>>>>>>> origin/main
 
 All four required deny scenarios were caught correctly; zero false allows and zero false denies on the twenty legitimate episodes.
 
@@ -48,6 +56,7 @@ Gating a tool call on bit-exact, independently replayable inference verification
 Closest work, by property: **A2Auth** matches on verification depth — same bit-exact tier — but names a single closed vendor with no public spec, and has no verify-execute binding, weight allowlist, or gateway architecture of its own. **Notarized Agents** matches on log-integrity, solving "the agent lies about its own trace" via a receiver that signs what it observed into a cosigned Merkle log, where this design instead uses independent second-verifier replay of the agent's own receipts; neither combines receiver-side notarization with bit-exact replay. **MCP security guidance** (Anthropic/OWASP) matches on naming the vulnerability — the confused deputy, tool-result content with no attestable provenance — but its mitigation is authorization and session-scoping, itself described as advisory rather than a security boundary, not cryptographic binding of forwarded bytes to a verified inference receipt.
 
 Two claims this design does not make: it does not claim to be the sole or original receipt-gated agent tool gateway (signed/hash-chained agent receipts are a crowded space); and passing these checks does not mean a call was a good idea or the model is trustworthy — only that its history is checkable and tied to an approved weight triple (§3).
+<<<<<<< HEAD
 
 ## 8. Enforcement boundary
 
@@ -154,3 +163,9 @@ be dishonest if it implied otherwise.
   silicon. Root on either host can, in principle, unload the enforcing
   profile, edit the unit, or read key material directly; nothing here is
   a hypervisor- or TPM-rooted boundary.
+=======
+>>>>>>> origin/main
+
+## Residual limits
+
+- **Verification scale on the enforcement host.** The 2B-model receipt path (20 live episodes, four deny classes) was proven on the single-box gateway on the stronger machine. The two-box demonstration above used a small model on the weaker enforcement host, because a full 2B replay there takes minutes and the daemon serves one request at a time. A production enforcement host needs comparable compute to the agent host, or asynchronous verification.
