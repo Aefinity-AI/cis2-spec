@@ -49,3 +49,113 @@ Gating a tool call on bit-exact, independently replayable inference verification
 Closest work, by property: **A2Auth** matches on verification depth — same bit-exact tier — but names a single closed vendor with no public spec, and has no verify-execute binding, weight allowlist, or gateway architecture of its own. **Notarized Agents** matches on log-integrity, solving "the agent lies about its own trace" via a receiver that signs what it observed into a cosigned Merkle log, where this design instead uses independent second-verifier replay of the agent's own receipts; neither combines receiver-side notarization with bit-exact replay. **MCP security guidance** (Anthropic/OWASP) matches on naming the vulnerability — the confused deputy, tool-result content with no attestable provenance — but its mitigation is authorization and session-scoping, itself described as advisory rather than a security boundary, not cryptographic binding of forwarded bytes to a verified inference receipt.
 
 Two claims this design does not make: it does not claim to be the sole or original receipt-gated agent tool gateway (signed/hash-chained agent receipts are a crowded space); and passing these checks does not mean a call was a good idea or the model is trustworthy — only that its history is checkable and tied to an approved weight triple (§3).
+
+## 8. Enforcement boundary
+
+The receipt-gateway logic above is a userspace decision layer; §3 already
+concedes that a rogue process bypassing the gateway entirely is not
+caught by receipt verification alone. This section describes the
+complementary enforcement layer that closes that gap on a real
+deployment: OS-level confinement of the agent, tool-side capability
+tokens, and a daemon whose only network surface is a local socket — plus
+a set of escape tests exercised against a live install, including a
+two-box configuration where the agent and the gateway's signing keys are
+split across separate hosts.
+
+**Agent sandbox.** The agent runs inside a systemd service unit with
+`RestrictAddressFamilies=AF_UNIX` and `PrivateNetwork=yes`, so any
+attempt to open an AF_INET socket is refused at the kernel level before
+it can reach the network at all. Where AppArmor is installed and its
+enforcing profile is loaded, exec of anything other than the approved
+tool-shim binaries (and, for the shell shim, a narrowly scoped
+sub-profile reachable only after that shim's own capability check has
+already passed) is denied by the LSM. Together these mean the sandboxed
+agent process has no raw network path and no way to invoke an arbitrary
+shell — every tool action must go through a shim.
+
+**Capability tokens.** On every ALLOW decision, the gateway mints a
+single-use, expiring, HMAC-signed capability token bound to the specific
+action it just approved (an index the gateway assigns, the hash of the
+approved action bytes, and an expiry). Each tool shim independently
+recomputes the action hash from the bytes it is actually about to
+execute, verifies the token's signature and expiry, and checks its own
+persisted record of already-consumed indices before doing anything —
+so a captured but already-used token, a forged token, or a token for a
+different action all fail closed at the shim, independent of whether the
+gateway itself is ever asked again.
+
+**Gateway daemon.** The gateway runs as a long-lived daemon reachable
+only over a unix domain socket — it exposes no TCP listener, so there is
+no network-reachable surface to probe for the decision service itself.
+Every proposed action is checked against a submitted agent-trace receipt
+(verify-execute binding, freshness, and the signed artifact allowlist, as
+in §2) before a capability token is ever issued; a request that fails any
+of those checks gets a DENY and no token.
+
+### Escape tests
+
+Five probes were run against live installs to confirm the above holds in
+practice, not just on paper.
+
+- **Network escape.** Attempting to open a raw network socket from
+  inside the sandboxed agent unit fails immediately with `EAFNOSUPPORT`
+  — confirmed at the syscall level, not merely by an error return code
+  from a wrapper.
+- **Shell exec.** Attempting to exec an arbitrary shell binary from
+  inside the sandboxed unit, with the AppArmor profile enforcing, is
+  denied: `/bin/bash: Permission denied`, exit 126 — while the profile's
+  own explicitly allowed shell entry point still runs, showing the
+  denial is the mandatory-access-control policy and not a missing
+  binary or a broken environment.
+- **Forged or replayed-signature capability token.** Presenting a tool
+  shim with no token, or with a token whose signature does not verify,
+  is refused: `REFUSE: no capability token / signature invalid`. Nothing
+  executes.
+- **Reused capability token.** Presenting a genuinely valid, single-use
+  token a second time — after it has already authorized one action — is
+  refused: `REFUSE: capability token already consumed`. The token works
+  once and never again.
+- **Two-box split.** In a configuration where the agent runs on one host
+  ("box A") and the gateway daemon plus its signing keys live on a
+  separate host ("box B"), reachable only through a forced-command SSH
+  channel, five separate exfiltration and bypass attempts from box A —
+  copying the key files off box B, opening a local port-forward through
+  the channel, connecting directly to any TCP port on box B (the gateway
+  listens only on a unix socket, so there is no such port to reach),
+  forcing an interactive shell or pty over the channel, and authenticating
+  with an unrelated key not present on box B — were all refused. The
+  legitimate protocol, by contrast, worked exactly as designed: a
+  correctly signed request over the same channel produced a real ALLOW
+  with a minted capability token, and resubmitting that identical request
+  produced a freshness DENY on replay. The two-box configuration proves
+  the split holds end to end, not just for the illegitimate paths.
+
+### Residual limits
+
+This layer does not defend against everything, and the design note would
+be dishonest if it implied otherwise.
+
+- **A compromised gateway host is not defended against.** In a
+  single-box deployment the gateway process holds both signing keys in
+  plaintext at runtime; root or process compromise there can forge any
+  token it wants. The two-box configuration reduces this by moving the
+  keys off the host where agent-controlled content lives, but a
+  compromise of the box that does hold the keys is still a full break —
+  there is no independent, real-time detection of that case.
+- **Tools reachable outside the shims are out of scope.** The enforcement
+  described here only applies to actions that go through a wrapped tool
+  shim. Any other way of reaching a resource — direct OS access, a
+  binary not covered by the AppArmor profile, a service left listening
+  outside this design — is not mediated by any of this and must be
+  treated as a separate, unaddressed surface.
+- **No hardware-rooted attestation.** There is no vendor-rooted hardware
+  attestation (no TPM-anchored chain) anywhere in this fleet. The trust
+  root is the gateway process plus its AppArmor/systemd policy — software
+  and LSM mediation on top of the existing kernel and root account — not
+  silicon. Root on either host can, in principle, unload the enforcing
+  profile, edit the unit, or read key material directly; nothing here is
+  a hypervisor- or TPM-rooted boundary.
+
+## Residual limits
+
+- **Verification scale on the enforcement host.** The 2B-model receipt path (20 live episodes, four deny classes) was proven on the single-box gateway on the stronger machine. The two-box demonstration above used a small model on the weaker enforcement host, because a full 2B replay there takes minutes and the daemon serves one request at a time. A production enforcement host needs comparable compute to the agent host, or asynchronous verification.
