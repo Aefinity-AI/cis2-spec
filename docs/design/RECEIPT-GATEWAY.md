@@ -1,6 +1,6 @@
 # Receipt gateway: a "no receipt, no action" tool gate
 
-Design note. Status: design + a working end-to-end prototype (box1), independently re-verified on a second device. No wall-clock or performance numbers appear below; none are claimed.
+Design note. Status: design + a working end-to-end prototype (box1), independently re-verified on a second device, and separately demonstrated split across two machines over a forced-command SSH relay (§5a) — with a round trip using a real 2B-parameter model receipt, not only the small/tiny-model receipts used in earlier demonstrations. No wall-clock or performance numbers appear below; none are claimed.
 
 The gateway is a small service sitting between an autonomous agent and the tools it calls (shell, filesystem, external APIs). Its rule: a tool call is executed only if it arrives with a receipt that verifies — an AEGIS-TRACE receipt covering every step up to and including that call, replayed and checked before the call is let through.
 
@@ -33,6 +33,35 @@ All four required deny scenarios were caught correctly; zero false allows and ze
 ## 5. Independent re-verification (a second device)
 
 Because the gateway's own decision log is a single point of failure, a second, independent verifier periodically re-checks a sample of ALLOW decisions rather than trusting the gateway's own verdict: it recomputes a committed decision-log chain head by hand from a receipt's declared model/embed/vocab/trace-chain fields and confirms it matches the head the gateway externally committed (hex-identical match confirmed); and it independently re-runs the verifier — built for a different CPU architecture than the one that produced the receipts — against a sample of ALLOWed receipts, using its own copy of the reference artifacts (sha256-confirmed against pinned values, not supplied by the gateway). All sampled receipts came back VERIFY PASS with trace-chain hex matching the receipt's own declared value; one carried the same grounding WARNING already known for that episode (pass-with-warning, not a failure). An ALLOW that an independent replay says should have been DENY is treated as evidence the gateway itself is compromised, not logged and moved past.
+
+## 5a. Two-box enforcement demonstration (relay-split gateway)
+
+Beyond running the gateway and its independent verifier as separate processes on one machine (§5), the split was also demonstrated across two physically separate machines: the agent issuing requests from box1, and the gateway/verifier running on box2, communicating only through a forced-command SSH relay (a raw byte pipe onto the gateway's own UNIX-socket line protocol — no separate relay-side protocol logic to keep in sync with the gateway). This round trip has since been repeated with a real 2B-parameter model's receipt (previously only small/tiny-model receipts had been used for the two-box case), closing that gap. The receipt was a single, non-chained step (no `table-sha256` dependency), submitted asynchronously against the gateway's ticket-based queue. Verbatim sequence (elided to the required lines):
+
+```
+$ printf 'MODE GATEWAY\nRECEIPT %s\nACTION %s\nSESSION %s\nCOUNTER %s\n\n' "$RECEIPT" "$ACTION" "$SESSION" "$COUNTER" | ssh ... cm@<box2>
+PENDING ticket=T1
+rc=0
+
+$ printf 'MODE GATEWAY\nPOLL ticket=T1\n\n' | ssh ... cm@<box2>
+PENDING
+rc=0
+[... further PENDING polls while the gateway's background worker verifies ...]
+
+$ printf 'MODE GATEWAY\nPOLL ticket=T1\n\n' | ssh ... cm@<box2>
+ALLOW idx=3 cap=8ece5f6cb84d301ef2594ea2271591e2d5aa9d8bfc7cb8ebcd66e1aeb7e66f09 exp=1789413648
+rc=0
+```
+
+Resubmitting the identical `(session, counter, action)` afterward correctly triggers the freshness deny (§2b), demonstrating that replay protection holds across the relay, not just within a single process:
+
+```
+$ printf 'MODE GATEWAY\nRECEIPT %s\nACTION %s\nSESSION %s\nCOUNTER %s\n\n' "$RECEIPT" "$ACTION" "$SESSION" "$COUNTER" | ssh ... cm@<box2>
+DENY freshness: (session, counter, action-hash) already seen
+rc=0
+```
+
+All three lines — `PENDING ticket=T1`, the `ALLOW ...` line, and the `DENY freshness: ...` line — were captured verbatim, none fabricated. No relay-side change was needed for the ticket-based PENDING/POLL exchange: because the relay is a raw byte pipe onto the gateway's socket, it passes the gateway's own async protocol through untouched.
 
 ## 6. How to run it
 
