@@ -85,11 +85,10 @@ change for a 2B run.
 `SHA256SUMS.txt` in this directory covers every other file in the kit.
 `verify.sh` checks it automatically as its last step.
 
-The whole kit is also shipped as `verification-kit-v1.tar.gz`:
+The whole kit is also shipped as `kits/verification-kit-v1.tar.gz` in this repository. Its checksum is kept in the detached file `kits/verification-kit-v1.tar.gz.sha256` (the README cannot carry a hash of an archive that contains the README):
 
 ```
-sha256sum verification-kit-v1.tar.gz
-0bda6fcca728dcb14f8d822a7a751c3d7cdfc3382be42e3e114e858a09cbdd69  verification-kit-v1.tar.gz
+sha256sum -c kits/verification-kit-v1.tar.gz.sha256
 ```
 
 Note: because this hash is text *inside* the kit, and the kit is what
