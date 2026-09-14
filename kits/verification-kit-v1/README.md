@@ -5,9 +5,18 @@ No network access is required or used by any script in this kit.
 
 ## Contents
 
-- `bin/cis-verify` — standalone CIS-1 witness-receipt verifier (static
-  x86_64-linux-musl, `crt-static`, no PT_INTERP, no dynamic linker needed).
-- `bin/agent_trace` — CIS-2 agent-episode trace verifier (same build).
+- `bin/x86_64/cis-verify`, `bin/aarch64/cis-verify` — standalone CIS-1
+  witness-receipt verifier, static (`crt-static`, no `PT_INTERP`, no
+  dynamic section, no dynamic linker needed at all). x86_64 build is
+  `x86_64-unknown-linux-musl`; aarch64 build is
+  `aarch64-unknown-linux-gnu` with `crt-static` (glibc static, not musl —
+  cross toolchain constraint, still fully static per `readelf`).
+- `bin/x86_64/agent_trace`, `bin/aarch64/agent_trace` — CIS-2
+  agent-episode trace verifier (same build approach per architecture).
+- `verify.sh` auto-selects `bin/$(uname -m)/` — the correct binaries for
+  the machine it runs on. If your architecture isn't one of the two
+  bundled here, `verify.sh` fails loudly and tells you what it looked
+  for, rather than silently running the wrong binary.
 - `model/` — the small "tinybit" (~3.8M param) M7 model triple
   (`MODEL.SAF`, `EMBED.BIN`, `VOCAB.BIN`) both receipts were run against.
 - `receipts/cis1_witness.receipt` — a golden CIS-1 `AEGIS-WITNESS v1-CIS`
@@ -75,3 +84,32 @@ change for a 2B run.
 
 `SHA256SUMS.txt` in this directory covers every other file in the kit.
 `verify.sh` checks it automatically as its last step.
+
+The whole kit is also shipped as `verification-kit-v1.tar.gz`:
+
+```
+sha256sum verification-kit-v1.tar.gz
+0bda6fcca728dcb14f8d822a7a751c3d7cdfc3382be42e3e114e858a09cbdd69  verification-kit-v1.tar.gz
+```
+
+Note: because this hash is text *inside* the kit, and the kit is what
+gets tarballed, this line necessarily describes the immediately-prior
+build, not the exact bytes of the tarball you are looking at right now
+(a self-referential hash cannot describe its own container). Treat it
+as a sanity pointer, not the canonical value — the canonical value for
+any given release is whatever `sha256sum verification-kit-v1.tar.gz`
+reports on the artifact you actually downloaded, and what's recorded in
+the PR/release notes for that artifact.
+
+## Verified on
+
+`./verify.sh` (both checks: bundled verifiers PASS with the pinned
+digests, and the sha256 manifest) and `./tamper-demo.sh` (all 4 tampers
+correctly rejected) have been independently re-run, from a clean git
+checkout of this kit, on:
+
+- x86_64 Linux — two separate machines (the machine this kit was built
+  on, and a second, independent machine).
+- aarch64 Linux — a Samsung Android phone (via `sh verify.sh`; no bash
+  on device), running the cross-built `bin/aarch64/` binaries under the
+  device's real kernel (no emulation on-device).
