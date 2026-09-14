@@ -1,0 +1,12 @@
+# Pinned expected results for this kit's two bundled receipts.
+# verify.sh checks the live tool output against these lines exactly.
+# These are NOT secrets — they are the public, expected re-derivation of
+# each receipt's own claimed digests, restated here so a design partner
+# has something to diff against without trusting their own eyeballs.
+
+# CIS-1 witness receipt (receipts/cis1_witness.receipt)
+CIS1_RESULT=VERIFY PASS
+
+# CIS-2 agent-trace receipt (receipts/cis2_agent_trace.receipt)
+CIS2_TRACE_CHAIN=cfe874d32bc334a1
+CIS2_RESULT=VERIFY PASS — replay reproduced 3 steps and the full trace chain bit-for-bit
