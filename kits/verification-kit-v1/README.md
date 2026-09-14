@@ -91,14 +91,6 @@ The whole kit is also shipped as `kits/verification-kit-v1.tar.gz` in this repos
 sha256sum -c kits/verification-kit-v1.tar.gz.sha256
 ```
 
-Note: because this hash is text *inside* the kit, and the kit is what
-gets tarballed, this line necessarily describes the immediately-prior
-build, not the exact bytes of the tarball you are looking at right now
-(a self-referential hash cannot describe its own container). Treat it
-as a sanity pointer, not the canonical value — the canonical value for
-any given release is whatever `sha256sum verification-kit-v1.tar.gz`
-reports on the artifact you actually downloaded, and what's recorded in
-the PR/release notes for that artifact.
 
 ## Verified on
 
