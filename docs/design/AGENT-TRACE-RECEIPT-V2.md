@@ -64,7 +64,16 @@ would leave a rebinding gap.
   wrongful ALLOWs after the fix.
 - Verifier fuzz (mutated receipt bodies fed straight to `agent_trace
   verify`): 11,601 cases across 10 mutation classes. 0 panics, 0
-  wrongful PASS on any mutated receipt.
+  wrongful PASS on any mutated receipt. Caveat, stated because it
+  matters: 3 of the 10 classes (byte flips, truncated chains, and one
+  of five oversized-field buckets) did not individually complete. A
+  mutation landing in a receipt field that is not structurally
+  validated forces a full model replay before the verifier can reject
+  it, and those runs exceeded the harness timeout. Those classes were
+  resolved by completing a 40-case random recheck (40/40 clean) and
+  extrapolating, not by running every case to completion. The 0-panic
+  and 0-wrongful-PASS result for those three classes therefore rests on
+  a sample, not on exhaustive completion.
 
 Both fuzz passes only exercise the verifier/gateway's handling of
 malformed or randomly mutated input; see limits below for what they do
