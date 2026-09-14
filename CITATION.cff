@@ -1,28 +1,26 @@
 cff-version: 1.2.0
-message: "If you use this specification or its verifiers, please cite it as below."
-title: "CIS-2: Canonical Floating-Point Semantics for fp32 Transformer Inference"
-version: "0.3b"
-date-released: "2026-08-29"
+title: "CIS-2: a specification and verifier for bit-exact, reproducible LLM inference, with receipts for agent tool calls"
+message: "If you use this specification, verifier, results or verification kit, please cite it."
+type: software
 authors:
-  - name: "Aefinity AI Inc."
-  - family-names: "Thompson"
-    given-names: "Justin Brian"
-license: Apache-2.0
+  - given-names: Justin
+    family-names: Thompson
+    affiliation: Aefinity AI
 repository-code: "https://github.com/Aefinity-AI/cis2-spec"
-abstract: >
-  A normative specification for fp32 transformer decode such that
-  independent implementations, written from the specification text alone,
-  produce bit-identical full-logit witness digests across x86_64 and
-  aarch64, across compilers (gcc, clang, rustc) and optimization levels,
-  and across model families, given a pinned model/prompt/decode-length
-  test vector. This repository includes the specification and two
-  independent clean-room verifiers (Rust and C).
-preferred-citation:
-  type: unpublished
-  title: "CIS-2: Canonical Floating-Point Semantics for fp32 Transformer Inference"
-  authors:
-    - name: "Aefinity AI Inc."
-    - family-names: "Thompson"
-      given-names: "Justin Brian"
-  year: 2026
-  notes: "arXiv preprint: link pending (placeholder — update on publication)."
+abstract: >-
+  A written specification for bit-exact, cross-architecture large language model
+  inference, together with an independent verifier, replayable receipts for agent
+  tool calls, and a receipt-gated enforcement boundary for agent tool use. Includes
+  measured results on single-weight corruption detection, receipt-verified
+  evaluation, fuzzing of both the verifier and the gateway, and a downloadable
+  verification kit with static x86_64 and aarch64 binaries that reproduces the
+  pinned digests on a third party's own machine.
+keywords:
+  - reproducible inference
+  - verifiable machine learning
+  - AI agent safety
+  - model integrity
+  - conformance testing
+license: Apache-2.0
+version: v0.4
+date-released: "2026-09-14"
