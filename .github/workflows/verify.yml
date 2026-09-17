@@ -118,6 +118,12 @@ jobs:
           grep -qE '^all [0-9]+ vector\(s\) passed$' /tmp/conformance_output.txt || { echo "MISMATCH: not all conformance vectors passed (${{ matrix.arch_label }})"; exit 1; }
           echo "PASS: conformance suite (${{ matrix.arch_label }}) — all vectors passed"
 
+      - name: Run per-vector derivation self-checks (softmax_v1, embed_lookup_v1)
+        run: |
+          set -euo pipefail
+          cargo test --release --test conformance_softmax --test conformance_embed_lookup
+          echo "PASS: softmax_v1/embed_lookup_v1 derivation self-checks (${{ matrix.arch_label }})"
+
   # --- verify2: Rust clean-room ---
   verify2:
     strategy:

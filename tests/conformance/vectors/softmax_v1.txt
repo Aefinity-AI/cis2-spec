@@ -1,0 +1,29 @@
+# CIS-2 conformance vector: softmax_v1
+# op=softmax, spec ref: docs/CIS2_SPEC_v0.2.md §9.3 (Softmax,
+# `softmax_seq`, in place: strict-sequential max-scan, pinned-exp
+# max-subtract, §5.3 sequential-sum denominator, elementwise divide).
+# This vector exercises softmax_seq directly as its own primitive
+# (unlike attention_block_v1, which exercises it as one step of a larger
+# score/softmax/V-mix pipeline where the input scores come from a dot
+# product) -- so the input here is a hand-sized `scores` vector, not
+# derived from any dot product.
+#
+# Fields are `key=value`. `n` is a plain decimal integer. `scores_bits`
+# is a comma-separated list of `0x`-prefixed 32-bit hex IEEE-754 binary32
+# bit patterns, one per input logit, in index order (index 0 first),
+# per tests/conformance/README.md's general convention.
+#
+# n=6. Values: 1.5, -0.5, 0.5, 1.5, -3.0, 0.0 -- deliberately includes an
+# EXACT tie for the maximum at indices 0 and 3 (both 1.5), to exercise
+# §9.3's "strict >, so the FIRST occurrence of the max wins ties"
+# max-scan rule explicitly (the tie is invisible in the final output
+# bits here, since both tied values are bit-identical, but the vector
+# still documents that softmax_v1's max-scan must use strict `>` and
+# must not, e.g., use the LAST occurrence or an unstable comparison).
+# Also includes a large negative outlier (-3.0) to exercise the
+# post-max-sub `exp_pinned` route at a value further from zero, and 0.0
+# as a mid-range plain value.
+op=softmax
+spec_ref=docs/CIS2_SPEC_v0.2.md#93-softmax-softmax_seq-in-place-over-scores0pos
+n=6
+scores_bits=0x3FC00000,0xBF000000,0x3F000000,0x3FC00000,0xC0400000,0x00000000
