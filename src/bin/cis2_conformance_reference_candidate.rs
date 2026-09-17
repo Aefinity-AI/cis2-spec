@@ -134,6 +134,31 @@ fn op_attention_block(text: &str) -> Vec<f32> {
     out_head
 }
 
+fn op_softmax(text: &str) -> Vec<f32> {
+    let n: usize = parse_field(text, "n").trim().parse().unwrap();
+    let mut scores = parse_bits_list(parse_field(text, "scores_bits"));
+    assert_eq!(scores.len(), n);
+    math::softmax_seq(&mut scores);
+    scores
+}
+
+fn op_embed_lookup(text: &str) -> Vec<f32> {
+    let vocab: usize = parse_field(text, "vocab").trim().parse().unwrap();
+    let hidden: usize = parse_field(text, "hidden").trim().parse().unwrap();
+    let embed = parse_bits_list(parse_field(text, "embed_bits"));
+    assert_eq!(embed.len(), vocab * hidden);
+    let token_ids: Vec<u32> = parse_field(text, "token_ids")
+        .split(',')
+        .map(|t| t.trim().parse().unwrap())
+        .collect();
+    let mut out = Vec::with_capacity(token_ids.len() * hidden);
+    for id in token_ids {
+        let start = id as usize * hidden;
+        out.extend_from_slice(&embed[start..start + hidden]);
+    }
+    out
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let op_arg = args.get(1).cloned();
@@ -151,6 +176,8 @@ fn main() {
         "rope_table" => op_rope_table(&input),
         "matvec" => op_matvec(&input),
         "attention_block" => op_attention_block(&input),
+        "softmax" => op_softmax(&input),
+        "embed_lookup" => op_embed_lookup(&input),
         other => panic!("unsupported op: {other}"),
     };
 

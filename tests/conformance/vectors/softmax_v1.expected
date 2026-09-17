@@ -1,0 +1,7 @@
+# Pinned expected output for softmax_v1.txt, computed by running the
+# reference implementation's §9.3 softmax_seq (src/math.rs::softmax_seq)
+# via `cargo test --test conformance_softmax` (see
+# tests/conformance_softmax.rs and tests/conformance/README.md "How this
+# vector was derived").
+out_bits=0x3EBB08FC,0x3D4A7FE4,0x3E099CDC,0x3EBB08FC,0x3B84FA38,0x3DA6EEC5
+out_sha256=3458472526c61ca0b1c817e29cb7e1900a28ef84ffffe019770c74f6e9c858ed

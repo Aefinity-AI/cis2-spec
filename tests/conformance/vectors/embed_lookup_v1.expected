@@ -1,0 +1,12 @@
+# Pinned expected output for embed_lookup_v1.txt, computed by reproducing
+# the §2.5 row-major token-embedding lookup (`start = token_id * hidden`,
+# `embed[start..start+hidden]`, verbatim from `src/main.rs`'s
+# forward_step) via `cargo test --test conformance_embed_lookup` (see
+# tests/conformance_embed_lookup.rs and tests/conformance/README.md "How
+# this vector was derived").
+#
+# out_bits layout (18 values, index order): the hidden=6-wide row for
+# token_ids[0]=0, then token_ids[1]=3, then token_ids[2]=1, concatenated
+# in that order.
+out_bits=0x00000000,0x3F800000,0x40000000,0x40400000,0x40800000,0x40A00000,0x41F00000,0x41F80000,0x42000000,0x42040000,0x42080000,0x420C0000,0x41200000,0x41300000,0x41400000,0x41500000,0x41600000,0x41700000
+out_sha256=3d359de9bb9189ae245b65dd68fe129eb945198c13e2dda0abcec7efcfaf8b65

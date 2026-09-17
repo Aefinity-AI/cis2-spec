@@ -1,4 +1,4 @@
-# CIS-2 third-party conformance suite (E21: RMSNorm, RoPE table, exp_pinned, attention block, matvec + CLI protocol)
+# CIS-2 third-party conformance suite (E21: RMSNorm, RoPE table, exp_pinned, attention block, matvec, softmax, embed lookup + CLI protocol)
 
 This directory lets someone with an independent CIS-2 implementation
 check individual normative primitives against pinned vectors, without
@@ -9,10 +9,11 @@ full forward pass): each vector here exercises exactly one primitive with
 a small, hand-sized input.
 
 **Status.** RMSNorm (§8), RoPE table (§7), exp_pinned (§6.2 pinned exp()
-polynomial), one attention block (§9.2–§9.4), and one matvec (§5.2)
-vector exist, plus a `cis2-conformance` CLI wrapper implementing the
-stdin/stdout protocol documented in `PROTOCOL.md`. See "What's missing"
-at the bottom for what's still outstanding.
+polynomial), one attention block (§9.2–§9.4), one matvec (§5.2), softmax
+(§9.3, standalone) and token-embedding lookup (§2.5) vectors exist, plus
+a `cis2-conformance` CLI wrapper implementing the stdin/stdout protocol
+documented in `PROTOCOL.md`. See "What's missing" at the bottom for
+what's still outstanding.
 
 ## Protocol
 
@@ -272,6 +273,100 @@ future edit to `src/math.rs`. (An `#[ignore]`d `print_bits_for_generation`
 test in the same file is not part of the pinned suite; it exists only to
 regenerate the fixture if the reference math ever changes — run with
 `cargo test --test conformance_matvec print_bits -- --ignored --nocapture`.)
+
+### `softmax_v1` (§9.3 Softmax, standalone)
+
+- Spec reference: `docs/CIS2_SPEC_v0.2.md` §9.3 (`softmax_seq`, in
+  place: strict-sequential max-scan with first-occurrence-wins tie
+  break, pinned-exp max-subtract per §6.2, §5.3 sequential-sum
+  denominator, elementwise divide — NOT multiply-by-reciprocal).
+  `attention_block_v1` above already exercises `softmax_seq` as one step
+  of the larger score/softmax/V-mix pipeline, but with input scores
+  produced by a dot product; this vector exercises `softmax_seq` on its
+  own, directly, with a hand-picked `scores` vector.
+- `n=6` (deliberately small and hand-sized, same rationale as the other
+  vectors' small dimensions).
+- Values `1.5, -0.5, 0.5, 1.5, -3.0, 0.0` deliberately include an EXACT
+  tie for the maximum at indices 0 and 3 (both `1.5`), to exercise §9.3's
+  "strict `>`, so the FIRST occurrence of the max wins ties" max-scan
+  rule explicitly (the tie happens to be invisible in the output bits
+  here, since the two tied values are themselves bit-identical, but the
+  vector still documents that a conforming max-scan must use strict `>`
+  and must not, e.g., pick the LAST occurrence or use an unstable
+  comparator — a real divergence would only show up with NaN-adjacent or
+  reordering-sensitive inputs, out of scope for this hand-sized vector).
+  `-3.0` exercises the post-max-sub `exp_pinned` route further from
+  zero than `attention_block_v1`'s scores do.
+- `out_bits` layout: 6 values, index order matching `scores_bits`.
+
+**How this vector was derived**: `tests/conformance_softmax.rs` includes
+`src/math.rs` by path (`softmax_seq` — the same function
+`src/main.rs`'s attention loop and `cis2_conformance_reference_candidate.rs`'s
+`op_attention_block` call) and runs it directly on `scores_bits`,
+computes the SHA-256 digest per the convention above, and asserts both
+the bit patterns and the digest match `vectors/softmax_v1.expected`. Run
+it with:
+
+```
+cargo test --test conformance_softmax
+```
+
+This was run once while authoring the vector to derive
+`softmax_v1.expected` from the reference implementation; the test now
+exists as a standing self-check that the fixture stays correct across
+any future edit to `src/math.rs`. (An `#[ignore]`d
+`print_bits_for_generation` test in the same file is not part of the
+pinned suite; it exists only to regenerate the fixture if the reference
+math ever changes — run with `cargo test --test conformance_softmax
+print_bits -- --ignored --nocapture`.)
+
+### `embed_lookup_v1` (§2.5 `model.embed_tokens.weight` row-major lookup)
+
+- Spec reference: `docs/CIS2_SPEC_v0.2.md` §2.5 (tensor shapes:
+  `model.embed_tokens.weight` is `[vocab, hidden]`, row-major), as
+  consumed by the token-embedding lookup step in `src/main.rs`'s
+  per-decode-step forward pass, immediately before the layer loop / §9
+  attention: `let start = token_id as usize * hidden; h =
+  model.embed_tokens[start..start + hidden].to_vec();`. This lookup is
+  pure indexing/copy of already-widened fp32 table rows — no
+  floating-point arithmetic is performed — so it is bit-exact by
+  construction; the vector pins the row-major `start = token_id *
+  hidden` indexing convention itself, not any numeric computation.
+- `vocab=4`, `hidden=6` (deliberately small and hand-sized, same
+  rationale as the other vectors' small dimensions).
+- `token_ids=0,3,1` bundles three lookups into one vector (same
+  rationale as `matvec_v1`'s several output rows / `attention_block_v1`'s
+  several cached KV positions), deliberately in a non-monotonic order
+  and including the LAST valid row (`(vocab-1)*hidden`, the largest
+  valid start offset) to catch an off-by-one or wrong-stride indexing
+  bug a monotonic `0,1,2` order could hide. Row values are `token*10 +
+  d` for `d in 0..hidden`, small exactly-representable integers chosen
+  so a mis-indexed row is trivially visible in the output, not to model
+  any real embedding table.
+- `out_bits` layout: `18` values (`token_ids.len() * hidden`), the
+  `hidden`-wide row for `token_ids[0]`, then `token_ids[1]`, then
+  `token_ids[2]`, concatenated in that order.
+
+**How this vector was derived**: `tests/conformance_embed_lookup.rs`
+reimplements the `start = token_id * hidden` / slice expression above
+verbatim (it does not include `src/math.rs` by path, unlike the other
+`conformance_*.rs` files, since there is no floating-point routine to
+share — the lookup is pure indexing) and runs it on `embed_bits` /
+`token_ids`, computes the SHA-256 digest per the convention above, and
+asserts both the bit patterns and the digest match
+`vectors/embed_lookup_v1.expected`. Run it with:
+
+```
+cargo test --test conformance_embed_lookup
+```
+
+This was run once while authoring the vector to derive
+`embed_lookup_v1.expected`; the test now exists as a standing self-check
+that the fixture stays correct if `src/main.rs`'s lookup expression ever
+changes. (An `#[ignore]`d `print_bits_for_generation` test in the same
+file is not part of the pinned suite; it exists only to regenerate the
+fixture if the reference indexing ever changes — run with `cargo test
+--test conformance_embed_lookup print_bits -- --ignored --nocapture`.)
 
 ## The `cis2-conformance` CLI
 
