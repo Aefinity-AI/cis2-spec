@@ -1,0 +1,10 @@
+16|Once upon a time|12522,5193,264,882|13.1 reference decode, ASCII control
+16|こんにちは世界|89015,99489|Japanese, 3-byte UTF-8
+16|Привет мир|53645,26991,8178,137144|Cyrillic, 2-byte UTF-8
+16|مرحبا بالعالم|124122,29825,124671,124476,129634|Arabic, RTL
+16|🙂🚀✨ emoji test|145080,145836,144232,42365,1273|4-byte UTF-8 astral plane
+16|café naïve résumé|924,58858,94880,586,9333,1242,963|accented Latin, NFC-sensitive
+16|∑∫∂∇ ℵ₀ ⊗|145127,145706,145371,144648,28653,113,89669,53025,245|mathematical symbols
+16|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA|57905,57905,57905,57905|32x repetition, degenerate attention
+16|!!!!!!!!!!!!!!!!|50667,50667|punctuation repetition
+256|Once upon a time|12522,5193,264,882|4x the previous generated-token ceiling
