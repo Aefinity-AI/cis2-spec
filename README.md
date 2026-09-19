@@ -210,6 +210,15 @@ scripts/self_check.sh     local build + digest reproduction check
   detection](docs/results/2026-09-13-RECEIPT-VERIFIED-EVAL60.md) — 60/60
   receipts verify, tamper detection improves from 3/4 to 4/4 caught after
   adding receipt/item context binding.
+- [Realistic embedding substitution: text replay vs top-5 logit check vs
+  witness digest](docs/results/2026-09-17-EMBED-SUBSTITUTION-HEADTOHEAD.md)
+  — quantization/pruning/fine-tune/surgical-row-patch experiments on a
+  pruned BitNet-2B checkpoint's embedding table; only the witness digest
+  catches every case, including unexercised single-row patches.
+- [GPU batched fp32 determinism: host CPU vs Tesla
+  T4](docs/results/2026-09-19-GPU-BATCHED-FP32-DETERMINISM.md) — row-batched
+  fp32 matches the CPU reference digest bit-for-bit at batch 1/4/8 on a
+  T4; grouped-GEMM and int8 batching mismatch as designed.
 
 ## Build and run the reference implementation (`src/`)
 
