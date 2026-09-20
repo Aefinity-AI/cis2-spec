@@ -18,6 +18,18 @@ env:
   EXPECTED_DUMP: 5386d3b0e529d9817af86f2ba1381193c2b174b0f26d12e22a441616dafb2f64
 
 jobs:
+  # --- demo: literally the README Quickstart command, on a stock Ubuntu
+  # runner, so a regression in scripts/self_check.sh (not just the
+  # individual build/run steps other jobs already cover) fails CI.
+  demo-quickstart:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the README Quickstart command (scripts/self_check.sh)
+        run: |
+          chmod +x scripts/self_check.sh scripts/fetch_weights.sh
+          scripts/self_check.sh
+
   # --- reference: src/, the Rust reference implementation the spec was
   # audited against (docs/CIS2_SPEC_v0.3b.md Appendix A). Not a clean-room:
   # this is the implementation the spec text describes.
