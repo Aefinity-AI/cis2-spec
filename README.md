@@ -1,5 +1,37 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
+## Quickstart (5 minutes)
+
+```sh
+git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec
+scripts/self_check.sh
+```
+
+That single command fetches + sha256-verifies the pinned
+`HuggingFaceTB/SmolLM2-135M` weights from Hugging Face (no account or
+token needed), builds the C clean-room verifier (`verify3/`) with your
+system `gcc`, runs it against the pinned §13.1 test vector, and diffs
+every digest against `EXPECTED_DIGESTS.md`. Expected last line:
+
+```
+PASS: all digests match the pinned CIS-2 v0.3b test vector.
+```
+
+Requires `git`, `gcc`, `make`, `curl`; `objdump` is used for an extra FMA
+check if present. No GPU and no Rust toolchain required for this path.
+Measured end-to-end wall time on a fresh clone: ~5 minutes, dominated by
+the ~257 MB weight download over the tester's network connection, not by
+the build or the verifier run themselves.
+
+**Independent reproduction.** The machine/compiler/ISA classes this
+repository documents as already having reproduced the primary `CIS2_REF`
+digest above are listed in `EXPECTED_DIGESTS.md`, `docs/GPU_RESULT.md`,
+and `.github/workflows/verify.yml` (currently: x86_64 and aarch64
+GitHub Actions runners, gcc and clang, and — as of 2026-09-08 — an
+NVIDIA Tesla P100 CUDA implementation). This is not a claim that no other
+environment could diverge; it is a record of which environments have been
+checked and are re-checked on every push by CI.
+
 **Claim:** given a normative specification (`docs/CIS2_SPEC_v0.3b.md`) for
 an fp32 transformer forward pass — pinned floating-point environment,
 pinned reduction order, pinned transcendental polynomials, pinned digest
@@ -67,14 +99,13 @@ run results and logs are included under `hardware_logs/` and
 and are not reproduced here — `.github/workflows/verify.yml` in this
 repository is the public equivalent).
 
-## Reproduce in 5 commands
+## Reproduce manually (equivalent to `scripts/self_check.sh`)
 
 ```sh
-git clone <this-repo-url> cis2-spec && cd cis2-spec
+git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec
 scripts/fetch_weights.sh weights          # fetches + sha256-verifies HuggingFaceTB/SmolLM2-135M
 make -C verify3                            # builds the C clean-room (verify3/)
 ./verify3/cis2_verify3 weights/model.safetensors weights/config.json weights/tokenizer.json
-scripts/self_check.sh                      # does all of the above and diffs against EXPECTED_DIGESTS.md
 ```
 
 Expected result: `CIS2_VERIFY3 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df`,
@@ -83,9 +114,10 @@ digest; see `.github/workflows/verify.yml` for the exact build/run
 sequence on both x86_64 and aarch64 CI runners.
 
 No timing numbers (tokens/sec, wall-clock, etc.) are published anywhere in
-this repository. The reference and both clean-room verifiers are scalar,
-unoptimized-for-speed implementations whose only goal is bit-exact,
-auditable determinism, not throughput.
+this repository other than the Quickstart's end-to-end wall-clock note
+above, which is about demo convenience, not throughput. The reference and
+both clean-room verifiers are scalar, unoptimized-for-speed
+implementations whose only goal is bit-exact, auditable determinism.
 
 `scripts/self_check.sh` extracts digests from verifier output using
 `grep -P` (PCRE lookbehind) when GNU grep is available, and automatically
