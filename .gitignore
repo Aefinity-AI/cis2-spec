@@ -4,3 +4,5 @@ weights/*.json
 weights_*/
 target/
 *.o
+eval/__pycache__/
+__pycache__/

@@ -671,6 +671,17 @@ fn run_one_prompt(
     let (w1, a1, toks1) = run("run1");
     let (w2, a2, toks2) = run("run2");
 
+    // ev-1 mini eval kit: decode the generated-only token slice to text so
+    // scoring scripts don't have to reimplement BPE decode. NOT part of
+    // CIS2_REF (the witness digest above already binds the raw token ids);
+    // this is a convenience projection for eval/run_eval.py.
+    let decode_gen = |all: &[u32]| -> String {
+        let gen_ids = &all[prompt_ids.len()..];
+        tok.decode(gen_ids, true).unwrap_or_default()
+    };
+    let text1 = decode_gen(&toks1);
+    let text2 = decode_gen(&toks2);
+
     println!("weights_sha256={}", hex::encode(weights_sha256));
     println!("tokenizer_sha256={}", hex::encode(tokenizer_sha256));
     println!("config_sha256={}", hex::encode(config_sha256));
@@ -683,6 +694,8 @@ fn run_one_prompt(
     println!("prompt_idx={prompt_idx} run2_witness_digest={w2}");
     println!("prompt_idx={prompt_idx} run1_argmax_digest={a1}");
     println!("prompt_idx={prompt_idx} run2_argmax_digest={a2}");
+    println!("prompt_idx={prompt_idx} run1_gen_text={text1:?}");
+    println!("prompt_idx={prompt_idx} run2_gen_text={text2:?}");
     println!(
         "prompt_idx={prompt_idx} runs_identical={}",
         w1 == w2 && a1 == a2 && toks1 == toks2
