@@ -252,6 +252,22 @@ scripts/self_check.sh     local build + digest reproduction check
   fp32 matches the CPU reference digest bit-for-bit at batch 1/4/8 on a
   T4; grouped-GEMM and int8 batching mismatch as designed.
 
+## Related tooling
+
+[`receipt-view`](https://github.com/Aefinity-AI/alice-aegis/blob/cm/rc1-receipt-viewer/demo/agent-trace/receipt-view.py)
+(in the `alice-aegis` repository, `demo/agent-trace/`) is a single-file,
+stdlib-only Python tool that turns an `agent_trace` agent-episode receipt
+— the sibling artifact to this repo's CIS-2 witness digests, hash-chaining
+a whole K-step agent episode rather than one forward pass — into a
+plain-English report: what ran, whether the hash chain is intact or
+broken, the first broken step and what changed, and whether the check ran
+offline. It shells out to the existing `agent_trace verify` (no
+reimplemented hashing/replay) and its own README documents a 4-case
+mutation test (changed token, changed tool-result, a flipped bit in an
+intermediate decode-chain digest, and a reordered step), each correctly
+caught and correctly attributed to the right step. See
+[`demo/agent-trace/receipt-view-README.md`](https://github.com/Aefinity-AI/alice-aegis/blob/cm/rc1-receipt-viewer/demo/agent-trace/receipt-view-README.md).
+
 ## Build and run the reference implementation (`src/`)
 
 ```sh
