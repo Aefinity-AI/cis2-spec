@@ -125,14 +125,17 @@ enough information for strangers to converge on identical bits — across an ISA
 boundary, a compiler boundary, a language boundary, and a CPU/GPU boundary,
 with no implementation consulting another.
 
-## Falsification bounty
+## Try to break it
 
-There is a standing $50-per-distinct-root-cause bounty for breaking this:
-https://github.com/Aefinity-AI/alice-aegis/blob/main/CHALLENGE.md — write your
-own implementation from `CIS2_SPEC_v0.3b.md`, in any language for any device,
-and get a different digest. If the disagreement is because the spec text permits
-two readings, that is the finding most worth paying for: it means the document
-is not yet sufficient, which is the entire thing CIS-2 claims to be.
+Write your own implementation from `CIS2_SPEC_v0.3b.md`, in any language for
+any device, and see whether you get a different digest. Verified divergences
+and verified reproductions are credited by name in the repository's
+`HALL-OF-DIVERGENCE.md`. There is no cash offer attached to this: the reason
+to do it is the finding itself, and the credit for it.
+
+If two implementations disagree because the spec text permits two readings,
+that is the most valuable outcome, not an embarrassing one: it means the
+document is not yet sufficient, which is the entire property CIS-2 claims.
 
 ---
 
