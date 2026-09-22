@@ -1,0 +1,120 @@
+name: Divergence report
+description: >-
+  You ran ./selfcheck.sh on a conforming machine, every build/gate step
+  passed, and one or more pinned digests came out different from
+  EXPECTED_DIGESTS.md. See CHALLENGE.md for what is and is not in scope.
+title: "[divergence] "
+labels: ["divergence"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing this. Read `CHALLENGE.md` first if you have not —
+        it defines what counts as a divergence vs. an out-of-scope failure
+        (bad download, missing toolchain, wrong model/prompt, non-fp32 path,
+        timing differences). This is credit-only: no cash, no prize, no
+        payment. Verified reports are credited by name in
+        `HALL-OF-DIVERGENCE.md`.
+  - type: input
+    id: machine-label
+    attributes:
+      label: Machine hostname / label
+      description: A name or label for this machine (used in the credit table).
+      placeholder: e.g. my-laptop, ci-runner-3
+    validations:
+      required: true
+  - type: input
+    id: cpu-model
+    attributes:
+      label: CPU model
+      placeholder: e.g. AMD Ryzen 7 5800X
+    validations:
+      required: true
+  - type: input
+    id: isa-flags
+    attributes:
+      label: ISA flags (relevant)
+      description: >-
+        From the selfcheck.sh machine-fingerprint block
+        (avx, avx2, fma, sse4_2, neon, asimd, ...).
+      placeholder: e.g. avx,avx2,fma,sse4_2
+    validations:
+      required: true
+  - type: input
+    id: os-kernel
+    attributes:
+      label: OS + kernel
+      description: The `os:` line from the selfcheck.sh machine-fingerprint block.
+      placeholder: e.g. Linux myhost 6.12.0-amd64 #1 SMP ... x86_64 GNU/Linux
+    validations:
+      required: true
+  - type: input
+    id: compiler-version
+    attributes:
+      label: Compiler + version
+      description: Output of `gcc --version` or `cc --version` (first line is enough).
+      placeholder: e.g. gcc (Debian 14.2.0-19) 14.2.0
+    validations:
+      required: true
+  - type: input
+    id: git-head
+    attributes:
+      label: git rev-parse HEAD
+      description: The exact commit of your checkout.
+      placeholder: e.g. 8eb5f41...
+    validations:
+      required: true
+  - type: textarea
+    id: which-digests
+    attributes:
+      label: Which digest(s) differed — expected vs. got
+      description: >-
+        List each of CIS2_REF / argmax_digest / table_digest /
+        inv_freq_table_digest that differed, with the expected value from
+        EXPECTED_DIGESTS.md and the value you got.
+      placeholder: |
+        CIS2_REF: expected d8274305... got 9a1c02f4...
+    validations:
+      required: true
+  - type: dropdown
+    id: build-gate-passed
+    attributes:
+      label: Did every build/gate step pass?
+      description: >-
+        i.e. cargo build, make -C verify3, and the FMA-instruction gate
+        (objdump check) all reported PASS — the mismatch is in the
+        digest values themselves, not a build failure.
+      options:
+        - "Yes — build and FMA gate both passed, only digest(s) differ"
+        - "No — a build or gate step also failed"
+        - "Unsure"
+    validations:
+      required: true
+  - type: textarea
+    id: selfcheck-output
+    attributes:
+      label: Full selfcheck.sh output (stdout+stderr, unedited)
+      description: Paste the entire output, not a trimmed excerpt.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: weight-sha256
+    attributes:
+      label: sha256 of each weight file
+      description: model.safetensors, config.json, tokenizer.json
+      placeholder: |
+        model.safetensors  80521b40...
+        config.json        1d556eab...
+        tokenizer.json     9ca9acdd...
+    validations:
+      required: true
+  - type: textarea
+    id: unusual
+    attributes:
+      label: Anything unusual about this machine?
+      description: >-
+        VM/container, custom compiler flags, unusual CPU microcode,
+        cross-compiled binary, emulation (QEMU), etc. Optional but helpful.
+    validations:
+      required: false
