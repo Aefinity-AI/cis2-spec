@@ -25,12 +25,19 @@ sys	0m2.095s
 
 **Machines this has been run on**
 
-| Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Log |
+| Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Full run |
 | --- | --- | --- | --- | --- | --- |
-| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | `state/logs/2026-09-22-pc1-selfcheck-aefinity-box.log` |
-| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | `state/logs/2026-09-22-pc1-selfcheck-aefinity-box2.log` |
-| penguin | TBD | Crostini | — | not yet run | pending |
-| phone | TBD | aarch64 | — | not yet run | pending |
+| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output in PR #21 |
+| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output in PR #21 |
+| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output in PR #21 |
+| phone | TBD | aarch64 (Android) | — | not yet run | pending |
+
+One caveat on the penguin row: that machine's resolver could not reach the
+Hugging Face LFS CDN host at run time, so the three pinned artifacts were
+copied to it over the LAN instead of downloaded. `scripts/fetch_weights.sh`
+accepts a pre-existing file only when its sha256 equals the pin recorded in
+that script, so the fetch step still verified the same three hashes; every
+later step ran normally on that host.
 
 ## Shorter path: digests only
 
