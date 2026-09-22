@@ -156,11 +156,13 @@ matching `EXPECTED_DIGESTS.md`. `verify2/` (Rust) reproduces the same
 digest; see `.github/workflows/verify.yml` for the exact build/run
 sequence on both x86_64 and aarch64 CI runners.
 
-No timing numbers (tokens/sec, wall-clock, etc.) are published anywhere in
-this repository other than the Quickstart's end-to-end wall-clock note
-above, which is about demo convenience, not throughput. The reference and
-both clean-room verifiers are scalar, unoptimized-for-speed
-implementations whose only goal is bit-exact, auditable determinism.
+No throughput numbers (tokens/sec and the like) are published anywhere in
+this repository. The only timings published are end-to-end wall-clock
+figures — the machine table above and the shorter-path note — labelled in
+both places as (demo convenience, not throughput): they tell you how long
+to wait, not how fast anything is. The reference and both clean-room
+verifiers are scalar, unoptimized-for-speed implementations whose only goal
+is bit-exact, auditable determinism, not throughput.
 
 `scripts/self_check.sh` extracts digests from verifier output using
 `grep -P` (PCRE lookbehind) when GNU grep is available, and automatically
