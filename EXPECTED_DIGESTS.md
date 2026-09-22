@@ -83,6 +83,42 @@ cross-ISA evidence, not §13.1 normative test vectors.
 | 3 | 19  | `ee1247798e49f766adf10b64fb9cce07ee9cf80a34394e5e38c47485939c6c01` |
 | 4 | 215 | `135f50b5850e9e7bf31ee4fd9b935a002c7627cce6e1b7260e665e726c2c450b` |
 
+## Informative: SmolLM2-360M (second-model-scale evidence, same family/tokenizer)
+
+Not a §13.1 test vector (that role belongs to SmolLM2-135M above); exercises
+the reference construction (`src/`, not the clean-rooms) against a second,
+genuinely different checkpoint in the same model family — 32 layers vs. 9,
+hidden_size 960 vs. 576, `rope_theta=100000` (same as 135M) — sharing only the
+tokenizer with the primary vector. Confirmed bit-identical between an AVX2
+x86_64 machine and a scalar (no AVX2/FMA) x86_64 machine on 2026-09-22.
+
+```
+Model: HuggingFaceTB/SmolLM2-360M, prompt "Once upon a time", gen_toks=16, spec v0.3b, dtype=fp32
+
+weights_sha256          = 7aaff6661428bed033abba9522bec81938678642cca3181fe752b6ca9e1e540f
+config_sha256            = 34f7801487078de7e434e19162c497e5cc6ff397080e40e8586627cb68a5168a
+tokenizer_sha256          = 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+table_digest              = 23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest     = da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+argmax_digest             = 90681903ebafdc4f8d8141be882e19b95b7a2c0f0761f16fa213df196db794a8
+generated_token_ids       = 28,281,253,1666,1869,2025,28,665,436,253,9077,1379,1217,260,476,61
+
+CIS2_REF (witness digest) = 3d159b94fd7a241fcc380bb6bc158cf03a6b4c13c03f46325c8a91d75c477dad
+```
+
+Reproduced via `src/` (`cis2_ref --weights-dir <dir>`, default `--gen-toks 16`)
+on:
+- x86_64, AVX2, `aefinity-box` (box1) — 23.9s wall.
+- x86_64, scalar (no AVX2/FMA — Intel Celeron N4020), `aefinity-box2` (box2),
+  same commit, cross-machine replay — 43.2s wall.
+
+Both machines produced the identical witness/argmax/table/inv_freq_table
+digests above, byte-for-byte, in a single run per machine (not just the
+in-process two-run check). `table_digest` and `inv_freq_table_digest` are
+identical to the primary SmolLM2-135M vector, as expected — both are
+independent of model weights (the transcendental-polynomial table is a
+fixed constant, and `rope_theta=100000` is shared with 135M).
+
 ## Informative: Qwen2.5-0.5B (theta-general RoPE exercise, `rope_theta=1000000`)
 
 Not a §13.1 test vector; exercises §7's general RoPE construction against
