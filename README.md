@@ -1,6 +1,42 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
-## Quickstart (5 minutes)
+## Reproduce this in <15 minutes
+
+```
+git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec && ./selfcheck.sh
+```
+
+Expected output ends with (trimmed to the machine-fingerprint and summary
+lines; full log runs longer with build output in between):
+
+```
+== machine fingerprint ==
+cpu_model: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
+isa_flags(relevant): avx,avx2,fma,sse4_2
+os: Linux aefinity-box 6.12.94+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64 GNU/Linux
+
+== SUMMARY: 9 passed, 0 failed ==
+PASS: all reproducible pinned digests match this repository's own EXPECTED_DIGESTS.md.
+
+real	3m30.629s
+user	0m53.911s
+sys	0m2.095s
+```
+
+**Machines this has been run on**
+
+| Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Log |
+| --- | --- | --- | --- | --- | --- |
+| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | `state/logs/2026-09-22-pc1-selfcheck-aefinity-box.log` |
+| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | `state/logs/2026-09-22-pc1-selfcheck-aefinity-box2.log` |
+| penguin | TBD | Crostini | — | not yet run | pending |
+| phone | TBD | aarch64 | — | not yet run | pending |
+
+## Shorter path: digests only
+
+This is the narrower of the two entry points: it checks the four pinned
+digests with the C verifier only, where `./selfcheck.sh` above runs all
+nine checks across both clean-room implementations.
 
 ```sh
 git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec
@@ -19,9 +55,10 @@ PASS: all digests match the pinned CIS-2 v0.3b test vector.
 
 Requires `git`, `gcc`, `make`, `curl`; `objdump` is used for an extra FMA
 check if present. No GPU and no Rust toolchain required for this path.
-Measured end-to-end wall time on a fresh clone: ~5 minutes, dominated by
-the ~257 MB weight download over the tester's network connection, not by
-the build or the verifier run themselves.
+Measured end-to-end wall time on a fresh clone: ~5 minutes (demo
+convenience, not throughput), dominated by the ~257 MB weight download
+over the tester's network connection, not by the build or the verifier run
+themselves.
 
 **Independent reproduction.** The machine/compiler/ISA classes this
 repository documents as already having reproduced the primary `CIS2_REF`
@@ -31,7 +68,6 @@ GitHub Actions runners, gcc and clang, and — as of 2026-09-08 — an
 NVIDIA Tesla P100 CUDA implementation). This is not a claim that no other
 environment could diverge; it is a record of which environments have been
 checked and are re-checked on every push by CI.
-
 **Claim:** given a normative specification (`docs/CIS2_SPEC_v0.3b.md`) for
 an fp32 transformer forward pass — pinned floating-point environment,
 pinned reduction order, pinned transcendental polynomials, pinned digest
