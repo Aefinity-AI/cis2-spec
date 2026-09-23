@@ -338,3 +338,9 @@ line, matching `EXPECTED_DIGESTS.md` and the `verify2`/`verify3` clean-room
 result above. No timing numbers are printed or recorded by this
 repository (Rule A); `nice` is used only to be a considerate neighbor on
 shared machines, not to produce a timing measurement.
+
+## Acknowledgments
+
+A special thank you to Charles Seaman and Linda Blanchard, whose contributions have helped Aefinity AI stay on track.
+
+And a very special thank you to **Bonnie Rae Power**: an amazing woman, a great friend and neighbor, without whom Aefinity AI would have never had a chance to ever get started. Thank you, Bonnie, for your advice, care, encouragement, guidance, intuitive wisdom, and financial assistance.
