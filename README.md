@@ -1,6 +1,49 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
-## Quickstart (5 minutes)
+## Reproduce this in <15 minutes
+
+```
+git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec && ./selfcheck.sh
+```
+
+Expected output ends with (trimmed to the machine-fingerprint and summary
+lines; full log runs longer with build output in between):
+
+```
+== machine fingerprint ==
+cpu_model: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
+isa_flags(relevant): avx,avx2,fma,sse4_2
+os: Linux aefinity-box 6.12.94+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64 GNU/Linux
+
+== SUMMARY: 9 passed, 0 failed ==
+PASS: all reproducible pinned digests match this repository's own EXPECTED_DIGESTS.md.
+
+real	3m30.629s
+user	0m53.911s
+sys	0m2.095s
+```
+
+**Machines this has been run on**
+
+| Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Full run |
+| --- | --- | --- | --- | --- | --- |
+| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output in PR #21 |
+| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output in PR #21 |
+| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output in PR #21 |
+| phone | TBD | aarch64 (Android) | — | not yet run | pending |
+
+One caveat on the penguin row: that machine's resolver could not reach the
+Hugging Face LFS CDN host at run time, so the three pinned artifacts were
+copied to it over the LAN instead of downloaded. `scripts/fetch_weights.sh`
+accepts a pre-existing file only when its sha256 equals the pin recorded in
+that script, so the fetch step still verified the same three hashes; every
+later step ran normally on that host.
+
+## Shorter path: digests only
+
+This is the narrower of the two entry points: it checks the four pinned
+digests with the C verifier only, where `./selfcheck.sh` above runs all
+nine checks across both clean-room implementations.
 
 ```sh
 git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec
@@ -19,9 +62,10 @@ PASS: all digests match the pinned CIS-2 v0.3b test vector.
 
 Requires `git`, `gcc`, `make`, `curl`; `objdump` is used for an extra FMA
 check if present. No GPU and no Rust toolchain required for this path.
-Measured end-to-end wall time on a fresh clone: ~5 minutes, dominated by
-the ~257 MB weight download over the tester's network connection, not by
-the build or the verifier run themselves.
+Measured end-to-end wall time on a fresh clone: ~5 minutes (demo
+convenience, not throughput), dominated by the ~257 MB weight download
+over the tester's network connection, not by the build or the verifier run
+themselves.
 
 **Independent reproduction.** The machine/compiler/ISA classes this
 repository documents as already having reproduced the primary `CIS2_REF`
@@ -31,7 +75,6 @@ GitHub Actions runners, gcc and clang, and — as of 2026-09-08 — an
 NVIDIA Tesla P100 CUDA implementation). This is not a claim that no other
 environment could diverge; it is a record of which environments have been
 checked and are re-checked on every push by CI.
-
 **Claim:** given a normative specification (`docs/CIS2_SPEC_v0.3b.md`) for
 an fp32 transformer forward pass — pinned floating-point environment,
 pinned reduction order, pinned transcendental polynomials, pinned digest
@@ -113,11 +156,13 @@ matching `EXPECTED_DIGESTS.md`. `verify2/` (Rust) reproduces the same
 digest; see `.github/workflows/verify.yml` for the exact build/run
 sequence on both x86_64 and aarch64 CI runners.
 
-No timing numbers (tokens/sec, wall-clock, etc.) are published anywhere in
-this repository other than the Quickstart's end-to-end wall-clock note
-above, which is about demo convenience, not throughput. The reference and
-both clean-room verifiers are scalar, unoptimized-for-speed
-implementations whose only goal is bit-exact, auditable determinism.
+No throughput numbers (tokens/sec and the like) are published anywhere in
+this repository. The only timings published are end-to-end wall-clock
+figures — the machine table above and the shorter-path note — labelled in
+both places as (demo convenience, not throughput): they tell you how long
+to wait, not how fast anything is. The reference and both clean-room
+verifiers are scalar, unoptimized-for-speed implementations whose only goal
+is bit-exact, auditable determinism, not throughput.
 
 `scripts/self_check.sh` extracts digests from verifier output using
 `grep -P` (PCRE lookbehind) when GNU grep is available, and automatically

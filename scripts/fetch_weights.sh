@@ -13,6 +13,20 @@ BASE_URL="https://huggingface.co/HuggingFaceTB/SmolLM2-135M/resolve/main"
 
 fetch_and_check() {
   local name="$1" expected="$2"
+  # Idempotent: if the file is already here and already matches the pin,
+  # do not re-download it. Re-runs (and reruns after a partial network
+  # failure) then cost nothing, and a copy staged by any other means is
+  # still accepted only if its sha256 equals the pin recorded below.
+  if [ -f "$DEST/$name" ]; then
+    local have
+    have=$(sha256sum "$DEST/$name" | awk '{print $1}')
+    if [ "$have" = "$expected" ]; then
+      echo "Have  $name (cached, sha256-verified against pin)"
+      return 0
+    fi
+    echo "Re-fetching $name (local copy does not match pin) ..."
+    rm -f "$DEST/$name"
+  fi
   echo "Fetching $name ..."
   curl -sSf -L --retry 6 --retry-delay 10 --retry-all-errors \
     -o "$DEST/$name" "$BASE_URL/$name"
