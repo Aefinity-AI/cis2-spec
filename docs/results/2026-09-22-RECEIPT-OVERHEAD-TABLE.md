@@ -72,6 +72,74 @@ logs, including `/usr/bin/time -v` output (peak RSS: 1,406,336 KB for the
 WITH-receipts gen run on box1) and the raw receipt file, are committed in
 `alice-aegis` under `demo/agent-trace/out/rc3/`.
 
+## Addendum (2026-09-23): peak RSS and energy
+
+**Rule A note:** as above — no cross-machine comparison claims. box2 and phone
+entries below are `n/a` for real, disclosed reasons, not omissions.
+
+| Machine | Peak RSS (gen WITH receipts) | Energy (gen WITH receipts) |
+|---|---|---|
+| box1 (aefinity-box) | 1,309,996 KB | 369.45 J (RAPL package-0 only, ~46s window) |
+| box2 (aefinity-box2) | n/a — box2 never runs 2B generation (HOST RULE); also unreachable this tick (see below) | n/a — no RAPL/energy meter on this hardware, and same HOST RULE applies |
+| phone | n/a — unreachable (no `adb` on box1 or box2) | n/a — unreachable |
+
+box2 reachability attempted and failed both ways: `ssh box2lan` (192.168.11.69,
+LAN alias) timed out at the TCP level (`Connection timed out`, network path
+down, not an auth failure); `ssh cm@192.168.10.21` (fixed WiFi alias per
+`state/BOXES.md`) reached the host but was rejected (`Permission denied
+(publickey)` — no matching private key present on this host for that path).
+Neither result is used to produce a number; both are reported as the reason
+for `n/a`. Independent of reachability, box2's HOST RULE (see main table
+above) already forbids running `agent_trace gen` against the 2B artifact
+triple on box2 at all, so even with SSH access restored this cell would stay
+`n/a` for that reason.
+
+box1 measurement re-ran the *exact* command from "Exact commands" above (same
+model/embed/vocab/K/N/prompt), wrapped in `/usr/bin/time -v` under
+`systemd-run --scope --user -p CPUWeight=idle` (per CLAUDE.md's box1/box2
+measurement-leg convention), on an idle box1 (`load average: 0.08 0.08 0.11`,
+`free -m` showing 4.2 GB available before the run). The resulting receipt
+(1599 bytes) is byte-identical to `demo/agent-trace/out/rc3/scenario1-tool-use.receipt`
+(`diff` exit 0) — confirming this is the same workload as the original table,
+not a different run.
+
+Energy was read from `/sys/class/powercap/intel-rapl:0/energy_uj` (domain
+name `package-0` — CPU package power only, **not** whole-machine wall power;
+no wall meter was available, so this number should be read as a lower bound
+on total system energy draw) immediately before and after the timed command,
+via `sudo -n cat` (passwordless sudo already configured for this host, per
+`state/BOXES.md`). No wraparound occurred (`after >= before`), so
+`delta_uj = after - before` was used directly (wraparound-handling logic with
+`max_energy_range_uj` was written but not exercised, since it wasn't needed
+this run).
+
+Raw values:
+```
+box1-rapl-before.txt: 95225856562
+box1-rapl-after.txt:  95595311000
+delta_uj = 369454438  ->  369.454438 J
+window: 2026-09-23T02:32:11Z .. 2026-09-23T02:32:57Z (46s, matches time -v's 0:45.94 elapsed)
+```
+
+`/usr/bin/time -v` tail (full output committed alongside this doc):
+```
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:45.94
+Maximum resident set size (kbytes): 1309996
+Exit status: 0
+```
+
+Note this run's peak RSS (1,309,996 KB) and elapsed time (45.94s) differ
+slightly from the original table's box1 gen-with-receipt run (1,463,176 KB
+per that run's own `time -v` log, reported in prose above as "1,406,336 KB" —
+that prose figure appears to predate the committed log and is superseded by
+the log itself; 44.74s wall). Both are real, separately-measured numbers from
+two different invocations of the identical command on the identical machine;
+the ~150 MB / ~1s spread is ordinary run-to-run variance (allocator/page-cache
+state, GC-adjacent effects in the release binary) and is reported as
+observed, not smoothed into a single figure. Raw logs for this addendum:
+`docs/results/2026-09-23-rc3-addendum-energy/` in this repo, and
+`state/reports/2026-09-23-rc3-addendum-energy/` in `claudius-maximus`.
+
 ## Honest summary
 
 The "with vs. without receipts" gen comparison is for the whole
@@ -91,6 +159,8 @@ count). Receipt size (1599 bytes for this K=3 episode) and box1 verify time
 is polling-bounded, not a precise wall-clock `time` figure, because the
 daemon protocol used (the only box2-HOST-RULE-permitted 2B path) has no
 synchronous RPC. Phone replay was not attempted beyond checking for `adb`
-(absent on both boxes) — reported as unreachable, not estimated. Energy
-draw was not measured this tick (a separate QUEUE addendum item covers
-that); no number is fabricated in its place.
+(absent on both boxes) — reported as unreachable, not estimated. Peak RSS
+and energy draw for box1's gen-with-receipt run were added in the
+2026-09-23 addendum above (369.45 J, CPU-package-only, plus 1,309,996 KB
+peak RSS); box2 and phone remain `n/a` for the disclosed reasons (HOST
+RULE, unreachable, no meter) — no number is fabricated in their place.
