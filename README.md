@@ -200,6 +200,18 @@ full, honest list):
    reproduce) `EXPECTED_DIGESTS.md`. Mismatches are useful — they are how
    this spec's own item-order bug was found (see `CHANGELOG.md`).
 
+## Try to break it
+
+CIS-2 predicts a specific hash on hardware nobody here has run it on
+yet. `CHALLENGE.md` defines what counts as a divergence vs. an
+out-of-scope failure; `HALL-OF-DIVERGENCE.md` credits every verified
+report by name (credit-only: no cash, no prize, no payment). Report via
+[`divergence-report.yml`](.github/ISSUE_TEMPLATE/divergence-report.yml)
+or [`reproduction-report.yml`](.github/ISSUE_TEMPLATE/reproduction-report.yml)
+— or open one directly:
+[divergence](../../issues/new?template=divergence-report.yml) /
+[reproduction](../../issues/new?template=reproduction-report.yml).
+
 ## Paper
 
 arXiv link: pending — updated on publication. See `CITATION.cff`.

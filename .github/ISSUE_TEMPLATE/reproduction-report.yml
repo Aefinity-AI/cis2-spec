@@ -1,0 +1,90 @@
+name: Reproduction report
+description: >-
+  You ran ./selfcheck.sh and every digest matched (a clean PASS), or the
+  run failed for environment reasons (FMA found, FTZ/DAZ unpinned, etc.)
+  rather than a spec divergence. Both are useful and both are credited.
+title: "[reproduction] "
+labels: ["reproduction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for running this. This template is for a successful
+        reproduction (all digests matched) or an environment-caused
+        failure (e.g. FMA-family instruction found, unpinned FTZ/DAZ) —
+        not for a spec-level digest mismatch on a conforming machine
+        (use the Divergence report template for that). Credit-only: no
+        cash, no prize, no payment. Verified reports are credited by name
+        in `HALL-OF-DIVERGENCE.md`.
+  - type: input
+    id: machine-label
+    attributes:
+      label: Machine hostname / label
+      placeholder: e.g. my-laptop, ci-runner-3
+    validations:
+      required: true
+  - type: input
+    id: cpu-model
+    attributes:
+      label: CPU model
+      placeholder: e.g. Intel Core i7-1165G7
+    validations:
+      required: true
+  - type: input
+    id: isa-flags
+    attributes:
+      label: ISA flags (relevant)
+      description: >-
+        From the selfcheck.sh machine-fingerprint block
+        (avx, avx2, fma, sse4_2, neon, asimd, ...).
+      placeholder: e.g. avx,avx2,fma,sse4_2
+    validations:
+      required: true
+  - type: input
+    id: os-kernel
+    attributes:
+      label: OS + kernel
+      description: The `os:` line from the selfcheck.sh machine-fingerprint block.
+      placeholder: e.g. Linux myhost 6.12.0-amd64 #1 SMP ... x86_64 GNU/Linux
+    validations:
+      required: true
+  - type: input
+    id: compiler-version
+    attributes:
+      label: Compiler + version
+      placeholder: e.g. gcc (Debian 14.2.0-19) 14.2.0
+    validations:
+      required: true
+  - type: input
+    id: git-head
+    attributes:
+      label: git rev-parse HEAD
+      placeholder: e.g. 8eb5f41...
+    validations:
+      required: true
+  - type: input
+    id: pass-fail-counts
+    attributes:
+      label: PASS/FAIL counts
+      description: 'The "== SUMMARY: N passed, M failed ==" line.'
+      placeholder: e.g. 9 passed, 0 failed
+    validations:
+      required: true
+  - type: textarea
+    id: selfcheck-output
+    attributes:
+      label: Full selfcheck.sh output (stdout+stderr, unedited)
+      description: Paste the entire output, not a trimmed excerpt.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: wallclock
+    attributes:
+      label: "Wall-clock (demo convenience, not throughput) [optional]"
+      description: >-
+        Optional. The `real` time from the run, if you have it. Never a
+        tokens/sec figure — this repository does not publish those.
+      placeholder: e.g. 3m30s
+    validations:
+      required: false
