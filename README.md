@@ -29,6 +29,7 @@ sys	0m2.095s
 | --- | --- | --- | --- | --- | --- |
 | box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output in PR #21 |
 | box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output in PR #21 |
+| box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | trimmed output in this PR |
 | penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output in PR #21 |
 | phone | TBD | aarch64 (Android) | — | not yet run | pending |
 
