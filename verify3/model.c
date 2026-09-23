@@ -280,12 +280,53 @@ static void dump_line(const char *layer, const char *field, size_t pos, const fl
     fprintf(stderr, "CIS2_DUMP layer=%s field=%s pos=%zu digest=%s\n", layer, field, pos, hex);
 }
 
+/* xb-1: compute the logit-lens top-CIS2_LENS_TOPK for one layer's hidden
+ * state at position `pos`, using the model's real final-norm weight and
+ * unembedding weight `lm_w` (identical math to the final-logits path).
+ * Writes CIS2_LENS_TOPK entries into out (already allocated by caller). */
+static void lens_topk_for_layer(const cis2_model *m, const float *h_pos, const float *lm_w,
+                                 cis2_lens_entry *out)
+{
+    size_t hidden = m->cfg.hidden_size;
+    size_t vocab = m->cfg.vocab_size;
+    float eps = m->cfg.rms_norm_eps;
+
+    float *hn = malloc(hidden * sizeof(float));
+    cis2_rmsnorm(h_pos, m->norm_weight, eps, hn, hidden);
+    float *logits = malloc(vocab * sizeof(float));
+    cis2_matvec(lm_w, hn, logits, vocab, hidden);
+
+    /* simple top-K selection (K is tiny; O(K*vocab) is fine) */
+    int used[CIS2_LENS_TOPK];
+    for (int k = 0; k < CIS2_LENS_TOPK; k++) used[k] = -1;
+    for (int k = 0; k < CIS2_LENS_TOPK; k++) {
+        long best_idx = -1;
+        float best_val = 0.0f;
+        for (size_t idx = 0; idx < vocab; idx++) {
+            int already = 0;
+            for (int j = 0; j < k; j++) if (used[j] == (int)idx) { already = 1; break; }
+            if (already) continue;
+            if (best_idx < 0 || logits[idx] > best_val) { best_idx = (long)idx; best_val = logits[idx]; }
+        }
+        used[k] = (int)best_idx;
+        out[k].token_id = (uint32_t)best_idx;
+        out[k].logit = best_val;
+    }
+
+    free(logits);
+    free(hn);
+}
+
 /* Runs a full forward pass over tokens[0..ntok-1], returns logits[vocab]
  * for the LAST position only (malloc'd, caller frees). If `dump_last` is
  * nonzero and g_dump_layers is enabled, emits per-layer CIS2_DUMP lines
  * (E15k) for position ntok-1 only (the forward pass that produces step
- * 0's logits). */
-static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t ntok, int dump_last)
+ * 0's logits). If `lens_out` is non-NULL, it must point at
+ * num_hidden_layers*CIS2_LENS_TOPK cis2_lens_entry slots; this function
+ * fills them in with the xb-1 logit-lens top-K table for position
+ * ntok-1, one row per layer (row-major layer then rank). */
+static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t ntok, int dump_last,
+                            cis2_lens_entry *lens_out)
 {
     int dump = g_dump_layers && dump_last;
     size_t dump_pos = ntok - 1;
@@ -329,6 +370,7 @@ static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t n
     float *down = malloc(ntok * hidden * sizeof(float));
     float *scores = malloc(ntok * sizeof(float));
     float scale = cis2_rsqrt((float)head_dim);
+    const float *lm_w = m->cfg.tie_word_embeddings ? m->embed_tokens : (m->lm_head ? m->lm_head : m->embed_tokens);
 
     for (size_t layer_i = 0; layer_i < m->cfg.num_hidden_layers; layer_i++) {
         const cis2_layer *L = &m->layers[layer_i];
@@ -405,13 +447,15 @@ static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t n
             snprintf(label, sizeof(label), "block%zu", layer_i);
             dump_line(label, "post_mlp_hidden", dump_pos, h + dump_pos * hidden, hidden);
         }
+        if (lens_out) {
+            lens_topk_for_layer(m, h + dump_pos * hidden, lm_w, lens_out + layer_i * CIS2_LENS_TOPK);
+        }
     }
 
     size_t last = ntok - 1;
     float *hn = malloc(hidden * sizeof(float));
     cis2_rmsnorm(h + last * hidden, m->norm_weight, eps, hn, hidden);
     if (dump) dump_line("final_norm", "final_norm_output", dump_pos, hn, hidden);
-    const float *lm_w = m->cfg.tie_word_embeddings ? m->embed_tokens : (m->lm_head ? m->lm_head : m->embed_tokens);
     float *logits = malloc(m->cfg.vocab_size * sizeof(float));
     cis2_matvec(lm_w, hn, logits, m->cfg.vocab_size, hidden);
     if (dump) dump_line("logits", "pre_argmax_logits", dump_pos, logits, m->cfg.vocab_size);
@@ -500,8 +544,14 @@ void cis2_run_decode(const cis2_model *m,
 
     uint32_t *generated = malloc(n_gen * sizeof(uint32_t));
 
+    /* xb-1: logit-lens top-K table, captured at step 0 (last prompt
+     * position) only -- "for a fixed prompt", per QUEUE item xb-1. */
+    size_t n_layers = m->cfg.num_hidden_layers;
+    cis2_lens_entry *lens_table = malloc(n_layers * CIS2_LENS_TOPK * sizeof(cis2_lens_entry));
+
     for (size_t step = 0; step < n_gen; step++) {
-        float *logits = forward_full(m, tokens, ntok, g_dump_run_count == 1 && step <= 1);
+        cis2_lens_entry *lens_out = (step == 0) ? lens_table : NULL;
+        float *logits = forward_full(m, tokens, ntok, g_dump_run_count == 1 && step <= 1, lens_out);
         for (size_t i = 0; i < m->cfg.vocab_size; i++) {
             uint32_t bits = cis2_f32_bits(logits[i]);
             uint8_t b[4] = { (uint8_t)(bits & 0xFF), (uint8_t)((bits >> 8) & 0xFF),
@@ -519,7 +569,28 @@ void cis2_run_decode(const cis2_model *m,
 
     cis2_sha256_final(&witness, out->witness_digest);
     cis2_sha256_final(&argctx, out->argmax_digest);
+
+    /* xb-1: layer_lens_digest is a SEPARATE sha256 over the serialized
+     * lens table -- it does not feed the witness/argmax contexts above,
+     * so their finalized digests are unaffected by this addition. */
+    cis2_sha256_ctx lens_ctx;
+    cis2_sha256_init(&lens_ctx);
+    for (size_t li = 0; li < n_layers; li++) {
+        feed_u32_le(&lens_ctx, (uint32_t)li);
+        for (size_t k = 0; k < CIS2_LENS_TOPK; k++) {
+            const cis2_lens_entry *e = &lens_table[li * CIS2_LENS_TOPK + k];
+            feed_u32_le(&lens_ctx, e->token_id);
+            uint32_t bits = cis2_f32_bits(e->logit);
+            uint8_t b[4] = { (uint8_t)(bits & 0xFF), (uint8_t)((bits >> 8) & 0xFF),
+                             (uint8_t)((bits >> 16) & 0xFF), (uint8_t)((bits >> 24) & 0xFF) };
+            cis2_sha256_update(&lens_ctx, b, 4);
+        }
+    }
+    cis2_sha256_final(&lens_ctx, out->layer_lens_digest);
+
     out->generated_ids = generated;
     out->n_gen = n_gen;
+    out->layer_lens_table = lens_table;
+    out->layer_lens_n_layers = n_layers;
     free(tokens);
 }

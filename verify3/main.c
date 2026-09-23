@@ -140,26 +140,43 @@ int main(int argc, char **argv)
     if (memcmp(r1.witness_digest, r2.witness_digest, 32) != 0) det_ok = 0;
     if (memcmp(r1.argmax_digest, r2.argmax_digest, 32) != 0) det_ok = 0;
     if (memcmp(r1.generated_ids, r2.generated_ids, 16 * sizeof(uint32_t)) != 0) det_ok = 0;
+    if (memcmp(r1.layer_lens_digest, r2.layer_lens_digest, 32) != 0) det_ok = 0;
     if (!det_ok) {
         fprintf(stderr, "CIS2_VERIFY3 FATAL: two-run determinism check failed (spec §12.4)\n");
         return 93;
     }
     printf("CIS2_VERIFY3 determinism=PASS\n");
 
-    char witness_hex[65], argmax_hex[65], table_hex[65], invfreq_hex[65];
+    char witness_hex[65], argmax_hex[65], table_hex[65], invfreq_hex[65], lens_hex[65];
     hex_encode(r1.witness_digest, 32, witness_hex);
     hex_encode(r1.argmax_digest, 32, argmax_hex);
     hex_encode(r1.table_digest, 32, table_hex);
     hex_encode(r1.inv_freq_table_digest, 32, invfreq_hex);
+    hex_encode(r1.layer_lens_digest, 32, lens_hex);
 
     printf("CIS2_VERIFY3 digest=%s prompt_idx=0 prompt_toks=4 gen_toks=16 dtype=fp32\n", witness_hex);
     printf("CIS2_VERIFY3 argmax_digest=%s\n", argmax_hex);
     printf("CIS2_VERIFY3 table_digest=%s\n", table_hex);
     printf("CIS2_VERIFY3 inv_freq_table_digest=%s\n", invfreq_hex);
+    printf("CIS2_VERIFY3 layer_lens_digest=%s\n", lens_hex);
 
     printf("CIS2_VERIFY3 generated_token_ids=");
     for (size_t i = 0; i < r1.n_gen; i++) printf("%s%u", i ? "," : "", r1.generated_ids[i]);
     printf("\n");
+
+    /* xb-1: print the full logit-lens top-5 table (reproducible
+     * intermediate predictions per layer, not an explanation of the
+     * decision) for the fixed prompt "Once upon a time". */
+    printf("CIS2_VERIFY3 layer_lens_table_begin\n");
+    for (size_t li = 0; li < r1.layer_lens_n_layers; li++) {
+        printf("CIS2_VERIFY3 layer=%zu top5=", li);
+        for (size_t k = 0; k < CIS2_LENS_TOPK; k++) {
+            const cis2_lens_entry *e = &r1.layer_lens_table[li * CIS2_LENS_TOPK + k];
+            printf("%s(%u,%.6f)", k ? "," : "", e->token_id, (double)e->logit);
+        }
+        printf("\n");
+    }
+    printf("CIS2_VERIFY3 layer_lens_table_end\n");
 
     int conform_ok = 1;
     if (!hex_matches(r1.witness_digest, 32, PINNED_WITNESS_DIGEST_HEX)) {
@@ -189,6 +206,8 @@ int main(int argc, char **argv)
 
     free(r1.generated_ids);
     free(r2.generated_ids);
+    free(r1.layer_lens_table);
+    free(r2.layer_lens_table);
     free(prompt_ids);
     cis2_model_free(m);
 
