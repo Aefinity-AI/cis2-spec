@@ -424,6 +424,209 @@ static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t n
     return logits;
 }
 
+/* xb-2: forward pass over tokens[0..ntok-1] (no generation, no logits),
+ * identical layer-by-layer math to forward_full above, but additionally
+ * accumulates each layer's causal attention probability matrix (post-
+ * softmax, pre-value-mix), averaged over query heads, into
+ * attn_capture[layer*ntok*ntok + p*ntok + j] for j<=p (j>p left at the
+ * zero-init value the caller must provide). This is required because
+ * layer l's attention pattern depends on the fully-evolved hidden state
+ * from all prior layers (residual stream), so the whole stack must be run,
+ * not just layer l in isolation. */
+static void forward_capture_attn(const cis2_model *m, const uint32_t *tokens, size_t ntok, float *attn_capture)
+{
+    size_t hidden = m->cfg.hidden_size;
+    size_t inter = m->cfg.intermediate_size;
+    size_t head_dim = m->head_dim;
+    size_t half = m->half;
+    size_t n_heads = m->cfg.num_attention_heads;
+    size_t n_kv = m->cfg.num_key_value_heads;
+    size_t nkv_dim = n_kv * head_dim;
+    size_t group = m->group;
+    float eps = m->cfg.rms_norm_eps;
+
+    float *h = malloc(ntok * hidden * sizeof(float));
+    for (size_t p = 0; p < ntok; p++) {
+        memcpy(h + p * hidden, m->embed_tokens + (size_t)tokens[p] * hidden, hidden * sizeof(float));
+    }
+
+    float *cos_tab = malloc(ntok * half * sizeof(float));
+    float *sin_tab = malloc(ntok * half * sizeof(float));
+    for (size_t p = 0; p < ntok; p++) {
+        for (size_t i = 0; i < half; i++) {
+            float angle = (float)p * m->inv_freq[i];
+            cos_tab[p * half + i] = cis2_cos_pinned(angle);
+            sin_tab[p * half + i] = cis2_sin_pinned(angle);
+        }
+    }
+
+    float *ln1 = malloc(ntok * hidden * sizeof(float));
+    float *ln2 = malloc(ntok * hidden * sizeof(float));
+    float *q = malloc(ntok * hidden * sizeof(float));
+    float *k = malloc(ntok * nkv_dim * sizeof(float));
+    float *v = malloc(ntok * nkv_dim * sizeof(float));
+    float *attn_out = malloc(ntok * hidden * sizeof(float));
+    float *o = malloc(ntok * hidden * sizeof(float));
+    float *gate = malloc(ntok * inter * sizeof(float));
+    float *up = malloc(ntok * inter * sizeof(float));
+    float *hid = malloc(ntok * inter * sizeof(float));
+    float *down = malloc(ntok * hidden * sizeof(float));
+    float *scores = malloc(ntok * sizeof(float));
+    float scale = cis2_rsqrt((float)head_dim);
+
+    for (size_t layer_i = 0; layer_i < m->cfg.num_hidden_layers; layer_i++) {
+        const cis2_layer *L = &m->layers[layer_i];
+        float *cap_layer = attn_capture + layer_i * ntok * ntok;
+
+        for (size_t p = 0; p < ntok; p++)
+            cis2_rmsnorm(h + p * hidden, L->input_layernorm, eps, ln1 + p * hidden, hidden);
+
+        for (size_t p = 0; p < ntok; p++) {
+            cis2_matvec(L->q_proj, ln1 + p * hidden, q + p * hidden, hidden, hidden);
+            add_bias_opt(q + p * hidden, L->q_bias, hidden);
+            cis2_matvec(L->k_proj, ln1 + p * hidden, k + p * nkv_dim, nkv_dim, hidden);
+            add_bias_opt(k + p * nkv_dim, L->k_bias, nkv_dim);
+            cis2_matvec(L->v_proj, ln1 + p * hidden, v + p * nkv_dim, nkv_dim, hidden);
+            add_bias_opt(v + p * nkv_dim, L->v_bias, nkv_dim);
+
+            for (size_t qh = 0; qh < n_heads; qh++)
+                rope_apply_head(q + p * hidden + qh * head_dim, cos_tab + p * half, sin_tab + p * half, half);
+            for (size_t kh = 0; kh < n_kv; kh++)
+                rope_apply_head(k + p * nkv_dim + kh * head_dim, cos_tab + p * half, sin_tab + p * half, half);
+        }
+
+        for (size_t p = 0; p < ntok; p++) {
+            for (size_t qh = 0; qh < n_heads; qh++) {
+                size_t kv_head = qh / group;
+                const float *q_head = q + p * hidden + qh * head_dim;
+                for (size_t j = 0; j <= p; j++) {
+                    const float *k_j = k + j * nkv_dim + kv_head * head_dim;
+                    float d = cis2_dot_seq(q_head, k_j, head_dim);
+                    scores[j] = d * scale;
+                }
+                float max_v = scores[0];
+                for (size_t j = 1; j <= p; j++) if (scores[j] > max_v) max_v = scores[j];
+                for (size_t j = 0; j <= p; j++) scores[j] = cis2_exp_pinned(scores[j] - max_v);
+                float denom = cis2_sum_seq(scores, p + 1);
+                for (size_t j = 0; j <= p; j++) scores[j] = scores[j] / denom;
+
+                /* accumulate this head's softmax row into the layer's
+                 * head-averaged attention matrix (divided by n_heads
+                 * below, once, after the qh loop -- accumulate raw sum
+                 * here to keep the per-head arithmetic identical to the
+                 * real forward pass). */
+                for (size_t j = 0; j <= p; j++) cap_layer[p * ntok + j] = cap_layer[p * ntok + j] + scores[j];
+
+                float *out_head = attn_out + p * hidden + qh * head_dim;
+                for (size_t d = 0; d < head_dim; d++) {
+                    float acc = 0.0f;
+                    for (size_t j = 0; j <= p; j++) {
+                        float pv = scores[j] * v[j * nkv_dim + kv_head * head_dim + d];
+                        acc = acc + pv;
+                    }
+                    out_head[d] = acc;
+                }
+            }
+        }
+        for (size_t p = 0; p < ntok; p++)
+            for (size_t j = 0; j <= p; j++)
+                cap_layer[p * ntok + j] = cap_layer[p * ntok + j] / (float)n_heads;
+
+        for (size_t p = 0; p < ntok; p++) {
+            cis2_matvec(L->o_proj, attn_out + p * hidden, o + p * hidden, hidden, hidden);
+            for (size_t i = 0; i < hidden; i++) h[p * hidden + i] = h[p * hidden + i] + o[p * hidden + i];
+        }
+
+        for (size_t p = 0; p < ntok; p++)
+            cis2_rmsnorm(h + p * hidden, L->post_attention_layernorm, eps, ln2 + p * hidden, hidden);
+
+        for (size_t p = 0; p < ntok; p++) {
+            cis2_matvec(L->gate_proj, ln2 + p * hidden, gate + p * inter, inter, hidden);
+            cis2_matvec(L->up_proj, ln2 + p * hidden, up + p * inter, inter, hidden);
+            for (size_t i = 0; i < inter; i++) {
+                hid[p * inter + i] = cis2_silu_pinned(gate[p * inter + i]) * up[p * inter + i];
+            }
+            cis2_matvec(L->down_proj, hid + p * inter, down + p * hidden, hidden, inter);
+            for (size_t i = 0; i < hidden; i++) h[p * hidden + i] = h[p * hidden + i] + down[p * hidden + i];
+        }
+    }
+
+    free(h); free(cos_tab); free(sin_tab);
+    free(ln1); free(ln2); free(q); free(k); free(v);
+    free(attn_out); free(o); free(gate); free(up); free(hid); free(down); free(scores);
+}
+
+/* xb-2: attention-rollout (Abnar & Zuidema 2020, "Quantifying Attention
+ * Flow in Transformers"). For each layer l, form
+ *   A_hat_l = row_normalize(0.5*A_l + 0.5*I)
+ * (adding the identity accounts for the residual connection; row-
+ * normalizing keeps A_hat_l a valid stochastic matrix), then compose
+ * across layers: R_1 = A_hat_1, R_l = A_hat_l @ R_(l-1). The output row
+ * for the last prompt position of R_L is the rolled-out attribution of
+ * each prompt token to the final position's representation. */
+void cis2_run_attribution(const cis2_model *m, const uint32_t *prompt_ids, size_t n_prompt, cis2_attrib_result *out)
+{
+    size_t L = m->cfg.num_hidden_layers;
+    size_t n2 = n_prompt * n_prompt;
+    float *attn_capture = calloc(L * n2, sizeof(float));
+    forward_capture_attn(m, prompt_ids, n_prompt, attn_capture);
+
+    float *rollout = malloc(n2 * sizeof(float));
+    float *tmp = malloc(n2 * sizeof(float));
+    float *A_hat = malloc(n2 * sizeof(float));
+
+    for (size_t l = 0; l < L; l++) {
+        const float *A = attn_capture + l * n2;
+        for (size_t p = 0; p < n_prompt; p++) {
+            float row_sum = 0.0f;
+            for (size_t j = 0; j < n_prompt; j++) {
+                float id_term = (p == j) ? 0.5f : 0.0f;
+                float val = 0.5f * A[p * n_prompt + j] + id_term;
+                A_hat[p * n_prompt + j] = val;
+                row_sum = row_sum + val;
+            }
+            for (size_t j = 0; j < n_prompt; j++)
+                A_hat[p * n_prompt + j] = A_hat[p * n_prompt + j] / row_sum;
+        }
+        if (l == 0) {
+            memcpy(rollout, A_hat, n2 * sizeof(float));
+        } else {
+            for (size_t p = 0; p < n_prompt; p++) {
+                for (size_t j = 0; j < n_prompt; j++) {
+                    float acc = 0.0f;
+                    for (size_t kk = 0; kk < n_prompt; kk++)
+                        acc = acc + A_hat[p * n_prompt + kk] * rollout[kk * n_prompt + j];
+                    tmp[p * n_prompt + j] = acc;
+                }
+            }
+            memcpy(rollout, tmp, n2 * sizeof(float));
+        }
+    }
+
+    out->n = n_prompt;
+    out->rollout = malloc(n_prompt * sizeof(float));
+    size_t last = n_prompt - 1;
+    for (size_t j = 0; j < n_prompt; j++) out->rollout[j] = rollout[last * n_prompt + j];
+
+    cis2_sha256_ctx ctx;
+    cis2_sha256_init(&ctx);
+    for (size_t j = 0; j < n_prompt; j++) {
+        uint32_t bits = cis2_f32_bits(out->rollout[j]);
+        uint8_t b[4] = { (uint8_t)(bits & 0xFF), (uint8_t)((bits >> 8) & 0xFF),
+                         (uint8_t)((bits >> 16) & 0xFF), (uint8_t)((bits >> 24) & 0xFF) };
+        cis2_sha256_update(&ctx, b, 4);
+    }
+    cis2_sha256_final(&ctx, out->rollout_digest);
+
+    free(attn_capture); free(rollout); free(tmp); free(A_hat);
+}
+
+void cis2_attrib_free(cis2_attrib_result *r)
+{
+    free(r->rollout);
+    r->rollout = NULL;
+}
+
 static uint32_t argmax_logits(const float *logits, size_t n)
 {
     size_t best_idx = 0;

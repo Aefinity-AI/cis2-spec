@@ -1,3 +1,5 @@
 *.o
 cis2_verify3
+cis2_attrib
 selftest
+weights

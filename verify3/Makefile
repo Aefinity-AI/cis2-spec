@@ -23,10 +23,17 @@ BIN = cis2_verify3
 SELFTEST_SRCS = selftest.c model.c mathpin.c tokenizer.c json.c sha256.c
 SELFTEST_OBJS_ALL = $(SELFTEST_SRCS:.c=.o)
 
-all: $(BIN)
+ATTRIB_SRCS = attrib_main.c model.c mathpin.c tokenizer.c json.c sha256.c
+ATTRIB_OBJS = $(ATTRIB_SRCS:.c=.o)
+ATTRIB_BIN = cis2_attrib
+
+all: $(BIN) $(ATTRIB_BIN)
 
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+$(ATTRIB_BIN): $(ATTRIB_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(ATTRIB_OBJS) $(LDFLAGS)
 
 selftest: selftest.o mathpin.o tokenizer.o json.o sha256.o
 	$(CC) $(CFLAGS) -o $@ selftest.o mathpin.o tokenizer.o json.o sha256.o $(LDFLAGS)
@@ -35,6 +42,6 @@ selftest: selftest.o mathpin.o tokenizer.o json.o sha256.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(BIN) selftest.o selftest
+	rm -f $(OBJS) $(BIN) selftest.o selftest attrib_main.o $(ATTRIB_BIN)
 
 .PHONY: all clean

@@ -75,4 +75,29 @@ void cis2_run_decode(const cis2_model *m,
                        const uint8_t config_sha256[32],
                        cis2_run_result *out);
 
+/* xb-2: attention-rollout attribution (Abnar & Zuidema, "Quantifying
+ * Attention Flow in Transformers", 2020). NOT part of the CIS-2 witness
+ * chain -- a separate, additive side-channel computed from the same
+ * bit-exact fp32 forward pass. `rollout[j]` is the rolled-out attention
+ * mass that the LAST prompt-token position's representation receives
+ * (transitively, across all layers) from prompt position j. Values are
+ * non-negative and each row of the underlying rollout matrix sums to 1;
+ * `rollout[]` itself (a single row) need not sum to 1.
+ *
+ * Reproducibility caveat (see report): bit-identical rollout scores across
+ * machines only prove the COMPUTATION is deterministic/reproducible. They
+ * do NOT establish that attention-rollout is a faithful explanation of the
+ * model's actual decision process -- that is a separate, unresolved
+ * question in the interpretability literature. */
+typedef struct {
+    float *rollout;             /* [n_prompt], caller frees */
+    size_t n;
+    uint8_t rollout_digest[32]; /* sha256 over LE fp32 bits of rollout[] */
+} cis2_attrib_result;
+
+void cis2_run_attribution(const cis2_model *m,
+                            const uint32_t *prompt_ids, size_t n_prompt,
+                            cis2_attrib_result *out);
+void cis2_attrib_free(cis2_attrib_result *r);
+
 #endif
