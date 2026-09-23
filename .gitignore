@@ -4,3 +4,5 @@ weights/*.json
 weights_*/
 target/
 *.o
+eval_data/
+verify3/cis2_verify3_int8
