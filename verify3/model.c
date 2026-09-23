@@ -280,15 +280,64 @@ static void dump_line(const char *layer, const char *field, size_t pos, const fl
     fprintf(stderr, "CIS2_DUMP layer=%s field=%s pos=%zu digest=%s\n", layer, field, pos, hex);
 }
 
-/* Runs a full forward pass over tokens[0..ntok-1], returns logits[vocab]
- * for the LAST position only (malloc'd, caller frees). If `dump_last` is
- * nonzero and g_dump_layers is enabled, emits per-layer CIS2_DUMP lines
- * (E15k) for position ntok-1 only (the forward pass that produces step
- * 0's logits). */
-static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t ntok, int dump_last)
+/* ---- incremental (KV-cache) decode state ----
+ *
+ * fast-1 (2026-09-23): the original forward_full() recomputed every
+ * position's q/k/v/attention/MLP from scratch, for every decode step
+ * (O(n_gen^2) position-forwards instead of O(n_gen)). Profiling
+ * (docs/PROFILE_fast1.md) showed >95% of wall time in the per-layer
+ * matvecs (mostly MLP gate/up/down), and that cost was being paid
+ * redundantly: positions 0..ntok-2 at step `ntok` produce BIT-IDENTICAL
+ * q/k/v/hidden values to what was already computed at earlier steps,
+ * because each (layer, position) tuple's output depends only on that
+ * position's own residual stream and the layer's already-finalized K/V
+ * for positions <= it — never on ntok or on later positions. So caching
+ * K/V per layer and processing exactly one new position per step changes
+ * NONE of the floating-point operations or their order (every scalar
+ * value is still produced by the exact same sequence of ops as before,
+ * §5 reduction order untouched) — it just stops recomputing values that
+ * were already computed bit-for-bit identically. See EXPECTED_DIGESTS.md:
+ * this was verified to reproduce the pinned CIS2_REF digest unchanged.
+ */
+typedef struct {
+    float **cache_k; /* [num_layers][cap * nkv_dim] */
+    float **cache_v; /* [num_layers][cap * nkv_dim] */
+} decode_kv_cache;
+
+static decode_kv_cache *kv_cache_alloc(const cis2_model *m, size_t cap)
 {
-    int dump = g_dump_layers && dump_last;
-    size_t dump_pos = ntok - 1;
+    size_t nkv_dim = m->cfg.num_key_value_heads * m->head_dim;
+    decode_kv_cache *c = malloc(sizeof(decode_kv_cache));
+    c->cache_k = malloc(m->cfg.num_hidden_layers * sizeof(float *));
+    c->cache_v = malloc(m->cfg.num_hidden_layers * sizeof(float *));
+    for (size_t i = 0; i < m->cfg.num_hidden_layers; i++) {
+        c->cache_k[i] = malloc(cap * nkv_dim * sizeof(float));
+        c->cache_v[i] = malloc(cap * nkv_dim * sizeof(float));
+    }
+    return c;
+}
+
+static void kv_cache_free(decode_kv_cache *c, const cis2_model *m)
+{
+    for (size_t i = 0; i < m->cfg.num_hidden_layers; i++) {
+        free(c->cache_k[i]);
+        free(c->cache_v[i]);
+    }
+    free(c->cache_k);
+    free(c->cache_v);
+    free(c);
+}
+
+/* Processes exactly one new sequence position (`pos`, 0-indexed, token id
+ * `token_id`) through embedding + all layers, appending this position's
+ * K/V into `cache` for every layer. If `need_logits` is nonzero, also runs
+ * the final RMSNorm + lm_head matvec and returns logits[vocab] (malloc'd,
+ * caller frees); otherwise returns NULL. `dump` gates the E15k per-layer
+ * CIS2_DUMP side-channel for this position exactly as forward_full's
+ * `dump_last`/`dump_pos` used to (not part of any normative digest). */
+static float *process_position(const cis2_model *m, decode_kv_cache *cache,
+                                size_t pos, uint32_t token_id, int need_logits, int dump)
+{
     size_t hidden = m->cfg.hidden_size;
     size_t inter = m->cfg.intermediate_size;
     size_t head_dim = m->head_dim;
@@ -298,127 +347,121 @@ static float *forward_full(const cis2_model *m, const uint32_t *tokens, size_t n
     size_t nkv_dim = n_kv * head_dim;
     size_t group = m->group;
     float eps = m->cfg.rms_norm_eps;
-
-    float *h = malloc(ntok * hidden * sizeof(float));
-    for (size_t p = 0; p < ntok; p++) {
-        memcpy(h + p * hidden, m->embed_tokens + (size_t)tokens[p] * hidden, hidden * sizeof(float));
-    }
-    if (dump) dump_line("embed", "token_embedding", dump_pos, h + dump_pos * hidden, hidden);
-
-    /* per-position RoPE cos/sin tables, shared across all layers/heads (§7.3) */
-    float *cos_tab = malloc(ntok * half * sizeof(float));
-    float *sin_tab = malloc(ntok * half * sizeof(float));
-    for (size_t p = 0; p < ntok; p++) {
-        for (size_t i = 0; i < half; i++) {
-            float angle = (float)p * m->inv_freq[i];
-            cos_tab[p * half + i] = cis2_cos_pinned(angle);
-            sin_tab[p * half + i] = cis2_sin_pinned(angle);
-        }
-    }
-
-    float *ln1 = malloc(ntok * hidden * sizeof(float));
-    float *ln2 = malloc(ntok * hidden * sizeof(float));
-    float *q = malloc(ntok * hidden * sizeof(float));
-    float *k = malloc(ntok * nkv_dim * sizeof(float));
-    float *v = malloc(ntok * nkv_dim * sizeof(float));
-    float *attn_out = malloc(ntok * hidden * sizeof(float));
-    float *o = malloc(ntok * hidden * sizeof(float));
-    float *gate = malloc(ntok * inter * sizeof(float));
-    float *up = malloc(ntok * inter * sizeof(float));
-    float *hid = malloc(ntok * inter * sizeof(float));
-    float *down = malloc(ntok * hidden * sizeof(float));
-    float *scores = malloc(ntok * sizeof(float));
     float scale = cis2_rsqrt((float)head_dim);
+
+    float *h = malloc(hidden * sizeof(float));
+    memcpy(h, m->embed_tokens + (size_t)token_id * hidden, hidden * sizeof(float));
+    if (dump) dump_line("embed", "token_embedding", pos, h, hidden);
+
+    /* per-position RoPE cos/sin (§7.3); identical values regardless of
+     * when in the decode this position is processed. */
+    float *cos_p = malloc(half * sizeof(float));
+    float *sin_p = malloc(half * sizeof(float));
+    for (size_t i = 0; i < half; i++) {
+        float angle = (float)pos * m->inv_freq[i];
+        cos_p[i] = cis2_cos_pinned(angle);
+        sin_p[i] = cis2_sin_pinned(angle);
+    }
+
+    float *ln1 = malloc(hidden * sizeof(float));
+    float *ln2 = malloc(hidden * sizeof(float));
+    float *q = malloc(hidden * sizeof(float));
+    float *k_new = malloc(nkv_dim * sizeof(float));
+    float *v_new = malloc(nkv_dim * sizeof(float));
+    float *attn_out = malloc(hidden * sizeof(float));
+    float *o = malloc(hidden * sizeof(float));
+    float *gate = malloc(inter * sizeof(float));
+    float *up = malloc(inter * sizeof(float));
+    float *hid = malloc(inter * sizeof(float));
+    float *down = malloc(hidden * sizeof(float));
+    float *scores = malloc((pos + 1) * sizeof(float));
 
     for (size_t layer_i = 0; layer_i < m->cfg.num_hidden_layers; layer_i++) {
         const cis2_layer *L = &m->layers[layer_i];
+        float *cache_k = cache->cache_k[layer_i];
+        float *cache_v = cache->cache_v[layer_i];
 
-        for (size_t p = 0; p < ntok; p++)
-            cis2_rmsnorm(h + p * hidden, L->input_layernorm, eps, ln1 + p * hidden, hidden);
+        cis2_rmsnorm(h, L->input_layernorm, eps, ln1, hidden);
 
-        for (size_t p = 0; p < ntok; p++) {
-            cis2_matvec(L->q_proj, ln1 + p * hidden, q + p * hidden, hidden, hidden);
-            add_bias_opt(q + p * hidden, L->q_bias, hidden);
-            cis2_matvec(L->k_proj, ln1 + p * hidden, k + p * nkv_dim, nkv_dim, hidden);
-            add_bias_opt(k + p * nkv_dim, L->k_bias, nkv_dim);
-            cis2_matvec(L->v_proj, ln1 + p * hidden, v + p * nkv_dim, nkv_dim, hidden);
-            add_bias_opt(v + p * nkv_dim, L->v_bias, nkv_dim);
+        cis2_matvec(L->q_proj, ln1, q, hidden, hidden);
+        add_bias_opt(q, L->q_bias, hidden);
+        cis2_matvec(L->k_proj, ln1, k_new, nkv_dim, hidden);
+        add_bias_opt(k_new, L->k_bias, nkv_dim);
+        cis2_matvec(L->v_proj, ln1, v_new, nkv_dim, hidden);
+        add_bias_opt(v_new, L->v_bias, nkv_dim);
 
-            for (size_t qh = 0; qh < n_heads; qh++)
-                rope_apply_head(q + p * hidden + qh * head_dim, cos_tab + p * half, sin_tab + p * half, half);
-            for (size_t kh = 0; kh < n_kv; kh++)
-                rope_apply_head(k + p * nkv_dim + kh * head_dim, cos_tab + p * half, sin_tab + p * half, half);
-        }
+        for (size_t qh = 0; qh < n_heads; qh++)
+            rope_apply_head(q + qh * head_dim, cos_p, sin_p, half);
+        for (size_t kh = 0; kh < n_kv; kh++)
+            rope_apply_head(k_new + kh * head_dim, cos_p, sin_p, half);
 
-        for (size_t p = 0; p < ntok; p++) {
-            for (size_t qh = 0; qh < n_heads; qh++) {
-                size_t kv_head = qh / group;
-                const float *q_head = q + p * hidden + qh * head_dim;
-                for (size_t j = 0; j <= p; j++) {
-                    const float *k_j = k + j * nkv_dim + kv_head * head_dim;
-                    float d = cis2_dot_seq(q_head, k_j, head_dim);
-                    scores[j] = d * scale;
+        memcpy(cache_k + pos * nkv_dim, k_new, nkv_dim * sizeof(float));
+        memcpy(cache_v + pos * nkv_dim, v_new, nkv_dim * sizeof(float));
+
+        for (size_t qh = 0; qh < n_heads; qh++) {
+            size_t kv_head = qh / group;
+            const float *q_head = q + qh * head_dim;
+            for (size_t j = 0; j <= pos; j++) {
+                const float *k_j = cache_k + j * nkv_dim + kv_head * head_dim;
+                float d = cis2_dot_seq(q_head, k_j, head_dim);
+                scores[j] = d * scale;
+            }
+            /* softmax over scores[0..pos] */
+            float max_v = scores[0];
+            for (size_t j = 1; j <= pos; j++) if (scores[j] > max_v) max_v = scores[j];
+            for (size_t j = 0; j <= pos; j++) scores[j] = cis2_exp_pinned(scores[j] - max_v);
+            float denom = cis2_sum_seq(scores, pos + 1);
+            for (size_t j = 0; j <= pos; j++) scores[j] = scores[j] / denom;
+
+            float *out_head = attn_out + qh * head_dim;
+            for (size_t d = 0; d < head_dim; d++) {
+                float acc = 0.0f;
+                for (size_t j = 0; j <= pos; j++) {
+                    float pv = scores[j] * cache_v[j * nkv_dim + kv_head * head_dim + d];
+                    acc = acc + pv;
                 }
-                /* softmax over scores[0..p] */
-                float max_v = scores[0];
-                for (size_t j = 1; j <= p; j++) if (scores[j] > max_v) max_v = scores[j];
-                for (size_t j = 0; j <= p; j++) scores[j] = cis2_exp_pinned(scores[j] - max_v);
-                float denom = cis2_sum_seq(scores, p + 1);
-                for (size_t j = 0; j <= p; j++) scores[j] = scores[j] / denom;
-
-                float *out_head = attn_out + p * hidden + qh * head_dim;
-                for (size_t d = 0; d < head_dim; d++) {
-                    float acc = 0.0f;
-                    for (size_t j = 0; j <= p; j++) {
-                        float pv = scores[j] * v[j * nkv_dim + kv_head * head_dim + d];
-                        acc = acc + pv;
-                    }
-                    out_head[d] = acc;
-                }
+                out_head[d] = acc;
             }
         }
 
-        for (size_t p = 0; p < ntok; p++) {
-            cis2_matvec(L->o_proj, attn_out + p * hidden, o + p * hidden, hidden, hidden);
-            for (size_t i = 0; i < hidden; i++) h[p * hidden + i] = h[p * hidden + i] + o[p * hidden + i];
-        }
+        cis2_matvec(L->o_proj, attn_out, o, hidden, hidden);
+        for (size_t i = 0; i < hidden; i++) h[i] = h[i] + o[i];
         if (dump) {
             char label[32];
             snprintf(label, sizeof(label), "block%zu", layer_i);
-            dump_line(label, "post_attention_hidden", dump_pos, h + dump_pos * hidden, hidden);
+            dump_line(label, "post_attention_hidden", pos, h, hidden);
         }
 
-        for (size_t p = 0; p < ntok; p++)
-            cis2_rmsnorm(h + p * hidden, L->post_attention_layernorm, eps, ln2 + p * hidden, hidden);
+        cis2_rmsnorm(h, L->post_attention_layernorm, eps, ln2, hidden);
 
-        for (size_t p = 0; p < ntok; p++) {
-            cis2_matvec(L->gate_proj, ln2 + p * hidden, gate + p * inter, inter, hidden);
-            cis2_matvec(L->up_proj, ln2 + p * hidden, up + p * inter, inter, hidden);
-            for (size_t i = 0; i < inter; i++) {
-                hid[p * inter + i] = cis2_silu_pinned(gate[p * inter + i]) * up[p * inter + i];
-            }
-            cis2_matvec(L->down_proj, hid + p * inter, down + p * hidden, hidden, inter);
-            for (size_t i = 0; i < hidden; i++) h[p * hidden + i] = h[p * hidden + i] + down[p * hidden + i];
+        cis2_matvec(L->gate_proj, ln2, gate, inter, hidden);
+        cis2_matvec(L->up_proj, ln2, up, inter, hidden);
+        for (size_t i = 0; i < inter; i++) {
+            hid[i] = cis2_silu_pinned(gate[i]) * up[i];
         }
+        cis2_matvec(L->down_proj, hid, down, hidden, inter);
+        for (size_t i = 0; i < hidden; i++) h[i] = h[i] + down[i];
         if (dump) {
             char label[32];
             snprintf(label, sizeof(label), "block%zu", layer_i);
-            dump_line(label, "post_mlp_hidden", dump_pos, h + dump_pos * hidden, hidden);
+            dump_line(label, "post_mlp_hidden", pos, h, hidden);
         }
     }
 
-    size_t last = ntok - 1;
-    float *hn = malloc(hidden * sizeof(float));
-    cis2_rmsnorm(h + last * hidden, m->norm_weight, eps, hn, hidden);
-    if (dump) dump_line("final_norm", "final_norm_output", dump_pos, hn, hidden);
-    const float *lm_w = m->cfg.tie_word_embeddings ? m->embed_tokens : (m->lm_head ? m->lm_head : m->embed_tokens);
-    float *logits = malloc(m->cfg.vocab_size * sizeof(float));
-    cis2_matvec(lm_w, hn, logits, m->cfg.vocab_size, hidden);
-    if (dump) dump_line("logits", "pre_argmax_logits", dump_pos, logits, m->cfg.vocab_size);
+    float *logits = NULL;
+    if (need_logits) {
+        float *hn = malloc(hidden * sizeof(float));
+        cis2_rmsnorm(h, m->norm_weight, eps, hn, hidden);
+        if (dump) dump_line("final_norm", "final_norm_output", pos, hn, hidden);
+        const float *lm_w = m->cfg.tie_word_embeddings ? m->embed_tokens : (m->lm_head ? m->lm_head : m->embed_tokens);
+        logits = malloc(m->cfg.vocab_size * sizeof(float));
+        cis2_matvec(lm_w, hn, logits, m->cfg.vocab_size, hidden);
+        if (dump) dump_line("logits", "pre_argmax_logits", pos, logits, m->cfg.vocab_size);
+        free(hn);
+    }
 
-    free(hn);
-    free(h); free(cos_tab); free(sin_tab);
-    free(ln1); free(ln2); free(q); free(k); free(v);
+    free(h); free(cos_p); free(sin_p);
+    free(ln1); free(ln2); free(q); free(k_new); free(v_new);
     free(attn_out); free(o); free(gate); free(up); free(hid); free(down); free(scores);
 
     return logits;
@@ -500,8 +543,37 @@ void cis2_run_decode(const cis2_model *m,
 
     uint32_t *generated = malloc(n_gen * sizeof(uint32_t));
 
+    /* fast-1: incremental KV-cache decode (see process_position() above).
+     * Each sequence position is processed through all layers exactly
+     * once, in increasing position order; K/V for positions < pos are
+     * read from `cache` instead of being recomputed. This produces
+     * bit-identical q/k/v/hidden/logits values to the original
+     * forward_full()-per-step approach (same §5 reduction order, same
+     * per-op sequence — see the comment on process_position()), while
+     * doing O(n_prompt+n_gen) position-forwards total instead of
+     * O(n_gen^2). */
+    decode_kv_cache *cache = kv_cache_alloc(m, cap);
+    int dump_run = g_dump_layers && (g_dump_run_count == 1);
+
+    /* Prime the cache with the prompt positions. Only the LAST prompt
+     * position needs logits (step 0's forward pass); the E15k dump (if
+     * enabled) also only ever fired for that last position in the
+     * original code (dump_pos = ntok - 1 at step 0). */
+    float *logits = NULL;
+    for (size_t p = 0; p < n_prompt; p++) {
+        int need_logits = (p == n_prompt - 1);
+        int dump = dump_run && need_logits;
+        float *lg = process_position(m, cache, p, tokens[p], need_logits, dump);
+        if (need_logits) logits = lg;
+    }
+
     for (size_t step = 0; step < n_gen; step++) {
-        float *logits = forward_full(m, tokens, ntok, g_dump_run_count == 1 && step <= 1);
+        if (step > 0) {
+            /* dump_last in the original code also fired for step 1's
+             * forward pass (dump_pos = ntok - 1 = n_prompt at step 1). */
+            int dump = dump_run && (step == 1);
+            logits = process_position(m, cache, ntok - 1, tokens[ntok - 1], 1, dump);
+        }
         for (size_t i = 0; i < m->cfg.vocab_size; i++) {
             uint32_t bits = cis2_f32_bits(logits[i]);
             uint8_t b[4] = { (uint8_t)(bits & 0xFF), (uint8_t)((bits >> 8) & 0xFF),
@@ -510,6 +582,7 @@ void cis2_run_decode(const cis2_model *m,
         }
         uint32_t next = argmax_logits(logits, m->cfg.vocab_size);
         free(logits);
+        logits = NULL;
         feed_u32_le(&witness, next);
         feed_u32_le(&argctx, next);
         generated[step] = next;
@@ -517,6 +590,7 @@ void cis2_run_decode(const cis2_model *m,
         ntok++;
     }
 
+    kv_cache_free(cache, m);
     cis2_sha256_final(&witness, out->witness_digest);
     cis2_sha256_final(&argctx, out->argmax_digest);
     out->generated_ids = generated;
