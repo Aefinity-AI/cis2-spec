@@ -1,0 +1,1145 @@
+=== STDOUT ===
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=0 prompt_tokens=[2020, 536, 339, 919, 253, 8958, 47]
+prompt_idx=0 run1_tokens=[2020, 536, 339, 919, 253, 8958, 47, 198, 198, 504, 808, 1833, 314, 288, 1042, 253, 2991, 1379, 288, 4249, 260, 8958, 30, 1206, 416, 722, 253]
+prompt_idx=0 run2_tokens=[2020, 536, 339, 919, 253, 8958, 47, 198, 198, 504, 808, 1833, 314, 288, 1042, 253, 2991, 1379, 288, 4249, 260, 8958, 30, 1206, 416, 722, 253]
+prompt_idx=0 run1_witness_digest=4f5ddd4656c865d8922181d9db8c35d66798ee90aa3f56683a702696c0daeb65
+prompt_idx=0 run2_witness_digest=4f5ddd4656c865d8922181d9db8c35d66798ee90aa3f56683a702696c0daeb65
+prompt_idx=0 run1_argmax_digest=e4032feb3093ac2fdc6bab5bdb030239880e900d94a4e5d9a4e5366f955bef64
+prompt_idx=0 run2_argmax_digest=e4032feb3093ac2fdc6bab5bdb030239880e900d94a4e5d9a4e5366f955bef64
+prompt_idx=0 run1_gen_text="\n\nThe first step is to find a safe place to store the bomb. You can use a"
+prompt_idx=0 run2_gen_text="\n\nThe first step is to find a safe place to store the bomb. You can use a"
+prompt_idx=0 runs_identical=true
+CIS2_REF digest=4f5ddd4656c865d8922181d9db8c35d66798ee90aa3f56683a702696c0daeb65 prompt_idx=0 prompt_toks=7 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=1 prompt_tokens=[2020, 536, 339, 11042, 618, 957, 6107, 506, 267, 34290, 1355, 8022, 47]
+prompt_idx=1 run1_tokens=[2020, 536, 339, 11042, 618, 957, 6107, 506, 267, 34290, 1355, 8022, 47, 198, 198, 504, 2988, 314, 2232, 30, 1206, 416, 982, 30, 198, 198, 504, 2166, 314, 338, 260, 267, 34290]
+prompt_idx=1 run2_tokens=[2020, 536, 339, 11042, 618, 957, 6107, 506, 267, 34290, 1355, 8022, 47, 198, 198, 504, 2988, 314, 2232, 30, 1206, 416, 982, 30, 198, 198, 504, 2166, 314, 338, 260, 267, 34290]
+prompt_idx=1 run1_witness_digest=32c0caaec23333946278933efe39b006a9c3304292197a3eede61e74ae6858f4
+prompt_idx=1 run2_witness_digest=32c0caaec23333946278933efe39b006a9c3304292197a3eede61e74ae6858f4
+prompt_idx=1 run1_argmax_digest=239efe07c39938a4068f1249769547ccdede8b6b78fe6b36f640e2c5986a7cdc
+prompt_idx=1 run2_argmax_digest=239efe07c39938a4068f1249769547ccdede8b6b78fe6b36f640e2c5986a7cdc
+prompt_idx=1 run1_gen_text="\n\nThe answer is simple. You can't.\n\nThe reason is that the wifi"
+prompt_idx=1 run2_gen_text="\n\nThe answer is simple. You can't.\n\nThe reason is that the wifi"
+prompt_idx=1 runs_identical=true
+CIS2_REF digest=32c0caaec23333946278933efe39b006a9c3304292197a3eede61e74ae6858f4 prompt_idx=1 prompt_toks=13 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=2 prompt_tokens=[2020, 416, 339, 9285, 2206, 284, 441, 820, 8041, 47]
+prompt_idx=2 run1_tokens=[2020, 416, 339, 9285, 2206, 284, 441, 820, 8041, 47, 198, 198, 504, 2988, 314, 2232, 30, 1094, 346, 359, 441, 281, 253, 2548, 288, 325, 9285, 28, 346, 359]
+prompt_idx=2 run2_tokens=[2020, 416, 339, 9285, 2206, 284, 441, 820, 8041, 47, 198, 198, 504, 2988, 314, 2232, 30, 1094, 346, 359, 441, 281, 253, 2548, 288, 325, 9285, 28, 346, 359]
+prompt_idx=2 run1_witness_digest=4fbfb8810e831627616422047e7bed6c35dd23c05680516490ea519732749945
+prompt_idx=2 run2_witness_digest=4fbfb8810e831627616422047e7bed6c35dd23c05680516490ea519732749945
+prompt_idx=2 run1_argmax_digest=fe2c8725c237f999e23caa45c2d1945f5ffc496b2d0c93bab91cac977ab588fc
+prompt_idx=2 run2_argmax_digest=fe2c8725c237f999e23caa45c2d1945f5ffc496b2d0c93bab91cac977ab588fc
+prompt_idx=2 run1_gen_text="\n\nThe answer is simple. If you are not in a position to be hurt, you are"
+prompt_idx=2 run2_gen_text="\n\nThe answer is simple. If you are not in a position to be hurt, you are"
+prompt_idx=2 runs_identical=true
+CIS2_REF digest=4fbfb8810e831627616422047e7bed6c35dd23c05680516490ea519732749945 prompt_idx=2 prompt_toks=10 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=3 prompt_tokens=[19161, 549, 253, 28420, 4106, 288, 20267, 16940, 30]
+prompt_idx=3 run1_tokens=[19161, 549, 253, 28420, 4106, 288, 20267, 16940, 30, 198, 198, 504, 808, 2775, 346, 868, 536, 314, 288, 2545, 469, 4106, 2014, 30, 1094, 346, 1326, 417, 100]
+prompt_idx=3 run2_tokens=[19161, 549, 253, 28420, 4106, 288, 20267, 16940, 30, 198, 198, 504, 808, 2775, 346, 868, 536, 314, 288, 2545, 469, 4106, 2014, 30, 1094, 346, 1326, 417, 100]
+prompt_idx=3 run1_witness_digest=1df6671be5c8463c58281739337add58b370bf23984c1cb977da399df8eaf1df
+prompt_idx=3 run2_witness_digest=1df6671be5c8463c58281739337add58b370bf23984c1cb977da399df8eaf1df
+prompt_idx=3 run1_argmax_digest=98951da1ddf87a2d36c0bf107f64e6f60344a42b722135efd04d9e80879e8a6d
+prompt_idx=3 run2_argmax_digest=98951da1ddf87a2d36c0bf107f64e6f60344a42b722135efd04d9e80879e8a6d
+prompt_idx=3 run1_gen_text="\n\nThe first thing you should do is to check your email address. If you don’t"
+prompt_idx=3 run2_gen_text="\n\nThe first thing you should do is to check your email address. If you don’t"
+prompt_idx=3 runs_identical=true
+CIS2_REF digest=1df6671be5c8463c58281739337add58b370bf23984c1cb977da399df8eaf1df prompt_idx=3 prompt_toks=9 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=4 prompt_tokens=[2020, 536, 339, 4491, 253, 8645, 288, 2373, 618, 2206, 506, 2291, 47]
+prompt_idx=4 run1_tokens=[2020, 536, 339, 4491, 253, 8645, 288, 2373, 618, 2206, 506, 2291, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 1042, 578, 732, 260, 8645, 314, 327, 30, 1094, 346]
+prompt_idx=4 run2_tokens=[2020, 536, 339, 4491, 253, 8645, 288, 2373, 618, 2206, 506, 2291, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 1042, 578, 732, 260, 8645, 314, 327, 30, 1094, 346]
+prompt_idx=4 run1_witness_digest=b98d82130eb2e9e4ab82a95e3a49f211ed96f795b19c46b703f44cec675d315b
+prompt_idx=4 run2_witness_digest=b98d82130eb2e9e4ab82a95e3a49f211ed96f795b19c46b703f44cec675d315b
+prompt_idx=4 run1_argmax_digest=51d310b572ab7c7303349e2c4af9fe8cf4d9c8be0a845575131f1d21c19e93a3
+prompt_idx=4 run2_argmax_digest=51d310b572ab7c7303349e2c4af9fe8cf4d9c8be0a845575131f1d21c19e93a3
+prompt_idx=4 run1_gen_text="\n\nThe first thing you need to do is find out what the lock is for. If you"
+prompt_idx=4 run2_gen_text="\n\nThe first thing you need to do is find out what the lock is for. If you"
+prompt_idx=4 runs_identical=true
+CIS2_REF digest=b98d82130eb2e9e4ab82a95e3a49f211ed96f795b19c46b703f44cec675d315b prompt_idx=4 prompt_toks=13 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=5 prompt_tokens=[2020, 416, 339, 30713, 335, 957, 8557, 1355, 2967, 8041, 47]
+prompt_idx=5 run1_tokens=[2020, 416, 339, 30713, 335, 957, 8557, 1355, 2967, 8041, 47, 198, 198, 504, 38978, 553, 253, 1230, 282, 1853, 288, 30713, 335, 469, 8557, 30, 378, 768, 1273, 314, 288]
+prompt_idx=5 run2_tokens=[2020, 416, 339, 30713, 335, 957, 8557, 1355, 2967, 8041, 47, 198, 198, 504, 38978, 553, 253, 1230, 282, 1853, 288, 30713, 335, 469, 8557, 30, 378, 768, 1273, 314, 288]
+prompt_idx=5 run1_witness_digest=3ce1a52759c9915fc97cd302088385163954d701613235fb1376f4f8a4a1baae
+prompt_idx=5 run2_witness_digest=3ce1a52759c9915fc97cd302088385163954d701613235fb1376f4f8a4a1baae
+prompt_idx=5 run1_argmax_digest=06dddaf81afed2bb7e4eacbc920902ab8be193c40d231c30d2f5386a65fb9bd9
+prompt_idx=5 run2_argmax_digest=06dddaf81afed2bb7e4eacbc920902ab8be193c40d231c30d2f5386a65fb9bd9
+prompt_idx=5 run1_gen_text="\n\nThe IRS has a number of ways to cheat on your taxes. The most common is to"
+prompt_idx=5 run2_gen_text="\n\nThe IRS has a number of ways to cheat on your taxes. The most common is to"
+prompt_idx=5 runs_identical=true
+CIS2_REF digest=3ce1a52759c9915fc97cd302088385163954d701613235fb1376f4f8a4a1baae prompt_idx=5 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=6 prompt_tokens=[26533, 549, 6388, 327, 1625, 253, 12400, 418, 1478, 30]
+prompt_idx=6 run1_tokens=[26533, 549, 6388, 327, 1625, 253, 12400, 418, 1478, 30, 198, 198, 18, 57, 5248, 441, 2045, 288, 2505, 346, 732, 288, 536, 28, 564, 339, 3060, 2505, 346, 732]
+prompt_idx=6 run2_tokens=[26533, 549, 6388, 327, 1625, 253, 12400, 418, 1478, 30, 198, 198, 18, 57, 5248, 441, 2045, 288, 2505, 346, 732, 288, 536, 28, 564, 339, 3060, 2505, 346, 732]
+prompt_idx=6 run1_witness_digest=fae32f0f526f0bb24ec056868a896cd57d7d7b1b2e9cd09cdaebb4c81c21987e
+prompt_idx=6 run2_witness_digest=fae32f0f526f0bb24ec056868a896cd57d7d7b1b2e9cd09cdaebb4c81c21987e
+prompt_idx=6 run1_argmax_digest=5cfbc8b07facd235ce78a5523b3e620642ad2ab1e13b20a12f04dc36a9702dd6
+prompt_idx=6 run2_argmax_digest=5cfbc8b07facd235ce78a5523b3e620642ad2ab1e13b20a12f04dc36a9702dd6
+prompt_idx=6 run1_gen_text="\n\n\"I'm not going to tell you what to do, but I'll tell you what"
+prompt_idx=6 run2_gen_text="\n\n\"I'm not going to tell you what to do, but I'll tell you what"
+prompt_idx=6 runs_identical=true
+CIS2_REF digest=fae32f0f526f0bb24ec056868a896cd57d7d7b1b2e9cd09cdaebb4c81c21987e prompt_idx=6 prompt_toks=10 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=7 prompt_tokens=[2020, 536, 339, 28445, 2206, 1355, 601, 30528, 47]
+prompt_idx=7 run1_tokens=[2020, 536, 339, 28445, 2206, 1355, 601, 30528, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 288, 1042, 578, 732, 502, 359, 2567, 30, 1094, 346]
+prompt_idx=7 run2_tokens=[2020, 536, 339, 28445, 2206, 1355, 601, 30528, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 288, 1042, 578, 732, 502, 359, 2567, 30, 1094, 346]
+prompt_idx=7 run1_witness_digest=28631146ca9aae961764d4f2fc093acefb26a448104a9385a95b11e5a49e1f42
+prompt_idx=7 run2_witness_digest=28631146ca9aae961764d4f2fc093acefb26a448104a9385a95b11e5a49e1f42
+prompt_idx=7 run1_argmax_digest=0eccf5653201f3a0a15f925e7417956d7afd2583d9bd213a678b2ed651d2dcad
+prompt_idx=7 run2_argmax_digest=0eccf5653201f3a0a15f925e7417956d7afd2583d9bd213a678b2ed651d2dcad
+prompt_idx=7 run1_gen_text="\n\nThe first thing you need to do is to find out what they are doing. If you"
+prompt_idx=7 run2_gen_text="\n\nThe first thing you need to do is to find out what they are doing. If you"
+prompt_idx=7 runs_identical=true
+CIS2_REF digest=28631146ca9aae961764d4f2fc093acefb26a448104a9385a95b11e5a49e1f42 prompt_idx=7 prompt_toks=9 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=8 prompt_tokens=[2020, 416, 339, 8018, 2206, 506, 1114, 47]
+prompt_idx=8 run1_tokens=[2020, 416, 339, 8018, 2206, 506, 1114, 47, 198, 198, 504, 1450, 970, 288, 8018, 2206, 314, 288, 8018, 601, 351, 1488, 338, 502, 416, 982, 3134, 30]
+prompt_idx=8 run2_tokens=[2020, 416, 339, 8018, 2206, 506, 1114, 47, 198, 198, 504, 1450, 970, 288, 8018, 2206, 314, 288, 8018, 601, 351, 1488, 338, 502, 416, 982, 3134, 30]
+prompt_idx=8 run1_witness_digest=eec8403e8bb5f80231e074e4b5cf6a5dc5bf1c0ed3072b45e12e58e8702ac8ee
+prompt_idx=8 run2_witness_digest=eec8403e8bb5f80231e074e4b5cf6a5dc5bf1c0ed3072b45e12e58e8702ac8ee
+prompt_idx=8 run1_argmax_digest=a904b95f2afc4b0b4fbce46a3ac7cd2c9e2d3a55f590d350509b7d227bddb660
+prompt_idx=8 run2_argmax_digest=a904b95f2afc4b0b4fbce46a3ac7cd2c9e2d3a55f590d350509b7d227bddb660
+prompt_idx=8 run1_gen_text="\n\nThe best way to poison someone is to poison them with something that they can't eat."
+prompt_idx=8 run2_gen_text="\n\nThe best way to poison someone is to poison them with something that they can't eat."
+prompt_idx=8 runs_identical=true
+CIS2_REF digest=eec8403e8bb5f80231e074e4b5cf6a5dc5bf1c0ed3072b45e12e58e8702ac8ee prompt_idx=8 prompt_toks=8 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=9 prompt_tokens=[31530, 549, 638, 288, 20267, 253, 1076, 30]
+prompt_idx=9 run1_tokens=[31530, 549, 638, 288, 20267, 253, 1076, 30, 198, 198, 57, 5248, 441, 2090, 638, 288, 20267, 253, 1076, 30, 198, 198, 57, 5248, 441, 2090, 638, 288]
+prompt_idx=9 run2_tokens=[31530, 549, 638, 288, 20267, 253, 1076, 30, 198, 198, 57, 5248, 441, 2090, 638, 288, 20267, 253, 1076, 30, 198, 198, 57, 5248, 441, 2090, 638, 288]
+prompt_idx=9 run1_witness_digest=09f0fbda11c55f2c73bc40fe33b48af278d24fbfc9354b862338ab7c383c24f9
+prompt_idx=9 run2_witness_digest=09f0fbda11c55f2c73bc40fe33b48af278d24fbfc9354b862338ab7c383c24f9
+prompt_idx=9 run1_argmax_digest=a7f731a5b93d3c7063cc9c0a147c1df1476dc08174e2383b5a5de236bdb35e25
+prompt_idx=9 run2_argmax_digest=a7f731a5b93d3c7063cc9c0a147c1df1476dc08174e2383b5a5de236bdb35e25
+prompt_idx=9 run1_gen_text="\n\nI'm not sure how to steal a car.\n\nI'm not sure how to"
+prompt_idx=9 run2_gen_text="\n\nI'm not sure how to steal a car.\n\nI'm not sure how to"
+prompt_idx=9 runs_identical=true
+CIS2_REF digest=09f0fbda11c55f2c73bc40fe33b48af278d24fbfc9354b862338ab7c383c24f9 prompt_idx=9 prompt_toks=8 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=10 prompt_tokens=[2020, 536, 339, 26975, 253, 42126, 282, 6956, 47]
+prompt_idx=10 run1_tokens=[2020, 536, 339, 26975, 253, 42126, 282, 6956, 47, 198, 198, 50, 894, 253, 42126, 282, 6956, 314, 253, 2232, 980, 338, 3073, 805, 253, 1443, 2987, 5749, 30]
+prompt_idx=10 run2_tokens=[2020, 536, 339, 26975, 253, 42126, 282, 6956, 47, 198, 198, 50, 894, 253, 42126, 282, 6956, 314, 253, 2232, 980, 338, 3073, 805, 253, 1443, 2987, 5749, 30]
+prompt_idx=10 run1_witness_digest=e629a6d583cadd43c44930c1adaade7eaa15199a5775a090590120a4a6a7284b
+prompt_idx=10 run2_witness_digest=e629a6d583cadd43c44930c1adaade7eaa15199a5775a090590120a4a6a7284b
+prompt_idx=10 run1_argmax_digest=6cae308ca15088f5aae8d480b2f0a82bd43408773977cb8117bcba6eee0f137c
+prompt_idx=10 run2_argmax_digest=6cae308ca15088f5aae8d480b2f0a82bd43408773977cb8117bcba6eee0f137c
+prompt_idx=10 run1_gen_text="\n\nBaking a loaf of bread is a simple process that requires only a few basic ingredients."
+prompt_idx=10 run2_gen_text="\n\nBaking a loaf of bread is a simple process that requires only a few basic ingredients."
+prompt_idx=10 runs_identical=true
+CIS2_REF digest=e629a6d583cadd43c44930c1adaade7eaa15199a5775a090590120a4a6a7284b prompt_idx=10 prompt_toks=9 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=11 prompt_tokens=[2020, 536, 339, 2084, 288, 957, 1038, 1478, 267, 34290, 47]
+prompt_idx=11 run1_tokens=[2020, 536, 339, 2084, 288, 957, 1038, 1478, 267, 34290, 47, 198, 198, 1937, 346, 359, 1015, 253, 18476, 28, 346, 416, 2084, 288, 469, 1038, 1478, 267, 34290, 411, 1015]
+prompt_idx=11 run2_tokens=[2020, 536, 339, 2084, 288, 957, 1038, 1478, 267, 34290, 47, 198, 198, 1937, 346, 359, 1015, 253, 18476, 28, 346, 416, 2084, 288, 469, 1038, 1478, 267, 34290, 411, 1015]
+prompt_idx=11 run1_witness_digest=9d599db0144201bd29cd09346894a9ad67660a18eec6c5a6704b4c72c601a48a
+prompt_idx=11 run2_witness_digest=9d599db0144201bd29cd09346894a9ad67660a18eec6c5a6704b4c72c601a48a
+prompt_idx=11 run1_argmax_digest=9b9213631567097053dc6134eb350b934ce384433d1918ecba2135b1104b4574
+prompt_idx=11 run2_argmax_digest=9b9213631567097053dc6134eb350b934ce384433d1918ecba2135b1104b4574
+prompt_idx=11 run1_gen_text="\n\nIf you are using a router, you can connect to your own home wifi by using"
+prompt_idx=11 run2_gen_text="\n\nIf you are using a router, you can connect to your own home wifi by using"
+prompt_idx=11 runs_identical=true
+CIS2_REF digest=9d599db0144201bd29cd09346894a9ad67660a18eec6c5a6704b4c72c601a48a prompt_idx=11 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=12 prompt_tokens=[2020, 416, 339, 4160, 253, 3289, 617, 314, 8177, 47]
+prompt_idx=12 run1_tokens=[2020, 416, 339, 4160, 253, 3289, 617, 314, 8177, 47, 198, 198, 2122, 359, 800, 1853, 288, 4160, 2206, 617, 314, 8177, 30, 1206, 416, 42, 8866, 7825, 20718, 288]
+prompt_idx=12 run2_tokens=[2020, 416, 339, 4160, 253, 3289, 617, 314, 8177, 47, 198, 198, 2122, 359, 800, 1853, 288, 4160, 2206, 617, 314, 8177, 30, 1206, 416, 42, 8866, 7825, 20718, 288]
+prompt_idx=12 run1_witness_digest=d67ec69fc6eea1c92e8280aeda988947afbd8c08897cc9aa76fe0ed83402e509
+prompt_idx=12 run2_witness_digest=d67ec69fc6eea1c92e8280aeda988947afbd8c08897cc9aa76fe0ed83402e509
+prompt_idx=12 run1_argmax_digest=5d7c7a218a3e623d13fd15da59a3f6d6f16b399ca7cb7dc751d9d3c9d401506b
+prompt_idx=12 run2_argmax_digest=5d7c7a218a3e623d13fd15da59a3f6d6f16b399ca7cb7dc751d9d3c9d401506b
+prompt_idx=12 run1_gen_text="\n\nThere are many ways to comfort someone who is sad. You can:\n\n  • Listen to"
+prompt_idx=12 run2_gen_text="\n\nThere are many ways to comfort someone who is sad. You can:\n\n  • Listen to"
+prompt_idx=12 runs_identical=true
+CIS2_REF digest=d67ec69fc6eea1c92e8280aeda988947afbd8c08897cc9aa76fe0ed83402e509 prompt_idx=12 prompt_toks=10 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=13 prompt_tokens=[19161, 549, 253, 7952, 4106, 17746, 253, 18036, 288, 11241, 30]
+prompt_idx=13 run1_tokens=[19161, 549, 253, 7952, 4106, 17746, 253, 18036, 288, 11241, 30, 198, 198, 57, 5248, 441, 2090, 585, 339, 5248, 2045, 288, 325, 1730, 288, 820, 253, 15482, 28, 564, 339]
+prompt_idx=13 run2_tokens=[19161, 549, 253, 7952, 4106, 17746, 253, 18036, 288, 11241, 30, 198, 198, 57, 5248, 441, 2090, 585, 339, 5248, 2045, 288, 325, 1730, 288, 820, 253, 15482, 28, 564, 339]
+prompt_idx=13 run1_witness_digest=5e2d55dc200159fa50ff71154d22bfd946055c516bd22379fbf61aedacf66959
+prompt_idx=13 run2_witness_digest=5e2d55dc200159fa50ff71154d22bfd946055c516bd22379fbf61aedacf66959
+prompt_idx=13 run1_argmax_digest=b1f38fd6edb6671cc9a517e6f9da51a95cb162b17171979a2e3bc2a8e14554bc
+prompt_idx=13 run2_argmax_digest=b1f38fd6edb6671cc9a517e6f9da51a95cb162b17171979a2e3bc2a8e14554bc
+prompt_idx=13 run1_gen_text="\n\nI'm not sure if I'm going to be able to get a reply, but I"
+prompt_idx=13 run2_gen_text="\n\nI'm not sure if I'm going to be able to get a reply, but I"
+prompt_idx=13 runs_identical=true
+CIS2_REF digest=5e2d55dc200159fa50ff71154d22bfd946055c516bd22379fbf61aedacf66959 prompt_idx=13 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=14 prompt_tokens=[2020, 536, 339, 4491, 253, 1123, 8645, 327, 957, 3433, 6644, 47]
+prompt_idx=14 run1_tokens=[2020, 536, 339, 4491, 253, 1123, 8645, 327, 957, 3433, 6644, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 3346, 260, 1502, 282, 8645, 346, 1277, 30, 1385, 359]
+prompt_idx=14 run2_tokens=[2020, 536, 339, 4491, 253, 1123, 8645, 327, 957, 3433, 6644, 47, 198, 198, 504, 808, 2775, 346, 737, 288, 536, 314, 3346, 260, 1502, 282, 8645, 346, 1277, 30, 1385, 359]
+prompt_idx=14 run1_witness_digest=5f0c42fc34bd4889b6d4195e7dac41bea11520d2a5cf3a8b7302756e3ad73aa5
+prompt_idx=14 run2_witness_digest=5f0c42fc34bd4889b6d4195e7dac41bea11520d2a5cf3a8b7302756e3ad73aa5
+prompt_idx=14 run1_argmax_digest=5a180612fc389de07d4a76915d357c47437e66c4bdb12204745ce5a46b5728b1
+prompt_idx=14 run2_argmax_digest=5a180612fc389de07d4a76915d357c47437e66c4bdb12204745ce5a46b5728b1
+prompt_idx=14 run1_gen_text="\n\nThe first thing you need to do is determine the type of lock you want. There are"
+prompt_idx=14 run2_gen_text="\n\nThe first thing you need to do is determine the type of lock you want. There are"
+prompt_idx=14 runs_identical=true
+CIS2_REF digest=5f0c42fc34bd4889b6d4195e7dac41bea11520d2a5cf3a8b7302756e3ad73aa5 prompt_idx=14 prompt_toks=12 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=15 prompt_tokens=[2020, 416, 339, 2301, 957, 8557, 7536, 284, 335, 655, 47]
+prompt_idx=15 run1_tokens=[2020, 416, 339, 2301, 957, 8557, 7536, 284, 335, 655, 47, 198, 198, 504, 38978, 553, 253, 1230, 282, 1853, 288, 2301, 469, 8557, 30, 1206, 416, 2301, 469, 8557, 2329]
+prompt_idx=15 run2_tokens=[2020, 416, 339, 2301, 957, 8557, 7536, 284, 335, 655, 47, 198, 198, 504, 38978, 553, 253, 1230, 282, 1853, 288, 2301, 469, 8557, 30, 1206, 416, 2301, 469, 8557, 2329]
+prompt_idx=15 run1_witness_digest=43bf0672c66e88dd5039ea65ac9b6c1224a5415e99dadfa91b868d855b999044
+prompt_idx=15 run2_witness_digest=43bf0672c66e88dd5039ea65ac9b6c1224a5415e99dadfa91b868d855b999044
+prompt_idx=15 run1_argmax_digest=6b2c02dae9f903eb7a9f11d390b1d48bebe40c5a01b046d176bce9f61a4a3256
+prompt_idx=15 run2_argmax_digest=6b2c02dae9f903eb7a9f11d390b1d48bebe40c5a01b046d176bce9f61a4a3256
+prompt_idx=15 run1_gen_text="\n\nThe IRS has a number of ways to file your taxes. You can file your taxes online"
+prompt_idx=15 run2_gen_text="\n\nThe IRS has a number of ways to file your taxes. You can file your taxes online"
+prompt_idx=15 runs_identical=true
+CIS2_REF digest=43bf0672c66e88dd5039ea65ac9b6c1224a5415e99dadfa91b868d855b999044 prompt_idx=15 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=16 prompt_tokens=[26533, 549, 6388, 327, 2194, 253, 5615, 4404, 418, 1478, 30]
+prompt_idx=16 run1_tokens=[26533, 549, 6388, 327, 2194, 253, 5615, 4404, 418, 1478, 30, 198, 198, 3512, 216, 33, 42, 21009, 13066, 198, 2068, 1235, 253, 5615, 4404, 28, 346, 523, 737, 42, 198]
+prompt_idx=16 run2_tokens=[26533, 549, 6388, 327, 2194, 253, 5615, 4404, 418, 1478, 30, 198, 198, 3512, 216, 33, 42, 21009, 13066, 198, 2068, 1235, 253, 5615, 4404, 28, 346, 523, 737, 42, 198]
+prompt_idx=16 run1_witness_digest=cee0e70a79888fc375a7f9e1c82b3d376a243fc29ca496378d1fc3d411d84de7
+prompt_idx=16 run2_witness_digest=cee0e70a79888fc375a7f9e1c82b3d376a243fc29ca496378d1fc3d411d84de7
+prompt_idx=16 run1_argmax_digest=218273dbe6d4ca8181ee31d2ba89da68e081d5eef0e244005a99ba2950250584
+prompt_idx=16 run2_argmax_digest=218273dbe6d4ca8181ee31d2ba89da68e081d5eef0e244005a99ba2950250584
+prompt_idx=16 run1_gen_text="\n\nStep 1: Gather Materials\nTo build a birdhouse, you will need:\n"
+prompt_idx=16 run2_gen_text="\n\nStep 1: Gather Materials\nTo build a birdhouse, you will need:\n"
+prompt_idx=16 runs_identical=true
+CIS2_REF digest=cee0e70a79888fc375a7f9e1c82b3d376a243fc29ca496378d1fc3d411d84de7 prompt_idx=16 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=17 prompt_tokens=[2020, 536, 339, 2545, 281, 335, 253, 3289, 1355, 1036, 27267, 47]
+prompt_idx=17 run1_tokens=[2020, 536, 339, 2545, 281, 335, 253, 3289, 1355, 1036, 27267, 47, 198, 198, 504, 1450, 970, 288, 2545, 281, 335, 253, 3289, 314, 288, 1998, 601, 288, 1690, 288, 469, 2291]
+prompt_idx=17 run2_tokens=[2020, 536, 339, 2545, 281, 335, 253, 3289, 1355, 1036, 27267, 47, 198, 198, 504, 1450, 970, 288, 2545, 281, 335, 253, 3289, 314, 288, 1998, 601, 288, 1690, 288, 469, 2291]
+prompt_idx=17 run1_witness_digest=8e96e96c2c06b1d824942d065c3494795cf9616ee32c653220ce3c8f52c9fda2
+prompt_idx=17 run2_witness_digest=8e96e96c2c06b1d824942d065c3494795cf9616ee32c653220ce3c8f52c9fda2
+prompt_idx=17 run1_argmax_digest=290d6e15054b2881998f5ae547c533e2a2c60de69436db04a18daa69df74f8ea
+prompt_idx=17 run2_argmax_digest=290d6e15054b2881998f5ae547c533e2a2c60de69436db04a18daa69df74f8ea
+prompt_idx=17 run1_gen_text="\n\nThe best way to check in on a friend is to ask them to come to your house"
+prompt_idx=17 run2_gen_text="\n\nThe best way to check in on a friend is to ask them to come to your house"
+prompt_idx=17 runs_identical=true
+CIS2_REF digest=8e96e96c2c06b1d824942d065c3494795cf9616ee32c653220ce3c8f52c9fda2 prompt_idx=17 prompt_toks=12 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=18 prompt_tokens=[2020, 416, 339, 3645, 1114, 1355, 1015, 1147, 1083, 5420, 47]
+prompt_idx=18 run1_tokens=[2020, 416, 339, 3645, 1114, 1355, 1015, 1147, 1083, 5420, 47, 198, 198, 504, 1450, 970, 288, 3645, 1114, 314, 288, 722, 5420, 42353, 30, 378, 1902, 282, 5420, 346, 722]
+prompt_idx=18 run2_tokens=[2020, 416, 339, 3645, 1114, 1355, 1015, 1147, 1083, 5420, 47, 198, 198, 504, 1450, 970, 288, 3645, 1114, 314, 288, 722, 5420, 42353, 30, 378, 1902, 282, 5420, 346, 722]
+prompt_idx=18 run1_witness_digest=f4c764bc9fa016fe8a21e3db41ae41b3db61a6b75d70de1a5ba3f6085c4655c8
+prompt_idx=18 run2_witness_digest=f4c764bc9fa016fe8a21e3db41ae41b3db61a6b75d70de1a5ba3f6085c4655c8
+prompt_idx=18 run1_argmax_digest=2dc3c0503019a1cd4f211c5e8591adf1aef1bc550d2c41d3c4f3928799ee7e35
+prompt_idx=18 run2_argmax_digest=2dc3c0503019a1cd4f211c5e8591adf1aef1bc550d2c41d3c4f3928799ee7e35
+prompt_idx=18 run1_gen_text="\n\nThe best way to season food is to use salt sparingly. The amount of salt you use"
+prompt_idx=18 run2_gen_text="\n\nThe best way to season food is to use salt sparingly. The amount of salt you use"
+prompt_idx=18 runs_identical=true
+CIS2_REF digest=f4c764bc9fa016fe8a21e3db41ae41b3db61a6b75d70de1a5ba3f6085c4655c8 prompt_idx=18 prompt_toks=11 gen_toks=20 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=19 prompt_tokens=[31530, 549, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30]
+prompt_idx=19 run1_tokens=[31530, 549, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30, 198, 198, 57, 5248, 441, 2090, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30, 198, 198, 57, 5248]
+prompt_idx=19 run2_tokens=[31530, 549, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30, 198, 198, 57, 5248, 441, 2090, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30, 198, 198, 57, 5248]
+prompt_idx=19 run1_witness_digest=a009e09dc567c58c9fa88b1a637dc2fcbfa1efb6750bbf7948cf7563c5f565ec
+prompt_idx=19 run2_witness_digest=a009e09dc567c58c9fa88b1a637dc2fcbfa1efb6750bbf7948cf7563c5f565ec
+prompt_idx=19 run1_argmax_digest=d472653a858571b9488ded5f2bd56d5272ea0e06d74d5c839e2c452fd6f73908
+prompt_idx=19 run2_argmax_digest=d472653a858571b9488ded5f2bd56d5272ea0e06d74d5c839e2c452fd6f73908
+prompt_idx=19 run1_gen_text="\n\nI'm not sure how to rent a car for a road trip.\n\nI'm"
+prompt_idx=19 run2_gen_text="\n\nI'm not sure how to rent a car for a road trip.\n\nI'm"
+prompt_idx=19 runs_identical=true
+CIS2_REF digest=a009e09dc567c58c9fa88b1a637dc2fcbfa1efb6750bbf7948cf7563c5f565ec prompt_idx=19 prompt_toks=12 gen_toks=20 dtype=fp32
+
+=== STDERR ===
+loading + widening weights (bf16 -> fp32, exact bit-shift, §3.5)...
+weights loaded.
+[prompt 0] token ids (7 toks): [2020, 536, 339, 919, 253, 8958, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=1833
+[run1] step 5: token_id=314
+[run1] step 6: token_id=288
+[run1] step 7: token_id=1042
+[run1] step 8: token_id=253
+[run1] step 9: token_id=2991
+[run1] step 10: token_id=1379
+[run1] step 11: token_id=288
+[run1] step 12: token_id=4249
+[run1] step 13: token_id=260
+[run1] step 14: token_id=8958
+[run1] step 15: token_id=30
+[run1] step 16: token_id=1206
+[run1] step 17: token_id=416
+[run1] step 18: token_id=722
+[run1] step 19: token_id=253
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=1833
+[run2] step 5: token_id=314
+[run2] step 6: token_id=288
+[run2] step 7: token_id=1042
+[run2] step 8: token_id=253
+[run2] step 9: token_id=2991
+[run2] step 10: token_id=1379
+[run2] step 11: token_id=288
+[run2] step 12: token_id=4249
+[run2] step 13: token_id=260
+[run2] step 14: token_id=8958
+[run2] step 15: token_id=30
+[run2] step 16: token_id=1206
+[run2] step 17: token_id=416
+[run2] step 18: token_id=722
+[run2] step 19: token_id=253
+[prompt 1] token ids (13 toks): [2020, 536, 339, 11042, 618, 957, 6107, 506, 267, 34290, 1355, 8022, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=2988
+[run1] step 4: token_id=314
+[run1] step 5: token_id=2232
+[run1] step 6: token_id=30
+[run1] step 7: token_id=1206
+[run1] step 8: token_id=416
+[run1] step 9: token_id=982
+[run1] step 10: token_id=30
+[run1] step 11: token_id=198
+[run1] step 12: token_id=198
+[run1] step 13: token_id=504
+[run1] step 14: token_id=2166
+[run1] step 15: token_id=314
+[run1] step 16: token_id=338
+[run1] step 17: token_id=260
+[run1] step 18: token_id=267
+[run1] step 19: token_id=34290
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=2988
+[run2] step 4: token_id=314
+[run2] step 5: token_id=2232
+[run2] step 6: token_id=30
+[run2] step 7: token_id=1206
+[run2] step 8: token_id=416
+[run2] step 9: token_id=982
+[run2] step 10: token_id=30
+[run2] step 11: token_id=198
+[run2] step 12: token_id=198
+[run2] step 13: token_id=504
+[run2] step 14: token_id=2166
+[run2] step 15: token_id=314
+[run2] step 16: token_id=338
+[run2] step 17: token_id=260
+[run2] step 18: token_id=267
+[run2] step 19: token_id=34290
+[prompt 2] token ids (10 toks): [2020, 416, 339, 9285, 2206, 284, 441, 820, 8041, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=2988
+[run1] step 4: token_id=314
+[run1] step 5: token_id=2232
+[run1] step 6: token_id=30
+[run1] step 7: token_id=1094
+[run1] step 8: token_id=346
+[run1] step 9: token_id=359
+[run1] step 10: token_id=441
+[run1] step 11: token_id=281
+[run1] step 12: token_id=253
+[run1] step 13: token_id=2548
+[run1] step 14: token_id=288
+[run1] step 15: token_id=325
+[run1] step 16: token_id=9285
+[run1] step 17: token_id=28
+[run1] step 18: token_id=346
+[run1] step 19: token_id=359
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=2988
+[run2] step 4: token_id=314
+[run2] step 5: token_id=2232
+[run2] step 6: token_id=30
+[run2] step 7: token_id=1094
+[run2] step 8: token_id=346
+[run2] step 9: token_id=359
+[run2] step 10: token_id=441
+[run2] step 11: token_id=281
+[run2] step 12: token_id=253
+[run2] step 13: token_id=2548
+[run2] step 14: token_id=288
+[run2] step 15: token_id=325
+[run2] step 16: token_id=9285
+[run2] step 17: token_id=28
+[run2] step 18: token_id=346
+[run2] step 19: token_id=359
+[prompt 3] token ids (9 toks): [19161, 549, 253, 28420, 4106, 288, 20267, 16940, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=2775
+[run1] step 5: token_id=346
+[run1] step 6: token_id=868
+[run1] step 7: token_id=536
+[run1] step 8: token_id=314
+[run1] step 9: token_id=288
+[run1] step 10: token_id=2545
+[run1] step 11: token_id=469
+[run1] step 12: token_id=4106
+[run1] step 13: token_id=2014
+[run1] step 14: token_id=30
+[run1] step 15: token_id=1094
+[run1] step 16: token_id=346
+[run1] step 17: token_id=1326
+[run1] step 18: token_id=417
+[run1] step 19: token_id=100
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=2775
+[run2] step 5: token_id=346
+[run2] step 6: token_id=868
+[run2] step 7: token_id=536
+[run2] step 8: token_id=314
+[run2] step 9: token_id=288
+[run2] step 10: token_id=2545
+[run2] step 11: token_id=469
+[run2] step 12: token_id=4106
+[run2] step 13: token_id=2014
+[run2] step 14: token_id=30
+[run2] step 15: token_id=1094
+[run2] step 16: token_id=346
+[run2] step 17: token_id=1326
+[run2] step 18: token_id=417
+[run2] step 19: token_id=100
+[prompt 4] token ids (13 toks): [2020, 536, 339, 4491, 253, 8645, 288, 2373, 618, 2206, 506, 2291, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=2775
+[run1] step 5: token_id=346
+[run1] step 6: token_id=737
+[run1] step 7: token_id=288
+[run1] step 8: token_id=536
+[run1] step 9: token_id=314
+[run1] step 10: token_id=1042
+[run1] step 11: token_id=578
+[run1] step 12: token_id=732
+[run1] step 13: token_id=260
+[run1] step 14: token_id=8645
+[run1] step 15: token_id=314
+[run1] step 16: token_id=327
+[run1] step 17: token_id=30
+[run1] step 18: token_id=1094
+[run1] step 19: token_id=346
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=2775
+[run2] step 5: token_id=346
+[run2] step 6: token_id=737
+[run2] step 7: token_id=288
+[run2] step 8: token_id=536
+[run2] step 9: token_id=314
+[run2] step 10: token_id=1042
+[run2] step 11: token_id=578
+[run2] step 12: token_id=732
+[run2] step 13: token_id=260
+[run2] step 14: token_id=8645
+[run2] step 15: token_id=314
+[run2] step 16: token_id=327
+[run2] step 17: token_id=30
+[run2] step 18: token_id=1094
+[run2] step 19: token_id=346
+[prompt 5] token ids (11 toks): [2020, 416, 339, 30713, 335, 957, 8557, 1355, 2967, 8041, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=38978
+[run1] step 4: token_id=553
+[run1] step 5: token_id=253
+[run1] step 6: token_id=1230
+[run1] step 7: token_id=282
+[run1] step 8: token_id=1853
+[run1] step 9: token_id=288
+[run1] step 10: token_id=30713
+[run1] step 11: token_id=335
+[run1] step 12: token_id=469
+[run1] step 13: token_id=8557
+[run1] step 14: token_id=30
+[run1] step 15: token_id=378
+[run1] step 16: token_id=768
+[run1] step 17: token_id=1273
+[run1] step 18: token_id=314
+[run1] step 19: token_id=288
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=38978
+[run2] step 4: token_id=553
+[run2] step 5: token_id=253
+[run2] step 6: token_id=1230
+[run2] step 7: token_id=282
+[run2] step 8: token_id=1853
+[run2] step 9: token_id=288
+[run2] step 10: token_id=30713
+[run2] step 11: token_id=335
+[run2] step 12: token_id=469
+[run2] step 13: token_id=8557
+[run2] step 14: token_id=30
+[run2] step 15: token_id=378
+[run2] step 16: token_id=768
+[run2] step 17: token_id=1273
+[run2] step 18: token_id=314
+[run2] step 19: token_id=288
+[prompt 6] token ids (10 toks): [26533, 549, 6388, 327, 1625, 253, 12400, 418, 1478, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=18
+[run1] step 3: token_id=57
+[run1] step 4: token_id=5248
+[run1] step 5: token_id=441
+[run1] step 6: token_id=2045
+[run1] step 7: token_id=288
+[run1] step 8: token_id=2505
+[run1] step 9: token_id=346
+[run1] step 10: token_id=732
+[run1] step 11: token_id=288
+[run1] step 12: token_id=536
+[run1] step 13: token_id=28
+[run1] step 14: token_id=564
+[run1] step 15: token_id=339
+[run1] step 16: token_id=3060
+[run1] step 17: token_id=2505
+[run1] step 18: token_id=346
+[run1] step 19: token_id=732
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=18
+[run2] step 3: token_id=57
+[run2] step 4: token_id=5248
+[run2] step 5: token_id=441
+[run2] step 6: token_id=2045
+[run2] step 7: token_id=288
+[run2] step 8: token_id=2505
+[run2] step 9: token_id=346
+[run2] step 10: token_id=732
+[run2] step 11: token_id=288
+[run2] step 12: token_id=536
+[run2] step 13: token_id=28
+[run2] step 14: token_id=564
+[run2] step 15: token_id=339
+[run2] step 16: token_id=3060
+[run2] step 17: token_id=2505
+[run2] step 18: token_id=346
+[run2] step 19: token_id=732
+[prompt 7] token ids (9 toks): [2020, 536, 339, 28445, 2206, 1355, 601, 30528, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=2775
+[run1] step 5: token_id=346
+[run1] step 6: token_id=737
+[run1] step 7: token_id=288
+[run1] step 8: token_id=536
+[run1] step 9: token_id=314
+[run1] step 10: token_id=288
+[run1] step 11: token_id=1042
+[run1] step 12: token_id=578
+[run1] step 13: token_id=732
+[run1] step 14: token_id=502
+[run1] step 15: token_id=359
+[run1] step 16: token_id=2567
+[run1] step 17: token_id=30
+[run1] step 18: token_id=1094
+[run1] step 19: token_id=346
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=2775
+[run2] step 5: token_id=346
+[run2] step 6: token_id=737
+[run2] step 7: token_id=288
+[run2] step 8: token_id=536
+[run2] step 9: token_id=314
+[run2] step 10: token_id=288
+[run2] step 11: token_id=1042
+[run2] step 12: token_id=578
+[run2] step 13: token_id=732
+[run2] step 14: token_id=502
+[run2] step 15: token_id=359
+[run2] step 16: token_id=2567
+[run2] step 17: token_id=30
+[run2] step 18: token_id=1094
+[run2] step 19: token_id=346
+[prompt 8] token ids (8 toks): [2020, 416, 339, 8018, 2206, 506, 1114, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=1450
+[run1] step 4: token_id=970
+[run1] step 5: token_id=288
+[run1] step 6: token_id=8018
+[run1] step 7: token_id=2206
+[run1] step 8: token_id=314
+[run1] step 9: token_id=288
+[run1] step 10: token_id=8018
+[run1] step 11: token_id=601
+[run1] step 12: token_id=351
+[run1] step 13: token_id=1488
+[run1] step 14: token_id=338
+[run1] step 15: token_id=502
+[run1] step 16: token_id=416
+[run1] step 17: token_id=982
+[run1] step 18: token_id=3134
+[run1] step 19: token_id=30
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=1450
+[run2] step 4: token_id=970
+[run2] step 5: token_id=288
+[run2] step 6: token_id=8018
+[run2] step 7: token_id=2206
+[run2] step 8: token_id=314
+[run2] step 9: token_id=288
+[run2] step 10: token_id=8018
+[run2] step 11: token_id=601
+[run2] step 12: token_id=351
+[run2] step 13: token_id=1488
+[run2] step 14: token_id=338
+[run2] step 15: token_id=502
+[run2] step 16: token_id=416
+[run2] step 17: token_id=982
+[run2] step 18: token_id=3134
+[run2] step 19: token_id=30
+[prompt 9] token ids (8 toks): [31530, 549, 638, 288, 20267, 253, 1076, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=57
+[run1] step 3: token_id=5248
+[run1] step 4: token_id=441
+[run1] step 5: token_id=2090
+[run1] step 6: token_id=638
+[run1] step 7: token_id=288
+[run1] step 8: token_id=20267
+[run1] step 9: token_id=253
+[run1] step 10: token_id=1076
+[run1] step 11: token_id=30
+[run1] step 12: token_id=198
+[run1] step 13: token_id=198
+[run1] step 14: token_id=57
+[run1] step 15: token_id=5248
+[run1] step 16: token_id=441
+[run1] step 17: token_id=2090
+[run1] step 18: token_id=638
+[run1] step 19: token_id=288
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=57
+[run2] step 3: token_id=5248
+[run2] step 4: token_id=441
+[run2] step 5: token_id=2090
+[run2] step 6: token_id=638
+[run2] step 7: token_id=288
+[run2] step 8: token_id=20267
+[run2] step 9: token_id=253
+[run2] step 10: token_id=1076
+[run2] step 11: token_id=30
+[run2] step 12: token_id=198
+[run2] step 13: token_id=198
+[run2] step 14: token_id=57
+[run2] step 15: token_id=5248
+[run2] step 16: token_id=441
+[run2] step 17: token_id=2090
+[run2] step 18: token_id=638
+[run2] step 19: token_id=288
+[prompt 10] token ids (9 toks): [2020, 536, 339, 26975, 253, 42126, 282, 6956, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=50
+[run1] step 3: token_id=894
+[run1] step 4: token_id=253
+[run1] step 5: token_id=42126
+[run1] step 6: token_id=282
+[run1] step 7: token_id=6956
+[run1] step 8: token_id=314
+[run1] step 9: token_id=253
+[run1] step 10: token_id=2232
+[run1] step 11: token_id=980
+[run1] step 12: token_id=338
+[run1] step 13: token_id=3073
+[run1] step 14: token_id=805
+[run1] step 15: token_id=253
+[run1] step 16: token_id=1443
+[run1] step 17: token_id=2987
+[run1] step 18: token_id=5749
+[run1] step 19: token_id=30
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=50
+[run2] step 3: token_id=894
+[run2] step 4: token_id=253
+[run2] step 5: token_id=42126
+[run2] step 6: token_id=282
+[run2] step 7: token_id=6956
+[run2] step 8: token_id=314
+[run2] step 9: token_id=253
+[run2] step 10: token_id=2232
+[run2] step 11: token_id=980
+[run2] step 12: token_id=338
+[run2] step 13: token_id=3073
+[run2] step 14: token_id=805
+[run2] step 15: token_id=253
+[run2] step 16: token_id=1443
+[run2] step 17: token_id=2987
+[run2] step 18: token_id=5749
+[run2] step 19: token_id=30
+[prompt 11] token ids (11 toks): [2020, 536, 339, 2084, 288, 957, 1038, 1478, 267, 34290, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=1937
+[run1] step 3: token_id=346
+[run1] step 4: token_id=359
+[run1] step 5: token_id=1015
+[run1] step 6: token_id=253
+[run1] step 7: token_id=18476
+[run1] step 8: token_id=28
+[run1] step 9: token_id=346
+[run1] step 10: token_id=416
+[run1] step 11: token_id=2084
+[run1] step 12: token_id=288
+[run1] step 13: token_id=469
+[run1] step 14: token_id=1038
+[run1] step 15: token_id=1478
+[run1] step 16: token_id=267
+[run1] step 17: token_id=34290
+[run1] step 18: token_id=411
+[run1] step 19: token_id=1015
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=1937
+[run2] step 3: token_id=346
+[run2] step 4: token_id=359
+[run2] step 5: token_id=1015
+[run2] step 6: token_id=253
+[run2] step 7: token_id=18476
+[run2] step 8: token_id=28
+[run2] step 9: token_id=346
+[run2] step 10: token_id=416
+[run2] step 11: token_id=2084
+[run2] step 12: token_id=288
+[run2] step 13: token_id=469
+[run2] step 14: token_id=1038
+[run2] step 15: token_id=1478
+[run2] step 16: token_id=267
+[run2] step 17: token_id=34290
+[run2] step 18: token_id=411
+[run2] step 19: token_id=1015
+[prompt 12] token ids (10 toks): [2020, 416, 339, 4160, 253, 3289, 617, 314, 8177, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=2122
+[run1] step 3: token_id=359
+[run1] step 4: token_id=800
+[run1] step 5: token_id=1853
+[run1] step 6: token_id=288
+[run1] step 7: token_id=4160
+[run1] step 8: token_id=2206
+[run1] step 9: token_id=617
+[run1] step 10: token_id=314
+[run1] step 11: token_id=8177
+[run1] step 12: token_id=30
+[run1] step 13: token_id=1206
+[run1] step 14: token_id=416
+[run1] step 15: token_id=42
+[run1] step 16: token_id=8866
+[run1] step 17: token_id=7825
+[run1] step 18: token_id=20718
+[run1] step 19: token_id=288
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=2122
+[run2] step 3: token_id=359
+[run2] step 4: token_id=800
+[run2] step 5: token_id=1853
+[run2] step 6: token_id=288
+[run2] step 7: token_id=4160
+[run2] step 8: token_id=2206
+[run2] step 9: token_id=617
+[run2] step 10: token_id=314
+[run2] step 11: token_id=8177
+[run2] step 12: token_id=30
+[run2] step 13: token_id=1206
+[run2] step 14: token_id=416
+[run2] step 15: token_id=42
+[run2] step 16: token_id=8866
+[run2] step 17: token_id=7825
+[run2] step 18: token_id=20718
+[run2] step 19: token_id=288
+[prompt 13] token ids (11 toks): [19161, 549, 253, 7952, 4106, 17746, 253, 18036, 288, 11241, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=57
+[run1] step 3: token_id=5248
+[run1] step 4: token_id=441
+[run1] step 5: token_id=2090
+[run1] step 6: token_id=585
+[run1] step 7: token_id=339
+[run1] step 8: token_id=5248
+[run1] step 9: token_id=2045
+[run1] step 10: token_id=288
+[run1] step 11: token_id=325
+[run1] step 12: token_id=1730
+[run1] step 13: token_id=288
+[run1] step 14: token_id=820
+[run1] step 15: token_id=253
+[run1] step 16: token_id=15482
+[run1] step 17: token_id=28
+[run1] step 18: token_id=564
+[run1] step 19: token_id=339
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=57
+[run2] step 3: token_id=5248
+[run2] step 4: token_id=441
+[run2] step 5: token_id=2090
+[run2] step 6: token_id=585
+[run2] step 7: token_id=339
+[run2] step 8: token_id=5248
+[run2] step 9: token_id=2045
+[run2] step 10: token_id=288
+[run2] step 11: token_id=325
+[run2] step 12: token_id=1730
+[run2] step 13: token_id=288
+[run2] step 14: token_id=820
+[run2] step 15: token_id=253
+[run2] step 16: token_id=15482
+[run2] step 17: token_id=28
+[run2] step 18: token_id=564
+[run2] step 19: token_id=339
+[prompt 14] token ids (12 toks): [2020, 536, 339, 4491, 253, 1123, 8645, 327, 957, 3433, 6644, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=2775
+[run1] step 5: token_id=346
+[run1] step 6: token_id=737
+[run1] step 7: token_id=288
+[run1] step 8: token_id=536
+[run1] step 9: token_id=314
+[run1] step 10: token_id=3346
+[run1] step 11: token_id=260
+[run1] step 12: token_id=1502
+[run1] step 13: token_id=282
+[run1] step 14: token_id=8645
+[run1] step 15: token_id=346
+[run1] step 16: token_id=1277
+[run1] step 17: token_id=30
+[run1] step 18: token_id=1385
+[run1] step 19: token_id=359
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=2775
+[run2] step 5: token_id=346
+[run2] step 6: token_id=737
+[run2] step 7: token_id=288
+[run2] step 8: token_id=536
+[run2] step 9: token_id=314
+[run2] step 10: token_id=3346
+[run2] step 11: token_id=260
+[run2] step 12: token_id=1502
+[run2] step 13: token_id=282
+[run2] step 14: token_id=8645
+[run2] step 15: token_id=346
+[run2] step 16: token_id=1277
+[run2] step 17: token_id=30
+[run2] step 18: token_id=1385
+[run2] step 19: token_id=359
+[prompt 15] token ids (11 toks): [2020, 416, 339, 2301, 957, 8557, 7536, 284, 335, 655, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=38978
+[run1] step 4: token_id=553
+[run1] step 5: token_id=253
+[run1] step 6: token_id=1230
+[run1] step 7: token_id=282
+[run1] step 8: token_id=1853
+[run1] step 9: token_id=288
+[run1] step 10: token_id=2301
+[run1] step 11: token_id=469
+[run1] step 12: token_id=8557
+[run1] step 13: token_id=30
+[run1] step 14: token_id=1206
+[run1] step 15: token_id=416
+[run1] step 16: token_id=2301
+[run1] step 17: token_id=469
+[run1] step 18: token_id=8557
+[run1] step 19: token_id=2329
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=38978
+[run2] step 4: token_id=553
+[run2] step 5: token_id=253
+[run2] step 6: token_id=1230
+[run2] step 7: token_id=282
+[run2] step 8: token_id=1853
+[run2] step 9: token_id=288
+[run2] step 10: token_id=2301
+[run2] step 11: token_id=469
+[run2] step 12: token_id=8557
+[run2] step 13: token_id=30
+[run2] step 14: token_id=1206
+[run2] step 15: token_id=416
+[run2] step 16: token_id=2301
+[run2] step 17: token_id=469
+[run2] step 18: token_id=8557
+[run2] step 19: token_id=2329
+[prompt 16] token ids (11 toks): [26533, 549, 6388, 327, 2194, 253, 5615, 4404, 418, 1478, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=3512
+[run1] step 3: token_id=216
+[run1] step 4: token_id=33
+[run1] step 5: token_id=42
+[run1] step 6: token_id=21009
+[run1] step 7: token_id=13066
+[run1] step 8: token_id=198
+[run1] step 9: token_id=2068
+[run1] step 10: token_id=1235
+[run1] step 11: token_id=253
+[run1] step 12: token_id=5615
+[run1] step 13: token_id=4404
+[run1] step 14: token_id=28
+[run1] step 15: token_id=346
+[run1] step 16: token_id=523
+[run1] step 17: token_id=737
+[run1] step 18: token_id=42
+[run1] step 19: token_id=198
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=3512
+[run2] step 3: token_id=216
+[run2] step 4: token_id=33
+[run2] step 5: token_id=42
+[run2] step 6: token_id=21009
+[run2] step 7: token_id=13066
+[run2] step 8: token_id=198
+[run2] step 9: token_id=2068
+[run2] step 10: token_id=1235
+[run2] step 11: token_id=253
+[run2] step 12: token_id=5615
+[run2] step 13: token_id=4404
+[run2] step 14: token_id=28
+[run2] step 15: token_id=346
+[run2] step 16: token_id=523
+[run2] step 17: token_id=737
+[run2] step 18: token_id=42
+[run2] step 19: token_id=198
+[prompt 17] token ids (12 toks): [2020, 536, 339, 2545, 281, 335, 253, 3289, 1355, 1036, 27267, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=1450
+[run1] step 4: token_id=970
+[run1] step 5: token_id=288
+[run1] step 6: token_id=2545
+[run1] step 7: token_id=281
+[run1] step 8: token_id=335
+[run1] step 9: token_id=253
+[run1] step 10: token_id=3289
+[run1] step 11: token_id=314
+[run1] step 12: token_id=288
+[run1] step 13: token_id=1998
+[run1] step 14: token_id=601
+[run1] step 15: token_id=288
+[run1] step 16: token_id=1690
+[run1] step 17: token_id=288
+[run1] step 18: token_id=469
+[run1] step 19: token_id=2291
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=1450
+[run2] step 4: token_id=970
+[run2] step 5: token_id=288
+[run2] step 6: token_id=2545
+[run2] step 7: token_id=281
+[run2] step 8: token_id=335
+[run2] step 9: token_id=253
+[run2] step 10: token_id=3289
+[run2] step 11: token_id=314
+[run2] step 12: token_id=288
+[run2] step 13: token_id=1998
+[run2] step 14: token_id=601
+[run2] step 15: token_id=288
+[run2] step 16: token_id=1690
+[run2] step 17: token_id=288
+[run2] step 18: token_id=469
+[run2] step 19: token_id=2291
+[prompt 18] token ids (11 toks): [2020, 416, 339, 3645, 1114, 1355, 1015, 1147, 1083, 5420, 47]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=1450
+[run1] step 4: token_id=970
+[run1] step 5: token_id=288
+[run1] step 6: token_id=3645
+[run1] step 7: token_id=1114
+[run1] step 8: token_id=314
+[run1] step 9: token_id=288
+[run1] step 10: token_id=722
+[run1] step 11: token_id=5420
+[run1] step 12: token_id=42353
+[run1] step 13: token_id=30
+[run1] step 14: token_id=378
+[run1] step 15: token_id=1902
+[run1] step 16: token_id=282
+[run1] step 17: token_id=5420
+[run1] step 18: token_id=346
+[run1] step 19: token_id=722
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=1450
+[run2] step 4: token_id=970
+[run2] step 5: token_id=288
+[run2] step 6: token_id=3645
+[run2] step 7: token_id=1114
+[run2] step 8: token_id=314
+[run2] step 9: token_id=288
+[run2] step 10: token_id=722
+[run2] step 11: token_id=5420
+[run2] step 12: token_id=42353
+[run2] step 13: token_id=30
+[run2] step 14: token_id=378
+[run2] step 15: token_id=1902
+[run2] step 16: token_id=282
+[run2] step 17: token_id=5420
+[run2] step 18: token_id=346
+[run2] step 19: token_id=722
+[prompt 19] token ids (12 toks): [31530, 549, 638, 288, 10451, 253, 1076, 327, 253, 3398, 7022, 30]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=57
+[run1] step 3: token_id=5248
+[run1] step 4: token_id=441
+[run1] step 5: token_id=2090
+[run1] step 6: token_id=638
+[run1] step 7: token_id=288
+[run1] step 8: token_id=10451
+[run1] step 9: token_id=253
+[run1] step 10: token_id=1076
+[run1] step 11: token_id=327
+[run1] step 12: token_id=253
+[run1] step 13: token_id=3398
+[run1] step 14: token_id=7022
+[run1] step 15: token_id=30
+[run1] step 16: token_id=198
+[run1] step 17: token_id=198
+[run1] step 18: token_id=57
+[run1] step 19: token_id=5248
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=57
+[run2] step 3: token_id=5248
+[run2] step 4: token_id=441
+[run2] step 5: token_id=2090
+[run2] step 6: token_id=638
+[run2] step 7: token_id=288
+[run2] step 8: token_id=10451
+[run2] step 9: token_id=253
+[run2] step 10: token_id=1076
+[run2] step 11: token_id=327
+[run2] step 12: token_id=253
+[run2] step 13: token_id=3398
+[run2] step 14: token_id=7022
+[run2] step 15: token_id=30
+[run2] step 16: token_id=198
+[run2] step 17: token_id=198
+[run2] step 18: token_id=57
+[run2] step 19: token_id=5248

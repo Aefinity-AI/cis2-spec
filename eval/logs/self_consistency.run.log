@@ -1,0 +1,825 @@
+=== STDOUT ===
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=0 prompt_tokens=[504, 3575, 282, 4649, 314]
+prompt_idx=0 run1_tokens=[504, 3575, 282, 4649, 314, 260, 3575, 282, 260, 1798, 30, 198, 198, 504, 3575, 282, 4649]
+prompt_idx=0 run2_tokens=[504, 3575, 282, 4649, 314, 260, 3575, 282, 260, 1798, 30, 198, 198, 504, 3575, 282, 4649]
+prompt_idx=0 run1_witness_digest=e9d5852e3637312afdc43e3e766082c060a6ae0f2501bc7b1bd7458371aa3121
+prompt_idx=0 run2_witness_digest=e9d5852e3637312afdc43e3e766082c060a6ae0f2501bc7b1bd7458371aa3121
+prompt_idx=0 run1_argmax_digest=ef226e2b3aa8a0ee229397cd11d2a9585a4f5f6b702e013cf51ab12546fbce5a
+prompt_idx=0 run2_argmax_digest=ef226e2b3aa8a0ee229397cd11d2a9585a4f5f6b702e013cf51ab12546fbce5a
+prompt_idx=0 run1_gen_text=" the capital of the country.\n\nThe capital of France"
+prompt_idx=0 run2_gen_text=" the capital of the country.\n\nThe capital of France"
+prompt_idx=0 runs_identical=true
+CIS2_REF digest=e9d5852e3637312afdc43e3e766082c060a6ae0f2501bc7b1bd7458371aa3121 prompt_idx=0 prompt_toks=5 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=1 prompt_tokens=[12615, 36411, 418, 253, 2779, 282]
+prompt_idx=1 run1_tokens=[12615, 36411, 418, 253, 2779, 282, 216, 34, 33, 34, 5027, 21391, 30, 198, 198, 504, 16891, 1225]
+prompt_idx=1 run2_tokens=[12615, 36411, 418, 253, 2779, 282, 216, 34, 33, 34, 5027, 21391, 30, 198, 198, 504, 16891, 1225]
+prompt_idx=1 run1_witness_digest=2bae17de079b200c4f5182eefa55f6d1e1690a939b9ce62e5fe245fbaa0b6286
+prompt_idx=1 run2_witness_digest=2bae17de079b200c4f5182eefa55f6d1e1690a939b9ce62e5fe245fbaa0b6286
+prompt_idx=1 run1_argmax_digest=f5be4d5823d3b18fb96ba192d90aa1b89df3d83ba2ed82e3e782417e80558435
+prompt_idx=1 run2_argmax_digest=f5be4d5823d3b18fb96ba192d90aa1b89df3d83ba2ed82e3e782417e80558435
+prompt_idx=1 run1_gen_text=" 212 degrees Fahrenheit.\n\nThe boiling point"
+prompt_idx=1 run2_gen_text=" 212 degrees Fahrenheit.\n\nThe boiling point"
+prompt_idx=1 runs_identical=true
+CIS2_REF digest=2bae17de079b200c4f5182eefa55f6d1e1690a939b9ce62e5fe245fbaa0b6286 prompt_idx=1 prompt_toks=6 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=2 prompt_tokens=[504, 2388, 13685, 281, 260]
+prompt_idx=2 run1_tokens=[504, 2388, 13685, 281, 260, 6251, 284, 5208, 281, 260, 5846, 30, 198, 198, 504, 2388, 13685]
+prompt_idx=2 run2_tokens=[504, 2388, 13685, 281, 260, 6251, 284, 5208, 281, 260, 5846, 30, 198, 198, 504, 2388, 13685]
+prompt_idx=2 run1_witness_digest=c9b6368fe65873bcd01915db2b112c9e87ecede9862019cf926228efe796d16b
+prompt_idx=2 run2_witness_digest=c9b6368fe65873bcd01915db2b112c9e87ecede9862019cf926228efe796d16b
+prompt_idx=2 run1_argmax_digest=10b79e9c55a01a37c1b8244bc8b370329fa204455f7513a828a8c8deeb921ded
+prompt_idx=2 run2_argmax_digest=10b79e9c55a01a37c1b8244bc8b370329fa204455f7513a828a8c8deeb921ded
+prompt_idx=2 run1_gen_text=" east and sets in the west.\n\nThe sun rises"
+prompt_idx=2 run2_gen_text=" east and sets in the west.\n\nThe sun rises"
+prompt_idx=2 runs_identical=true
+CIS2_REF digest=c9b6368fe65873bcd01915db2b112c9e87ecede9862019cf926228efe796d16b prompt_idx=2 prompt_toks=5 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=3 prompt_tokens=[10345, 8055, 827, 16473]
+prompt_idx=3 run1_tokens=[10345, 8055, 827, 16473, 1876, 28, 588, 260, 2988, 314, 216, 33, 34, 30, 198, 198]
+prompt_idx=3 run2_tokens=[10345, 8055, 827, 16473, 1876, 28, 588, 260, 2988, 314, 216, 33, 34, 30, 198, 198]
+prompt_idx=3 run1_witness_digest=7721479d1b38735a1aeb5c43b5c1a463cbe954dcf0dc2a194d83d1c67fee178e
+prompt_idx=3 run2_witness_digest=7721479d1b38735a1aeb5c43b5c1a463cbe954dcf0dc2a194d83d1c67fee178e
+prompt_idx=3 run1_argmax_digest=9267ce00c6bdb7cfc6a4d1a3f4fa54a23aa5b4e827b10c77257586fad50b847f
+prompt_idx=3 run2_argmax_digest=9267ce00c6bdb7cfc6a4d1a3f4fa54a23aa5b4e827b10c77257586fad50b847f
+prompt_idx=3 run1_gen_text=" four, so the answer is 12.\n\n"
+prompt_idx=3 run2_gen_text=" four, so the answer is 12.\n\n"
+prompt_idx=3 runs_identical=true
+CIS2_REF digest=7721479d1b38735a1aeb5c43b5c1a463cbe954dcf0dc2a194d83d1c67fee178e prompt_idx=3 prompt_toks=4 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=4 prompt_tokens=[504, 7011, 282, 3380, 314]
+prompt_idx=4 run1_tokens=[504, 7011, 282, 3380, 314, 4011, 30, 198, 198, 504, 2229, 476, 32379, 18, 314, 253, 20662]
+prompt_idx=4 run2_tokens=[504, 7011, 282, 3380, 314, 4011, 30, 198, 198, 504, 2229, 476, 32379, 18, 314, 253, 20662]
+prompt_idx=4 run1_witness_digest=eeace4ab66242878936f089ce067afcac76b104510c530ea9d2264c7b9d51e89
+prompt_idx=4 run2_witness_digest=eeace4ab66242878936f089ce067afcac76b104510c530ea9d2264c7b9d51e89
+prompt_idx=4 run1_argmax_digest=694c6220417d2e4283fd8bd4e5bc90345b32b491774d330787a13fe7b82a0358
+prompt_idx=4 run2_argmax_digest=694c6220417d2e4283fd8bd4e5bc90345b32b491774d330787a13fe7b82a0358
+prompt_idx=4 run1_gen_text=" cold.\n\nThe word \"cold\" is a contraction"
+prompt_idx=4 run2_gen_text=" cold.\n\nThe word \"cold\" is a contraction"
+prompt_idx=4 runs_identical=true
+CIS2_REF digest=eeace4ab66242878936f089ce067afcac76b104510c530ea9d2264c7b9d51e89 prompt_idx=4 prompt_toks=5 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=5 prompt_tokens=[49, 2767, 314, 253, 1942, 282]
+prompt_idx=5 run1_tokens=[49, 2767, 314, 253, 1942, 282, 3161, 338, 314, 1035, 11339, 284, 553, 253, 1035, 1837, 2588, 282]
+prompt_idx=5 run2_tokens=[49, 2767, 314, 253, 1942, 282, 3161, 338, 314, 1035, 11339, 284, 553, 253, 1035, 1837, 2588, 282]
+prompt_idx=5 run1_witness_digest=0e4fc71abb6483f8039fabc2a34da7068501bba880b25fc6c95d699e26fa5b3d
+prompt_idx=5 run2_witness_digest=0e4fc71abb6483f8039fabc2a34da7068501bba880b25fc6c95d699e26fa5b3d
+prompt_idx=5 run1_argmax_digest=628fd40ea29080baff7e494fdfd5c239a6958d4d42a589be398670f3af8d31bc
+prompt_idx=5 run2_argmax_digest=628fd40ea29080baff7e494fdfd5c239a6958d4d42a589be398670f3af8d31bc
+prompt_idx=5 run1_gen_text=" animal that is very intelligent and has a very strong sense of"
+prompt_idx=5 run2_gen_text=" animal that is very intelligent and has a very strong sense of"
+prompt_idx=5 runs_identical=true
+CIS2_REF digest=0e4fc71abb6483f8039fabc2a34da7068501bba880b25fc6c95d699e26fa5b3d prompt_idx=5 prompt_toks=6 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=6 prompt_tokens=[504, 808, 3531, 282, 260, 713, 314]
+prompt_idx=6 run1_tokens=[504, 808, 3531, 282, 260, 713, 314, 1217, 260, 808, 3531, 282, 260, 713, 30, 198, 198, 504, 1796]
+prompt_idx=6 run2_tokens=[504, 808, 3531, 282, 260, 713, 314, 1217, 260, 808, 3531, 282, 260, 713, 30, 198, 198, 504, 1796]
+prompt_idx=6 run1_witness_digest=29992292912b830a7423eb4ce327fdd78df89ccdc945938b097df5040dd5798e
+prompt_idx=6 run2_witness_digest=29992292912b830a7423eb4ce327fdd78df89ccdc945938b097df5040dd5798e
+prompt_idx=6 run1_argmax_digest=6034651775e049297e35beb6df5b2a395048559ec616d266848dc6086ba8ac3d
+prompt_idx=6 run2_argmax_digest=6034651775e049297e35beb6df5b2a395048559ec616d266848dc6086ba8ac3d
+prompt_idx=6 run1_gen_text=" called the first month of the year.\n\nThe second"
+prompt_idx=6 run2_gen_text=" called the first month of the year.\n\nThe second"
+prompt_idx=6 runs_identical=true
+CIS2_REF digest=29992292912b830a7423eb4ce327fdd78df89ccdc945938b097df5040dd5798e prompt_idx=6 prompt_toks=7 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=7 prompt_tokens=[504, 2380, 282, 260, 6376, 335, 253, 2437, 1194, 314]
+prompt_idx=7 run1_tokens=[504, 2380, 282, 260, 6376, 335, 253, 2437, 1194, 314, 4461, 30, 198, 198, 504, 2380, 282, 260, 6376, 335, 253, 30339]
+prompt_idx=7 run2_tokens=[504, 2380, 282, 260, 6376, 335, 253, 2437, 1194, 314, 4461, 30, 198, 198, 504, 2380, 282, 260, 6376, 335, 253, 30339]
+prompt_idx=7 run1_witness_digest=cee2eacb5240ed3565e990f34b61a5d2b877573eb829a73ca2c6f621f4c22e2a
+prompt_idx=7 run2_witness_digest=cee2eacb5240ed3565e990f34b61a5d2b877573eb829a73ca2c6f621f4c22e2a
+prompt_idx=7 run1_argmax_digest=8fc6427b76bb7380442a596abb61bc44b887c5fb2bb4c86221f51ecf89e3e0c5
+prompt_idx=7 run2_argmax_digest=8fc6427b76bb7380442a596abb61bc44b887c5fb2bb4c86221f51ecf89e3e0c5
+prompt_idx=7 run1_gen_text=" blue.\n\nThe color of the sky on a cloudy"
+prompt_idx=7 run2_gen_text=" blue.\n\nThe color of the sky on a cloudy"
+prompt_idx=7 runs_identical=true
+CIS2_REF digest=cee2eacb5240ed3565e990f34b61a5d2b877573eb829a73ca2c6f621f4c22e2a prompt_idx=7 prompt_toks=10 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=8 prompt_tokens=[6403, 1980, 253, 655, 28, 665, 436, 253]
+prompt_idx=8 run1_tokens=[6403, 1980, 253, 655, 28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+prompt_idx=8 run2_tokens=[6403, 1980, 253, 655, 28, 665, 436, 253, 1838, 8180, 3365, 14176, 30, 2306, 4161, 281, 253, 2066, 2291, 351]
+prompt_idx=8 run1_witness_digest=173bd574201c6994764bd1fde8b5254e61ccffcb7f2d781650f3d124e0108da0
+prompt_idx=8 run2_witness_digest=173bd574201c6994764bd1fde8b5254e61ccffcb7f2d781650f3d124e0108da0
+prompt_idx=8 run1_argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+prompt_idx=8 run2_argmax_digest=0b9c8f3ac90d0b9cd5f1719ac327dca1fc639fd87468305fccebbe3d56f67aff
+prompt_idx=8 run1_gen_text=" little girl named Lily. She lived in a big house with"
+prompt_idx=8 run2_gen_text=" little girl named Lily. She lived in a big house with"
+prompt_idx=8 runs_identical=true
+CIS2_REF digest=173bd574201c6994764bd1fde8b5254e61ccffcb7f2d781650f3d124e0108da0 prompt_idx=8 prompt_toks=8 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=9 prompt_tokens=[504, 3995, 3925, 281, 260, 3693, 817, 314]
+prompt_idx=9 run1_tokens=[504, 3995, 3925, 281, 260, 3693, 817, 314, 14713, 30, 657, 314, 260, 3995, 3925, 281, 260, 3693, 817, 284]
+prompt_idx=9 run2_tokens=[504, 3995, 3925, 281, 260, 3693, 817, 314, 14713, 30, 657, 314, 260, 3995, 3925, 281, 260, 3693, 817, 284]
+prompt_idx=9 run1_witness_digest=bb254b0508ec71795bb9970eec707aa1f073647d9c0786bc1ee55df6900e1ffc
+prompt_idx=9 run2_witness_digest=bb254b0508ec71795bb9970eec707aa1f073647d9c0786bc1ee55df6900e1ffc
+prompt_idx=9 run1_argmax_digest=789cb25af036b03a05253d2c2400b12f03ce7c229632e91e3cba9fb589573311
+prompt_idx=9 run2_argmax_digest=789cb25af036b03a05253d2c2400b12f03ce7c229632e91e3cba9fb589573311
+prompt_idx=9 run1_gen_text=" Jupiter. It is the largest planet in the solar system and"
+prompt_idx=9 run2_gen_text=" Jupiter. It is the largest planet in the solar system and"
+prompt_idx=9 runs_identical=true
+CIS2_REF digest=bb254b0508ec71795bb9970eec707aa1f073647d9c0786bc1ee55df6900e1ffc prompt_idx=9 prompt_toks=8 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=10 prompt_tokens=[49, 14973, 553, 451, 800, 5882, 42]
+prompt_idx=10 run1_tokens=[49, 14973, 553, 451, 800, 5882, 42, 198, 198, 504, 1557, 282, 253, 14973, 314, 260, 1898, 2972, 260]
+prompt_idx=10 run2_tokens=[49, 14973, 553, 451, 800, 5882, 42, 198, 198, 504, 1557, 282, 253, 14973, 314, 260, 1898, 2972, 260]
+prompt_idx=10 run1_witness_digest=b8facda735ab3ad8c47bd8db8a417bad9b33253eb82f866b653d6ce6ba2ad2e8
+prompt_idx=10 run2_witness_digest=b8facda735ab3ad8c47bd8db8a417bad9b33253eb82f866b653d6ce6ba2ad2e8
+prompt_idx=10 run1_argmax_digest=28e4c93227b5dd15fc2b7de49bea655b8c9dc2651d81964cc22c21d11f5e8fbd
+prompt_idx=10 run2_argmax_digest=28e4c93227b5dd15fc2b7de49bea655b8c9dc2651d81964cc22c21d11f5e8fbd
+prompt_idx=10 run1_gen_text="\n\nThe area of a triangle is the space inside the"
+prompt_idx=10 run2_gen_text="\n\nThe area of a triangle is the space inside the"
+prompt_idx=10 runs_identical=true
+CIS2_REF digest=b8facda735ab3ad8c47bd8db8a417bad9b33253eb82f866b653d6ce6ba2ad2e8 prompt_idx=10 prompt_toks=7 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=11 prompt_tokens=[504, 2819, 3573, 327, 913, 314]
+prompt_idx=11 run1_tokens=[504, 2819, 3573, 327, 913, 314, 407, 34, 63, 30, 198, 198, 504, 2819, 3573, 327, 7457, 314]
+prompt_idx=11 run2_tokens=[504, 2819, 3573, 327, 913, 314, 407, 34, 63, 30, 198, 198, 504, 2819, 3573, 327, 7457, 314]
+prompt_idx=11 run1_witness_digest=4f455c7e794d2056b96516022c2b79f4b7135202e2e1f17d1fcbc2ee75af3aa5
+prompt_idx=11 run2_witness_digest=4f455c7e794d2056b96516022c2b79f4b7135202e2e1f17d1fcbc2ee75af3aa5
+prompt_idx=11 run1_argmax_digest=0642531149435503c864fd4e86e7de3e15e8eae4a1e28e6dd0818011375db4e0
+prompt_idx=11 run2_argmax_digest=0642531149435503c864fd4e86e7de3e15e8eae4a1e28e6dd0818011375db4e0
+prompt_idx=11 run1_gen_text=" H2O.\n\nThe chemical symbol for hydrogen is"
+prompt_idx=11 run2_gen_text=" H2O.\n\nThe chemical symbol for hydrogen is"
+prompt_idx=11 runs_identical=true
+CIS2_REF digest=4f455c7e794d2056b96516022c2b79f4b7135202e2e1f17d1fcbc2ee75af3aa5 prompt_idx=11 prompt_toks=6 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=12 prompt_tokens=[41464, 314, 12197]
+prompt_idx=12 run1_tokens=[41464, 314, 12197, 28, 284, 260, 3908, 314, 441, 4138, 30, 198, 198, 504, 3908]
+prompt_idx=12 run2_tokens=[41464, 314, 12197, 28, 284, 260, 3908, 314, 441, 4138, 30, 198, 198, 504, 3908]
+prompt_idx=12 run1_witness_digest=b0a62d392cd964d8b529f46a7b280d31b243794ee55a55cc54ecb4f96a2a28fc
+prompt_idx=12 run2_witness_digest=b0a62d392cd964d8b529f46a7b280d31b243794ee55a55cc54ecb4f96a2a28fc
+prompt_idx=12 run1_argmax_digest=c6b4f9690872a73da4c7fc502ac35b668f87de80324d73bf59337a19e6334dbd
+prompt_idx=12 run2_argmax_digest=c6b4f9690872a73da4c7fc502ac35b668f87de80324d73bf59337a19e6334dbd
+prompt_idx=12 run1_gen_text=", and the ice is not moving.\n\nThe ice"
+prompt_idx=12 run2_gen_text=", and the ice is not moving.\n\nThe ice"
+prompt_idx=12 runs_identical=true
+CIS2_REF digest=b0a62d392cd964d8b529f46a7b280d31b243794ee55a55cc54ecb4f96a2a28fc prompt_idx=12 prompt_toks=3 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=13 prompt_tokens=[504, 1919, 282, 30493, 284, 29117, 314]
+prompt_idx=13 run1_tokens=[504, 1919, 282, 30493, 284, 29117, 314, 253, 555, 617, 314, 253, 555, 30, 909, 314, 253, 555, 617]
+prompt_idx=13 run2_tokens=[504, 1919, 282, 30493, 284, 29117, 314, 253, 555, 617, 314, 253, 555, 30, 909, 314, 253, 555, 617]
+prompt_idx=13 run1_witness_digest=d6fabd6ec1ab01125cc9b2e4df3df4f83334a342a487d4de0ae2285c9450b279
+prompt_idx=13 run2_witness_digest=d6fabd6ec1ab01125cc9b2e4df3df4f83334a342a487d4de0ae2285c9450b279
+prompt_idx=13 run1_argmax_digest=7eddde9706e62c9e08aaa6719702a7198fd72f3053b45d70b68dba7d48a44a59
+prompt_idx=13 run2_argmax_digest=7eddde9706e62c9e08aaa6719702a7198fd72f3053b45d70b68dba7d48a44a59
+prompt_idx=13 run1_gen_text=" a man who is a man. He is a man who"
+prompt_idx=13 run2_gen_text=" a man who is a man. He is a man who"
+prompt_idx=13 runs_identical=true
+CIS2_REF digest=d6fabd6ec1ab01125cc9b2e4df3df4f83334a342a487d4de0ae2285c9450b279 prompt_idx=13 prompt_toks=7 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=14 prompt_tokens=[49, 2605, 553, 451, 800, 2009, 42]
+prompt_idx=14 run1_tokens=[49, 2605, 553, 451, 800, 2009, 42, 198, 198, 504, 808, 1194, 282, 260, 2605, 314, 10528, 30, 198]
+prompt_idx=14 run2_tokens=[49, 2605, 553, 451, 800, 2009, 42, 198, 198, 504, 808, 1194, 282, 260, 2605, 314, 10528, 30, 198]
+prompt_idx=14 run1_witness_digest=986d9185a21d0d4d1d48c51b7dcc750620ad83e65859b1c9686c5571bd642977
+prompt_idx=14 run2_witness_digest=986d9185a21d0d4d1d48c51b7dcc750620ad83e65859b1c9686c5571bd642977
+prompt_idx=14 run1_argmax_digest=adf91ebc27274841557a270a659472dbe124ab56f866c0c160a55517ad5f8522
+prompt_idx=14 run2_argmax_digest=adf91ebc27274841557a270a659472dbe124ab56f866c0c160a55517ad5f8522
+prompt_idx=14 run1_gen_text="\n\nThe first day of the week is Sunday.\n"
+prompt_idx=14 run2_gen_text="\n\nThe first day of the week is Sunday.\n"
+prompt_idx=14 runs_identical=true
+CIS2_REF digest=986d9185a21d0d4d1d48c51b7dcc750620ad83e65859b1c9686c5571bd642977 prompt_idx=14 prompt_toks=7 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=15 prompt_tokens=[504, 1896, 16669, 282, 260, 6936, 637, 4215, 23, 314]
+prompt_idx=15 run1_tokens=[504, 1896, 16669, 282, 260, 6936, 637, 4215, 23, 314, 637, 4215, 4289, 198, 198, 504, 1896, 16669, 282, 260, 6936, 637]
+prompt_idx=15 run2_tokens=[504, 1896, 16669, 282, 260, 6936, 637, 4215, 23, 314, 637, 4215, 4289, 198, 198, 504, 1896, 16669, 282, 260, 6936, 637]
+prompt_idx=15 run1_witness_digest=69add99237c0a26ff70b7876b97dc4761412836605888a0dcfb7530457afb939
+prompt_idx=15 run2_witness_digest=69add99237c0a26ff70b7876b97dc4761412836605888a0dcfb7530457afb939
+prompt_idx=15 run1_argmax_digest=77df33ae18b43906df9fa6d469ed936992389f76523105a57c168feba81b03fd
+prompt_idx=15 run2_argmax_digest=77df33ae18b43906df9fa6d469ed936992389f76523105a57c168feba81b03fd
+prompt_idx=15 run1_gen_text=" 'run'.\n\nThe past tense of the verb '"
+prompt_idx=15 run2_gen_text=" 'run'.\n\nThe past tense of the verb '"
+prompt_idx=15 runs_identical=true
+CIS2_REF digest=69add99237c0a26ff70b7876b97dc4761412836605888a0dcfb7530457afb939 prompt_idx=15 prompt_toks=10 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=16 prompt_tokens=[38634, 314, 260, 3575, 282]
+prompt_idx=16 run1_tokens=[38634, 314, 260, 3575, 282, 260, 3432, 6151, 282, 260, 6151, 282, 260, 6151, 282, 260, 6151]
+prompt_idx=16 run2_tokens=[38634, 314, 260, 3575, 282, 260, 3432, 6151, 282, 260, 6151, 282, 260, 6151, 282, 260, 6151]
+prompt_idx=16 run1_witness_digest=0eeb91e9a1808ff6eedfe8ff5d2a5fafe88f37219f9709556af014dc5a378e69
+prompt_idx=16 run2_witness_digest=0eeb91e9a1808ff6eedfe8ff5d2a5fafe88f37219f9709556af014dc5a378e69
+prompt_idx=16 run1_argmax_digest=404d849d48e35ff003c64ad7bcf35b305f7b8618eb8b9a116c156789336bcc33
+prompt_idx=16 run2_argmax_digest=404d849d48e35ff003c64ad7bcf35b305f7b8618eb8b9a116c156789336bcc33
+prompt_idx=16 run1_gen_text=" the French department of the department of the department of the department"
+prompt_idx=16 run2_gen_text=" the French department of the department of the department of the department"
+prompt_idx=16 runs_identical=true
+CIS2_REF digest=0eeb91e9a1808ff6eedfe8ff5d2a5fafe88f37219f9709556af014dc5a378e69 prompt_idx=16 prompt_toks=5 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=17 prompt_tokens=[504, 16127, 1225, 282, 913, 281, 20590, 314]
+prompt_idx=17 run1_tokens=[504, 16127, 1225, 282, 913, 281, 20590, 314, 216, 32, 5027, 20590, 30, 198, 198, 504, 16127, 1225, 282, 913]
+prompt_idx=17 run2_tokens=[504, 16127, 1225, 282, 913, 281, 20590, 314, 216, 32, 5027, 20590, 30, 198, 198, 504, 16127, 1225, 282, 913]
+prompt_idx=17 run1_witness_digest=38bdb9e801020bd253588cb26dc21e9fb5fa139db80ea8c9146fd6b62db6b1b4
+prompt_idx=17 run2_witness_digest=38bdb9e801020bd253588cb26dc21e9fb5fa139db80ea8c9146fd6b62db6b1b4
+prompt_idx=17 run1_argmax_digest=b88d61d4d1b47745653727a5fd5140610aca7c0f8dce21c1dc827b57083aa020
+prompt_idx=17 run2_argmax_digest=b88d61d4d1b47745653727a5fd5140610aca7c0f8dce21c1dc827b57083aa020
+prompt_idx=17 run1_gen_text=" 0 degrees Celsius.\n\nThe freezing point of water"
+prompt_idx=17 run2_gen_text=" 0 degrees Celsius.\n\nThe freezing point of water"
+prompt_idx=17 runs_identical=true
+CIS2_REF digest=38bdb9e801020bd253588cb26dc21e9fb5fa139db80ea8c9146fd6b62db6b1b4 prompt_idx=17 prompt_toks=8 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=18 prompt_tokens=[49, 1528, 282, 15329, 314, 1217, 253]
+prompt_idx=18 run1_tokens=[49, 1528, 282, 15329, 314, 1217, 253, 3123, 30, 198, 198, 49, 3123, 314, 253, 1528, 282, 15329, 30]
+prompt_idx=18 run2_tokens=[49, 1528, 282, 15329, 314, 1217, 253, 3123, 30, 198, 198, 49, 3123, 314, 253, 1528, 282, 15329, 30]
+prompt_idx=18 run1_witness_digest=dcc6d1b08e6a5ec9f5e6aef15f4933f2ef4ce189eff53ed541fef2af75cc071a
+prompt_idx=18 run2_witness_digest=dcc6d1b08e6a5ec9f5e6aef15f4933f2ef4ce189eff53ed541fef2af75cc071a
+prompt_idx=18 run1_argmax_digest=8e2fea8916e5500d207d6469b2fdfb3cccb29f7b7974ef8560ead50e52bf926e
+prompt_idx=18 run2_argmax_digest=8e2fea8916e5500d207d6469b2fdfb3cccb29f7b7974ef8560ead50e52bf926e
+prompt_idx=18 run1_gen_text=" pack.\n\nA pack is a group of wolves."
+prompt_idx=18 run2_gen_text=" pack.\n\nA pack is a group of wolves."
+prompt_idx=18 runs_identical=true
+CIS2_REF digest=dcc6d1b08e6a5ec9f5e6aef15f4933f2ef4ce189eff53ed541fef2af75cc071a prompt_idx=18 prompt_toks=7 gen_toks=12 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=19 prompt_tokens=[504, 3547, 282, 1420, 314, 4723]
+prompt_idx=19 run1_tokens=[504, 3547, 282, 1420, 314, 4723, 216, 35, 32, 32, 28, 32, 32, 32, 28, 32, 32, 32]
+prompt_idx=19 run2_tokens=[504, 3547, 282, 1420, 314, 4723, 216, 35, 32, 32, 28, 32, 32, 32, 28, 32, 32, 32]
+prompt_idx=19 run1_witness_digest=715b1a72de9eb605d967eeb7a45b48fb89f1ac1c5a7a0a42f460e32daf673a5a
+prompt_idx=19 run2_witness_digest=715b1a72de9eb605d967eeb7a45b48fb89f1ac1c5a7a0a42f460e32daf673a5a
+prompt_idx=19 run1_argmax_digest=a597eca303d05c1fd7b5c666479ecbfb4d7d4af78529f6783e36eb9fbfcf0316
+prompt_idx=19 run2_argmax_digest=a597eca303d05c1fd7b5c666479ecbfb4d7d4af78529f6783e36eb9fbfcf0316
+prompt_idx=19 run1_gen_text=" 300,000,000"
+prompt_idx=19 run2_gen_text=" 300,000,000"
+prompt_idx=19 runs_identical=true
+CIS2_REF digest=715b1a72de9eb605d967eeb7a45b48fb89f1ac1c5a7a0a42f460e32daf673a5a prompt_idx=19 prompt_toks=6 gen_toks=12 dtype=fp32
+
+=== STDERR ===
+loading + widening weights (bf16 -> fp32, exact bit-shift, §3.5)...
+weights loaded.
+[prompt 0] token ids (5 toks): [504, 3575, 282, 4649, 314]
+[run1] step 0: token_id=260
+[run1] step 1: token_id=3575
+[run1] step 2: token_id=282
+[run1] step 3: token_id=260
+[run1] step 4: token_id=1798
+[run1] step 5: token_id=30
+[run1] step 6: token_id=198
+[run1] step 7: token_id=198
+[run1] step 8: token_id=504
+[run1] step 9: token_id=3575
+[run1] step 10: token_id=282
+[run1] step 11: token_id=4649
+[run2] step 0: token_id=260
+[run2] step 1: token_id=3575
+[run2] step 2: token_id=282
+[run2] step 3: token_id=260
+[run2] step 4: token_id=1798
+[run2] step 5: token_id=30
+[run2] step 6: token_id=198
+[run2] step 7: token_id=198
+[run2] step 8: token_id=504
+[run2] step 9: token_id=3575
+[run2] step 10: token_id=282
+[run2] step 11: token_id=4649
+[prompt 1] token ids (6 toks): [12615, 36411, 418, 253, 2779, 282]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=34
+[run1] step 2: token_id=33
+[run1] step 3: token_id=34
+[run1] step 4: token_id=5027
+[run1] step 5: token_id=21391
+[run1] step 6: token_id=30
+[run1] step 7: token_id=198
+[run1] step 8: token_id=198
+[run1] step 9: token_id=504
+[run1] step 10: token_id=16891
+[run1] step 11: token_id=1225
+[run2] step 0: token_id=216
+[run2] step 1: token_id=34
+[run2] step 2: token_id=33
+[run2] step 3: token_id=34
+[run2] step 4: token_id=5027
+[run2] step 5: token_id=21391
+[run2] step 6: token_id=30
+[run2] step 7: token_id=198
+[run2] step 8: token_id=198
+[run2] step 9: token_id=504
+[run2] step 10: token_id=16891
+[run2] step 11: token_id=1225
+[prompt 2] token ids (5 toks): [504, 2388, 13685, 281, 260]
+[run1] step 0: token_id=6251
+[run1] step 1: token_id=284
+[run1] step 2: token_id=5208
+[run1] step 3: token_id=281
+[run1] step 4: token_id=260
+[run1] step 5: token_id=5846
+[run1] step 6: token_id=30
+[run1] step 7: token_id=198
+[run1] step 8: token_id=198
+[run1] step 9: token_id=504
+[run1] step 10: token_id=2388
+[run1] step 11: token_id=13685
+[run2] step 0: token_id=6251
+[run2] step 1: token_id=284
+[run2] step 2: token_id=5208
+[run2] step 3: token_id=281
+[run2] step 4: token_id=260
+[run2] step 5: token_id=5846
+[run2] step 6: token_id=30
+[run2] step 7: token_id=198
+[run2] step 8: token_id=198
+[run2] step 9: token_id=504
+[run2] step 10: token_id=2388
+[run2] step 11: token_id=13685
+[prompt 3] token ids (4 toks): [10345, 8055, 827, 16473]
+[run1] step 0: token_id=1876
+[run1] step 1: token_id=28
+[run1] step 2: token_id=588
+[run1] step 3: token_id=260
+[run1] step 4: token_id=2988
+[run1] step 5: token_id=314
+[run1] step 6: token_id=216
+[run1] step 7: token_id=33
+[run1] step 8: token_id=34
+[run1] step 9: token_id=30
+[run1] step 10: token_id=198
+[run1] step 11: token_id=198
+[run2] step 0: token_id=1876
+[run2] step 1: token_id=28
+[run2] step 2: token_id=588
+[run2] step 3: token_id=260
+[run2] step 4: token_id=2988
+[run2] step 5: token_id=314
+[run2] step 6: token_id=216
+[run2] step 7: token_id=33
+[run2] step 8: token_id=34
+[run2] step 9: token_id=30
+[run2] step 10: token_id=198
+[run2] step 11: token_id=198
+[prompt 4] token ids (5 toks): [504, 7011, 282, 3380, 314]
+[run1] step 0: token_id=4011
+[run1] step 1: token_id=30
+[run1] step 2: token_id=198
+[run1] step 3: token_id=198
+[run1] step 4: token_id=504
+[run1] step 5: token_id=2229
+[run1] step 6: token_id=476
+[run1] step 7: token_id=32379
+[run1] step 8: token_id=18
+[run1] step 9: token_id=314
+[run1] step 10: token_id=253
+[run1] step 11: token_id=20662
+[run2] step 0: token_id=4011
+[run2] step 1: token_id=30
+[run2] step 2: token_id=198
+[run2] step 3: token_id=198
+[run2] step 4: token_id=504
+[run2] step 5: token_id=2229
+[run2] step 6: token_id=476
+[run2] step 7: token_id=32379
+[run2] step 8: token_id=18
+[run2] step 9: token_id=314
+[run2] step 10: token_id=253
+[run2] step 11: token_id=20662
+[prompt 5] token ids (6 toks): [49, 2767, 314, 253, 1942, 282]
+[run1] step 0: token_id=3161
+[run1] step 1: token_id=338
+[run1] step 2: token_id=314
+[run1] step 3: token_id=1035
+[run1] step 4: token_id=11339
+[run1] step 5: token_id=284
+[run1] step 6: token_id=553
+[run1] step 7: token_id=253
+[run1] step 8: token_id=1035
+[run1] step 9: token_id=1837
+[run1] step 10: token_id=2588
+[run1] step 11: token_id=282
+[run2] step 0: token_id=3161
+[run2] step 1: token_id=338
+[run2] step 2: token_id=314
+[run2] step 3: token_id=1035
+[run2] step 4: token_id=11339
+[run2] step 5: token_id=284
+[run2] step 6: token_id=553
+[run2] step 7: token_id=253
+[run2] step 8: token_id=1035
+[run2] step 9: token_id=1837
+[run2] step 10: token_id=2588
+[run2] step 11: token_id=282
+[prompt 6] token ids (7 toks): [504, 808, 3531, 282, 260, 713, 314]
+[run1] step 0: token_id=1217
+[run1] step 1: token_id=260
+[run1] step 2: token_id=808
+[run1] step 3: token_id=3531
+[run1] step 4: token_id=282
+[run1] step 5: token_id=260
+[run1] step 6: token_id=713
+[run1] step 7: token_id=30
+[run1] step 8: token_id=198
+[run1] step 9: token_id=198
+[run1] step 10: token_id=504
+[run1] step 11: token_id=1796
+[run2] step 0: token_id=1217
+[run2] step 1: token_id=260
+[run2] step 2: token_id=808
+[run2] step 3: token_id=3531
+[run2] step 4: token_id=282
+[run2] step 5: token_id=260
+[run2] step 6: token_id=713
+[run2] step 7: token_id=30
+[run2] step 8: token_id=198
+[run2] step 9: token_id=198
+[run2] step 10: token_id=504
+[run2] step 11: token_id=1796
+[prompt 7] token ids (10 toks): [504, 2380, 282, 260, 6376, 335, 253, 2437, 1194, 314]
+[run1] step 0: token_id=4461
+[run1] step 1: token_id=30
+[run1] step 2: token_id=198
+[run1] step 3: token_id=198
+[run1] step 4: token_id=504
+[run1] step 5: token_id=2380
+[run1] step 6: token_id=282
+[run1] step 7: token_id=260
+[run1] step 8: token_id=6376
+[run1] step 9: token_id=335
+[run1] step 10: token_id=253
+[run1] step 11: token_id=30339
+[run2] step 0: token_id=4461
+[run2] step 1: token_id=30
+[run2] step 2: token_id=198
+[run2] step 3: token_id=198
+[run2] step 4: token_id=504
+[run2] step 5: token_id=2380
+[run2] step 6: token_id=282
+[run2] step 7: token_id=260
+[run2] step 8: token_id=6376
+[run2] step 9: token_id=335
+[run2] step 10: token_id=253
+[run2] step 11: token_id=30339
+[prompt 8] token ids (8 toks): [6403, 1980, 253, 655, 28, 665, 436, 253]
+[run1] step 0: token_id=1838
+[run1] step 1: token_id=8180
+[run1] step 2: token_id=3365
+[run1] step 3: token_id=14176
+[run1] step 4: token_id=30
+[run1] step 5: token_id=2306
+[run1] step 6: token_id=4161
+[run1] step 7: token_id=281
+[run1] step 8: token_id=253
+[run1] step 9: token_id=2066
+[run1] step 10: token_id=2291
+[run1] step 11: token_id=351
+[run2] step 0: token_id=1838
+[run2] step 1: token_id=8180
+[run2] step 2: token_id=3365
+[run2] step 3: token_id=14176
+[run2] step 4: token_id=30
+[run2] step 5: token_id=2306
+[run2] step 6: token_id=4161
+[run2] step 7: token_id=281
+[run2] step 8: token_id=253
+[run2] step 9: token_id=2066
+[run2] step 10: token_id=2291
+[run2] step 11: token_id=351
+[prompt 9] token ids (8 toks): [504, 3995, 3925, 281, 260, 3693, 817, 314]
+[run1] step 0: token_id=14713
+[run1] step 1: token_id=30
+[run1] step 2: token_id=657
+[run1] step 3: token_id=314
+[run1] step 4: token_id=260
+[run1] step 5: token_id=3995
+[run1] step 6: token_id=3925
+[run1] step 7: token_id=281
+[run1] step 8: token_id=260
+[run1] step 9: token_id=3693
+[run1] step 10: token_id=817
+[run1] step 11: token_id=284
+[run2] step 0: token_id=14713
+[run2] step 1: token_id=30
+[run2] step 2: token_id=657
+[run2] step 3: token_id=314
+[run2] step 4: token_id=260
+[run2] step 5: token_id=3995
+[run2] step 6: token_id=3925
+[run2] step 7: token_id=281
+[run2] step 8: token_id=260
+[run2] step 9: token_id=3693
+[run2] step 10: token_id=817
+[run2] step 11: token_id=284
+[prompt 10] token ids (7 toks): [49, 14973, 553, 451, 800, 5882, 42]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=1557
+[run1] step 4: token_id=282
+[run1] step 5: token_id=253
+[run1] step 6: token_id=14973
+[run1] step 7: token_id=314
+[run1] step 8: token_id=260
+[run1] step 9: token_id=1898
+[run1] step 10: token_id=2972
+[run1] step 11: token_id=260
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=1557
+[run2] step 4: token_id=282
+[run2] step 5: token_id=253
+[run2] step 6: token_id=14973
+[run2] step 7: token_id=314
+[run2] step 8: token_id=260
+[run2] step 9: token_id=1898
+[run2] step 10: token_id=2972
+[run2] step 11: token_id=260
+[prompt 11] token ids (6 toks): [504, 2819, 3573, 327, 913, 314]
+[run1] step 0: token_id=407
+[run1] step 1: token_id=34
+[run1] step 2: token_id=63
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run1] step 6: token_id=504
+[run1] step 7: token_id=2819
+[run1] step 8: token_id=3573
+[run1] step 9: token_id=327
+[run1] step 10: token_id=7457
+[run1] step 11: token_id=314
+[run2] step 0: token_id=407
+[run2] step 1: token_id=34
+[run2] step 2: token_id=63
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[run2] step 6: token_id=504
+[run2] step 7: token_id=2819
+[run2] step 8: token_id=3573
+[run2] step 9: token_id=327
+[run2] step 10: token_id=7457
+[run2] step 11: token_id=314
+[prompt 12] token ids (3 toks): [41464, 314, 12197]
+[run1] step 0: token_id=28
+[run1] step 1: token_id=284
+[run1] step 2: token_id=260
+[run1] step 3: token_id=3908
+[run1] step 4: token_id=314
+[run1] step 5: token_id=441
+[run1] step 6: token_id=4138
+[run1] step 7: token_id=30
+[run1] step 8: token_id=198
+[run1] step 9: token_id=198
+[run1] step 10: token_id=504
+[run1] step 11: token_id=3908
+[run2] step 0: token_id=28
+[run2] step 1: token_id=284
+[run2] step 2: token_id=260
+[run2] step 3: token_id=3908
+[run2] step 4: token_id=314
+[run2] step 5: token_id=441
+[run2] step 6: token_id=4138
+[run2] step 7: token_id=30
+[run2] step 8: token_id=198
+[run2] step 9: token_id=198
+[run2] step 10: token_id=504
+[run2] step 11: token_id=3908
+[prompt 13] token ids (7 toks): [504, 1919, 282, 30493, 284, 29117, 314]
+[run1] step 0: token_id=253
+[run1] step 1: token_id=555
+[run1] step 2: token_id=617
+[run1] step 3: token_id=314
+[run1] step 4: token_id=253
+[run1] step 5: token_id=555
+[run1] step 6: token_id=30
+[run1] step 7: token_id=909
+[run1] step 8: token_id=314
+[run1] step 9: token_id=253
+[run1] step 10: token_id=555
+[run1] step 11: token_id=617
+[run2] step 0: token_id=253
+[run2] step 1: token_id=555
+[run2] step 2: token_id=617
+[run2] step 3: token_id=314
+[run2] step 4: token_id=253
+[run2] step 5: token_id=555
+[run2] step 6: token_id=30
+[run2] step 7: token_id=909
+[run2] step 8: token_id=314
+[run2] step 9: token_id=253
+[run2] step 10: token_id=555
+[run2] step 11: token_id=617
+[prompt 14] token ids (7 toks): [49, 2605, 553, 451, 800, 2009, 42]
+[run1] step 0: token_id=198
+[run1] step 1: token_id=198
+[run1] step 2: token_id=504
+[run1] step 3: token_id=808
+[run1] step 4: token_id=1194
+[run1] step 5: token_id=282
+[run1] step 6: token_id=260
+[run1] step 7: token_id=2605
+[run1] step 8: token_id=314
+[run1] step 9: token_id=10528
+[run1] step 10: token_id=30
+[run1] step 11: token_id=198
+[run2] step 0: token_id=198
+[run2] step 1: token_id=198
+[run2] step 2: token_id=504
+[run2] step 3: token_id=808
+[run2] step 4: token_id=1194
+[run2] step 5: token_id=282
+[run2] step 6: token_id=260
+[run2] step 7: token_id=2605
+[run2] step 8: token_id=314
+[run2] step 9: token_id=10528
+[run2] step 10: token_id=30
+[run2] step 11: token_id=198
+[prompt 15] token ids (10 toks): [504, 1896, 16669, 282, 260, 6936, 637, 4215, 23, 314]
+[run1] step 0: token_id=637
+[run1] step 1: token_id=4215
+[run1] step 2: token_id=4289
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run1] step 6: token_id=1896
+[run1] step 7: token_id=16669
+[run1] step 8: token_id=282
+[run1] step 9: token_id=260
+[run1] step 10: token_id=6936
+[run1] step 11: token_id=637
+[run2] step 0: token_id=637
+[run2] step 1: token_id=4215
+[run2] step 2: token_id=4289
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[run2] step 6: token_id=1896
+[run2] step 7: token_id=16669
+[run2] step 8: token_id=282
+[run2] step 9: token_id=260
+[run2] step 10: token_id=6936
+[run2] step 11: token_id=637
+[prompt 16] token ids (5 toks): [38634, 314, 260, 3575, 282]
+[run1] step 0: token_id=260
+[run1] step 1: token_id=3432
+[run1] step 2: token_id=6151
+[run1] step 3: token_id=282
+[run1] step 4: token_id=260
+[run1] step 5: token_id=6151
+[run1] step 6: token_id=282
+[run1] step 7: token_id=260
+[run1] step 8: token_id=6151
+[run1] step 9: token_id=282
+[run1] step 10: token_id=260
+[run1] step 11: token_id=6151
+[run2] step 0: token_id=260
+[run2] step 1: token_id=3432
+[run2] step 2: token_id=6151
+[run2] step 3: token_id=282
+[run2] step 4: token_id=260
+[run2] step 5: token_id=6151
+[run2] step 6: token_id=282
+[run2] step 7: token_id=260
+[run2] step 8: token_id=6151
+[run2] step 9: token_id=282
+[run2] step 10: token_id=260
+[run2] step 11: token_id=6151
+[prompt 17] token ids (8 toks): [504, 16127, 1225, 282, 913, 281, 20590, 314]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=32
+[run1] step 2: token_id=5027
+[run1] step 3: token_id=20590
+[run1] step 4: token_id=30
+[run1] step 5: token_id=198
+[run1] step 6: token_id=198
+[run1] step 7: token_id=504
+[run1] step 8: token_id=16127
+[run1] step 9: token_id=1225
+[run1] step 10: token_id=282
+[run1] step 11: token_id=913
+[run2] step 0: token_id=216
+[run2] step 1: token_id=32
+[run2] step 2: token_id=5027
+[run2] step 3: token_id=20590
+[run2] step 4: token_id=30
+[run2] step 5: token_id=198
+[run2] step 6: token_id=198
+[run2] step 7: token_id=504
+[run2] step 8: token_id=16127
+[run2] step 9: token_id=1225
+[run2] step 10: token_id=282
+[run2] step 11: token_id=913
+[prompt 18] token ids (7 toks): [49, 1528, 282, 15329, 314, 1217, 253]
+[run1] step 0: token_id=3123
+[run1] step 1: token_id=30
+[run1] step 2: token_id=198
+[run1] step 3: token_id=198
+[run1] step 4: token_id=49
+[run1] step 5: token_id=3123
+[run1] step 6: token_id=314
+[run1] step 7: token_id=253
+[run1] step 8: token_id=1528
+[run1] step 9: token_id=282
+[run1] step 10: token_id=15329
+[run1] step 11: token_id=30
+[run2] step 0: token_id=3123
+[run2] step 1: token_id=30
+[run2] step 2: token_id=198
+[run2] step 3: token_id=198
+[run2] step 4: token_id=49
+[run2] step 5: token_id=3123
+[run2] step 6: token_id=314
+[run2] step 7: token_id=253
+[run2] step 8: token_id=1528
+[run2] step 9: token_id=282
+[run2] step 10: token_id=15329
+[run2] step 11: token_id=30
+[prompt 19] token ids (6 toks): [504, 3547, 282, 1420, 314, 4723]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=35
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=28
+[run1] step 5: token_id=32
+[run1] step 6: token_id=32
+[run1] step 7: token_id=32
+[run1] step 8: token_id=28
+[run1] step 9: token_id=32
+[run1] step 10: token_id=32
+[run1] step 11: token_id=32
+[run2] step 0: token_id=216
+[run2] step 1: token_id=35
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=28
+[run2] step 5: token_id=32
+[run2] step 6: token_id=32
+[run2] step 7: token_id=32
+[run2] step 8: token_id=28
+[run2] step 9: token_id=32
+[run2] step 10: token_id=32
+[run2] step 11: token_id=32

@@ -1,0 +1,1745 @@
+=== STDOUT ===
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=0 prompt_tokens=[34, 33, 1232, 216, 33, 32, 446]
+prompt_idx=0 run1_tokens=[34, 33, 1232, 216, 33, 32, 446, 216, 33, 33, 32, 198, 198]
+prompt_idx=0 run2_tokens=[34, 33, 1232, 216, 33, 32, 446, 216, 33, 33, 32, 198, 198]
+prompt_idx=0 run1_witness_digest=3480986fcc968c600bf9afff277e6d117bb900cd65353958b5d70fde9ba179d9
+prompt_idx=0 run2_witness_digest=3480986fcc968c600bf9afff277e6d117bb900cd65353958b5d70fde9ba179d9
+prompt_idx=0 run1_argmax_digest=e668929ffea80743c937e3e58fa539faa8e66f46094c8e85e7b20e8e3db203b8
+prompt_idx=0 run2_argmax_digest=e668929ffea80743c937e3e58fa539faa8e66f46094c8e85e7b20e8e3db203b8
+prompt_idx=0 run1_gen_text=" 110\n\n"
+prompt_idx=0 run2_gen_text=" 110\n\n"
+prompt_idx=0 runs_identical=true
+CIS2_REF digest=3480986fcc968c600bf9afff277e6d117bb900cd65353958b5d70fde9ba179d9 prompt_idx=0 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=1 prompt_tokens=[34, 38, 731, 216, 36, 446]
+prompt_idx=1 run1_tokens=[34, 38, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=1 run2_tokens=[34, 38, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=1 run1_witness_digest=817102eed84f7119dde1d341e408c25cc96044d36ae2c5692402bdecd6ead394
+prompt_idx=1 run2_witness_digest=817102eed84f7119dde1d341e408c25cc96044d36ae2c5692402bdecd6ead394
+prompt_idx=1 run1_argmax_digest=887ca5df12ecb54b39212215823941697d7e0fc027638cedcc4dccbc85c1f15e
+prompt_idx=1 run2_argmax_digest=887ca5df12ecb54b39212215823941697d7e0fc027638cedcc4dccbc85c1f15e
+prompt_idx=1 run1_gen_text=" 100\n\n"
+prompt_idx=1 run2_gen_text=" 100\n\n"
+prompt_idx=1 runs_identical=true
+CIS2_REF digest=817102eed84f7119dde1d341e408c25cc96044d36ae2c5692402bdecd6ead394 prompt_idx=1 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=2 prompt_tokens=[37, 1232, 216, 35, 37, 446]
+prompt_idx=2 run1_tokens=[37, 1232, 216, 35, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=2 run2_tokens=[37, 1232, 216, 35, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=2 run1_witness_digest=3edbebc7b36de86a5a246832985d351a240dd0dfd38f356480adae37403b9237
+prompt_idx=2 run2_witness_digest=3edbebc7b36de86a5a246832985d351a240dd0dfd38f356480adae37403b9237
+prompt_idx=2 run1_argmax_digest=2eaa1a59dab5b04d30e5278a6b1a17dec1c4cf2a9d3a6c355ef2c5f238b42117
+prompt_idx=2 run2_argmax_digest=2eaa1a59dab5b04d30e5278a6b1a17dec1c4cf2a9d3a6c355ef2c5f238b42117
+prompt_idx=2 run1_gen_text=" 100\n\n"
+prompt_idx=2 run2_gen_text=" 100\n\n"
+prompt_idx=2 runs_identical=true
+CIS2_REF digest=3edbebc7b36de86a5a246832985d351a240dd0dfd38f356480adae37403b9237 prompt_idx=2 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=3 prompt_tokens=[34, 36, 731, 216, 39, 446]
+prompt_idx=3 run1_tokens=[34, 36, 731, 216, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=3 run2_tokens=[34, 36, 731, 216, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=3 run1_witness_digest=3cbdee15ee2faff5347494468c6256dc16dfefd020209463a518d42d50a4d5e3
+prompt_idx=3 run2_witness_digest=3cbdee15ee2faff5347494468c6256dc16dfefd020209463a518d42d50a4d5e3
+prompt_idx=3 run1_argmax_digest=399e76618540ecccbcd9929060b0473b3479e3c0956cae65ece1153c609569b5
+prompt_idx=3 run2_argmax_digest=399e76618540ecccbcd9929060b0473b3479e3c0956cae65ece1153c609569b5
+prompt_idx=3 run1_gen_text=" 100\n\n"
+prompt_idx=3 run2_gen_text=" 100\n\n"
+prompt_idx=3 runs_identical=true
+CIS2_REF digest=3cbdee15ee2faff5347494468c6256dc16dfefd020209463a518d42d50a4d5e3 prompt_idx=3 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=4 prompt_tokens=[35, 40, 1232, 216, 36, 446]
+prompt_idx=4 run1_tokens=[35, 40, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=4 run2_tokens=[35, 40, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=4 run1_witness_digest=2c430a2b535391db5b2e6391cdece1773c44ef72b194d6d923a4e2d144c293ec
+prompt_idx=4 run2_witness_digest=2c430a2b535391db5b2e6391cdece1773c44ef72b194d6d923a4e2d144c293ec
+prompt_idx=4 run1_argmax_digest=f01bbe00f9ea8990f6be85400d7f972d6a0bc4752eb5aaa3703963601a480218
+prompt_idx=4 run2_argmax_digest=f01bbe00f9ea8990f6be85400d7f972d6a0bc4752eb5aaa3703963601a480218
+prompt_idx=4 run1_gen_text=" 50.\n\n"
+prompt_idx=4 run2_gen_text=" 50.\n\n"
+prompt_idx=4 runs_identical=true
+CIS2_REF digest=2c430a2b535391db5b2e6391cdece1773c44ef72b194d6d923a4e2d144c293ec prompt_idx=4 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=5 prompt_tokens=[35, 35, 731, 216, 33, 36, 446]
+prompt_idx=5 run1_tokens=[35, 35, 731, 216, 33, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=5 run2_tokens=[35, 35, 731, 216, 33, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=5 run1_witness_digest=8aec4b016341f9d70f13cb95e4d2f840564e5072135ba706a5d955eeeb6b43d8
+prompt_idx=5 run2_witness_digest=8aec4b016341f9d70f13cb95e4d2f840564e5072135ba706a5d955eeeb6b43d8
+prompt_idx=5 run1_argmax_digest=8279770c7453e5aaafd9646cd1835ef683c2a9bf171b9c85cbfe529436d901d5
+prompt_idx=5 run2_argmax_digest=8279770c7453e5aaafd9646cd1835ef683c2a9bf171b9c85cbfe529436d901d5
+prompt_idx=5 run1_gen_text=" 100\n\n"
+prompt_idx=5 run2_gen_text=" 100\n\n"
+prompt_idx=5 runs_identical=true
+CIS2_REF digest=8aec4b016341f9d70f13cb95e4d2f840564e5072135ba706a5d955eeeb6b43d8 prompt_idx=5 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=6 prompt_tokens=[35, 1232, 216, 38, 446]
+prompt_idx=6 run1_tokens=[35, 1232, 216, 38, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=6 run2_tokens=[35, 1232, 216, 38, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=6 run1_witness_digest=862ce33887b89a67fc38a797bcf154ff3f87b3134f089cd7d62120fd185884c9
+prompt_idx=6 run2_witness_digest=862ce33887b89a67fc38a797bcf154ff3f87b3134f089cd7d62120fd185884c9
+prompt_idx=6 run1_argmax_digest=7121a9d8c825ec6496f70fd75cc5887158f8a9382c1aaab06f441f6d11460735
+prompt_idx=6 run2_argmax_digest=7121a9d8c825ec6496f70fd75cc5887158f8a9382c1aaab06f441f6d11460735
+prompt_idx=6 run1_gen_text=" 10\n\nThe"
+prompt_idx=6 run2_gen_text=" 10\n\nThe"
+prompt_idx=6 runs_identical=true
+CIS2_REF digest=862ce33887b89a67fc38a797bcf154ff3f87b3134f089cd7d62120fd185884c9 prompt_idx=6 prompt_toks=5 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=7 prompt_tokens=[34, 40, 731, 216, 34, 39, 446]
+prompt_idx=7 run1_tokens=[34, 40, 731, 216, 34, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=7 run2_tokens=[34, 40, 731, 216, 34, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=7 run1_witness_digest=1b0f6bec69286ce478eea2e647484de1bd59c91b1b7d0bab724cf5448214adeb
+prompt_idx=7 run2_witness_digest=1b0f6bec69286ce478eea2e647484de1bd59c91b1b7d0bab724cf5448214adeb
+prompt_idx=7 run1_argmax_digest=55c27bd50bae3746e21ad92af154d3dda84bb998ebab744f1fa91e2e0112e15e
+prompt_idx=7 run2_argmax_digest=55c27bd50bae3746e21ad92af154d3dda84bb998ebab744f1fa91e2e0112e15e
+prompt_idx=7 run1_gen_text=" 100\n\n"
+prompt_idx=7 run2_gen_text=" 100\n\n"
+prompt_idx=7 runs_identical=true
+CIS2_REF digest=1b0f6bec69286ce478eea2e647484de1bd59c91b1b7d0bab724cf5448214adeb prompt_idx=7 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=8 prompt_tokens=[37, 1232, 216, 33, 38, 446]
+prompt_idx=8 run1_tokens=[37, 1232, 216, 33, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=8 run2_tokens=[37, 1232, 216, 33, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=8 run1_witness_digest=106b78d2e8842b2e3cb5518bf79004395516419f0018bf7c33c08605dc8b0a3c
+prompt_idx=8 run2_witness_digest=106b78d2e8842b2e3cb5518bf79004395516419f0018bf7c33c08605dc8b0a3c
+prompt_idx=8 run1_argmax_digest=e8bd0a51beca7b206b8bfd8b978f66b0140ef43c388890001eeaba395071131e
+prompt_idx=8 run2_argmax_digest=e8bd0a51beca7b206b8bfd8b978f66b0140ef43c388890001eeaba395071131e
+prompt_idx=8 run1_gen_text=" 100\n\n"
+prompt_idx=8 run2_gen_text=" 100\n\n"
+prompt_idx=8 runs_identical=true
+CIS2_REF digest=106b78d2e8842b2e3cb5518bf79004395516419f0018bf7c33c08605dc8b0a3c prompt_idx=8 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=9 prompt_tokens=[35, 38, 731, 216, 38, 446]
+prompt_idx=9 run1_tokens=[35, 38, 731, 216, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=9 run2_tokens=[35, 38, 731, 216, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=9 run1_witness_digest=996934df3a6acb088c88c42cf1081ff30db1bff85b03c4e74eb5367954eb35b7
+prompt_idx=9 run2_witness_digest=996934df3a6acb088c88c42cf1081ff30db1bff85b03c4e74eb5367954eb35b7
+prompt_idx=9 run1_argmax_digest=9174d32fcf7cbb5050a2da8b8e2099462bb155ca50730298f32045a48af4a3ad
+prompt_idx=9 run2_argmax_digest=9174d32fcf7cbb5050a2da8b8e2099462bb155ca50730298f32045a48af4a3ad
+prompt_idx=9 run1_gen_text=" 100\n\n"
+prompt_idx=9 run2_gen_text=" 100\n\n"
+prompt_idx=9 runs_identical=true
+CIS2_REF digest=996934df3a6acb088c88c42cf1081ff30db1bff85b03c4e74eb5367954eb35b7 prompt_idx=9 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=10 prompt_tokens=[34, 40, 1232, 216, 36, 446]
+prompt_idx=10 run1_tokens=[34, 40, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=10 run2_tokens=[34, 40, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=10 run1_witness_digest=aeb109d94e9aaa4e94087e2a428f5634a07db85b99976aa95a0b51b12f42cc53
+prompt_idx=10 run2_witness_digest=aeb109d94e9aaa4e94087e2a428f5634a07db85b99976aa95a0b51b12f42cc53
+prompt_idx=10 run1_argmax_digest=38e7dc8339cb14056d434d3527fa2fc1745361232e8cf2bd2663a9b62eb1c558
+prompt_idx=10 run2_argmax_digest=38e7dc8339cb14056d434d3527fa2fc1745361232e8cf2bd2663a9b62eb1c558
+prompt_idx=10 run1_gen_text=" 50.\n\n"
+prompt_idx=10 run2_gen_text=" 50.\n\n"
+prompt_idx=10 runs_identical=true
+CIS2_REF digest=aeb109d94e9aaa4e94087e2a428f5634a07db85b99976aa95a0b51b12f42cc53 prompt_idx=10 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=11 prompt_tokens=[35, 39, 731, 216, 40, 446]
+prompt_idx=11 run1_tokens=[35, 39, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=11 run2_tokens=[35, 39, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=11 run1_witness_digest=5cee6f653d65451ab0e2a35b5d3458b423b189c1ce57896daa030ec6f5994334
+prompt_idx=11 run2_witness_digest=5cee6f653d65451ab0e2a35b5d3458b423b189c1ce57896daa030ec6f5994334
+prompt_idx=11 run1_argmax_digest=a757476d68c084fd72f103bb5430b8572eef97049fddb23b932d6a3f4a699b03
+prompt_idx=11 run2_argmax_digest=a757476d68c084fd72f103bb5430b8572eef97049fddb23b932d6a3f4a699b03
+prompt_idx=11 run1_gen_text=" 100\n\n"
+prompt_idx=11 run2_gen_text=" 100\n\n"
+prompt_idx=11 runs_identical=true
+CIS2_REF digest=5cee6f653d65451ab0e2a35b5d3458b423b189c1ce57896daa030ec6f5994334 prompt_idx=11 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=12 prompt_tokens=[33, 37, 1232, 216, 35, 40, 446]
+prompt_idx=12 run1_tokens=[33, 37, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=12 run2_tokens=[33, 37, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=12 run1_witness_digest=e6c2632f4c926a060e7281be4062fbf72901088ef623902f791bf6ee73dc8be7
+prompt_idx=12 run2_witness_digest=e6c2632f4c926a060e7281be4062fbf72901088ef623902f791bf6ee73dc8be7
+prompt_idx=12 run1_argmax_digest=86a43807ee678145e42993f239550379482a477fad6152134dcfaf818a7e2703
+prompt_idx=12 run2_argmax_digest=86a43807ee678145e42993f239550379482a477fad6152134dcfaf818a7e2703
+prompt_idx=12 run1_gen_text=" 100\n\n"
+prompt_idx=12 run2_gen_text=" 100\n\n"
+prompt_idx=12 runs_identical=true
+CIS2_REF digest=e6c2632f4c926a060e7281be4062fbf72901088ef623902f791bf6ee73dc8be7 prompt_idx=12 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=13 prompt_tokens=[35, 39, 731, 216, 36, 446]
+prompt_idx=13 run1_tokens=[35, 39, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=13 run2_tokens=[35, 39, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=13 run1_witness_digest=15af84f97c15fc71a37ce2b393fd68abeda50a28d6e73da4138ad91e4d35ed22
+prompt_idx=13 run2_witness_digest=15af84f97c15fc71a37ce2b393fd68abeda50a28d6e73da4138ad91e4d35ed22
+prompt_idx=13 run1_argmax_digest=c73b652128606e6e6c5a1efd68d4dc5d288cb5a1f4b6448b1b833046f4520553
+prompt_idx=13 run2_argmax_digest=c73b652128606e6e6c5a1efd68d4dc5d288cb5a1f4b6448b1b833046f4520553
+prompt_idx=13 run1_gen_text=" 100\n\n"
+prompt_idx=13 run2_gen_text=" 100\n\n"
+prompt_idx=13 runs_identical=true
+CIS2_REF digest=15af84f97c15fc71a37ce2b393fd68abeda50a28d6e73da4138ad91e4d35ed22 prompt_idx=13 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=14 prompt_tokens=[35, 40, 1232, 216, 34, 38, 446]
+prompt_idx=14 run1_tokens=[35, 40, 1232, 216, 34, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=14 run2_tokens=[35, 40, 1232, 216, 34, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=14 run1_witness_digest=acf2c7ec73d4839e000e0c1676429c500335b9623d8733ec0ee5af1f3fd5e580
+prompt_idx=14 run2_witness_digest=acf2c7ec73d4839e000e0c1676429c500335b9623d8733ec0ee5af1f3fd5e580
+prompt_idx=14 run1_argmax_digest=0f3c43431d0225d3bf09bd845de3a4794d5183e92687ed7f5cbc8abf5186c88b
+prompt_idx=14 run2_argmax_digest=0f3c43431d0225d3bf09bd845de3a4794d5183e92687ed7f5cbc8abf5186c88b
+prompt_idx=14 run1_gen_text=" 100\n\n"
+prompt_idx=14 run2_gen_text=" 100\n\n"
+prompt_idx=14 runs_identical=true
+CIS2_REF digest=acf2c7ec73d4839e000e0c1676429c500335b9623d8733ec0ee5af1f3fd5e580 prompt_idx=14 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=15 prompt_tokens=[33, 37, 731, 216, 36, 446]
+prompt_idx=15 run1_tokens=[33, 37, 731, 216, 36, 446, 216, 33, 37, 198, 198, 504]
+prompt_idx=15 run2_tokens=[33, 37, 731, 216, 36, 446, 216, 33, 37, 198, 198, 504]
+prompt_idx=15 run1_witness_digest=c60b99681b32643d42ea9d728eb9f0342cd4edaf433fe4c9ac5302425fe87adf
+prompt_idx=15 run2_witness_digest=c60b99681b32643d42ea9d728eb9f0342cd4edaf433fe4c9ac5302425fe87adf
+prompt_idx=15 run1_argmax_digest=d90fd6af5826063ab36386d493e0176099fff4603ccbabfe5651af74575c55c5
+prompt_idx=15 run2_argmax_digest=d90fd6af5826063ab36386d493e0176099fff4603ccbabfe5651af74575c55c5
+prompt_idx=15 run1_gen_text=" 15\n\nThe"
+prompt_idx=15 run2_gen_text=" 15\n\nThe"
+prompt_idx=15 runs_identical=true
+CIS2_REF digest=c60b99681b32643d42ea9d728eb9f0342cd4edaf433fe4c9ac5302425fe87adf prompt_idx=15 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=16 prompt_tokens=[35, 1232, 216, 35, 38, 446]
+prompt_idx=16 run1_tokens=[35, 1232, 216, 35, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=16 run2_tokens=[35, 1232, 216, 35, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=16 run1_witness_digest=208f843e432760b9a49968a9e546450eb176417374a532efcfc345956a8c834f
+prompt_idx=16 run2_witness_digest=208f843e432760b9a49968a9e546450eb176417374a532efcfc345956a8c834f
+prompt_idx=16 run1_argmax_digest=fc7fc0f02b4eba3486b0433b108242b128cee276ffc4e6d1a0d86253e020f6c3
+prompt_idx=16 run2_argmax_digest=fc7fc0f02b4eba3486b0433b108242b128cee276ffc4e6d1a0d86253e020f6c3
+prompt_idx=16 run1_gen_text=" 100\n\n"
+prompt_idx=16 run2_gen_text=" 100\n\n"
+prompt_idx=16 runs_identical=true
+CIS2_REF digest=208f843e432760b9a49968a9e546450eb176417374a532efcfc345956a8c834f prompt_idx=16 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=17 prompt_tokens=[33, 41, 731, 216, 41, 446]
+prompt_idx=17 run1_tokens=[33, 41, 731, 216, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=17 run2_tokens=[33, 41, 731, 216, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=17 run1_witness_digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95
+prompt_idx=17 run2_witness_digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95
+prompt_idx=17 run1_argmax_digest=34838d68dc67073ab1731b2a9f414a44d72b19de1e93ae02e6eddc68a0cb912f
+prompt_idx=17 run2_argmax_digest=34838d68dc67073ab1731b2a9f414a44d72b19de1e93ae02e6eddc68a0cb912f
+prompt_idx=17 run1_gen_text=" 100\n\n"
+prompt_idx=17 run2_gen_text=" 100\n\n"
+prompt_idx=17 runs_identical=true
+CIS2_REF digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95 prompt_idx=17 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=18 prompt_tokens=[34, 39, 1232, 216, 33, 32, 446]
+prompt_idx=18 run1_tokens=[34, 39, 1232, 216, 33, 32, 446, 216, 33, 33, 32, 198, 198]
+prompt_idx=18 run2_tokens=[34, 39, 1232, 216, 33, 32, 446, 216, 33, 33, 32, 198, 198]
+prompt_idx=18 run1_witness_digest=9db9540ce66eafa53d2f1663f104a6d83236950f587fac0e91f43c16d4cdf06b
+prompt_idx=18 run2_witness_digest=9db9540ce66eafa53d2f1663f104a6d83236950f587fac0e91f43c16d4cdf06b
+prompt_idx=18 run1_argmax_digest=5f6f1a871a24578fc64d230db8ddbc469a36116af345a491a9ec1c81493bc466
+prompt_idx=18 run2_argmax_digest=5f6f1a871a24578fc64d230db8ddbc469a36116af345a491a9ec1c81493bc466
+prompt_idx=18 run1_gen_text=" 110\n\n"
+prompt_idx=18 run2_gen_text=" 110\n\n"
+prompt_idx=18 runs_identical=true
+CIS2_REF digest=9db9540ce66eafa53d2f1663f104a6d83236950f587fac0e91f43c16d4cdf06b prompt_idx=18 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=19 prompt_tokens=[35, 37, 731, 216, 40, 446]
+prompt_idx=19 run1_tokens=[35, 37, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=19 run2_tokens=[35, 37, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=19 run1_witness_digest=60785813a5ee30ab7d69b868ca53d64d99ee80580745fb6d545589bc878a40de
+prompt_idx=19 run2_witness_digest=60785813a5ee30ab7d69b868ca53d64d99ee80580745fb6d545589bc878a40de
+prompt_idx=19 run1_argmax_digest=38129d5b62ca84d02296633bc20d1909ebd815dff2b83c5396abeca1047d83c0
+prompt_idx=19 run2_argmax_digest=38129d5b62ca84d02296633bc20d1909ebd815dff2b83c5396abeca1047d83c0
+prompt_idx=19 run1_gen_text=" 100\n\n"
+prompt_idx=19 run2_gen_text=" 100\n\n"
+prompt_idx=19 runs_identical=true
+CIS2_REF digest=60785813a5ee30ab7d69b868ca53d64d99ee80580745fb6d545589bc878a40de prompt_idx=19 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=20 prompt_tokens=[35, 39, 1232, 216, 34, 32, 446]
+prompt_idx=20 run1_tokens=[35, 39, 1232, 216, 34, 32, 446, 216, 33, 35, 39, 30, 198]
+prompt_idx=20 run2_tokens=[35, 39, 1232, 216, 34, 32, 446, 216, 33, 35, 39, 30, 198]
+prompt_idx=20 run1_witness_digest=815c6f72d7158650c7a4bf3cf2053fc35fd37e87c76abab156056e673cc4cf3a
+prompt_idx=20 run2_witness_digest=815c6f72d7158650c7a4bf3cf2053fc35fd37e87c76abab156056e673cc4cf3a
+prompt_idx=20 run1_argmax_digest=7dd830f54578866f3933a7f114c4ffd3adfeaa3d338b92b35fc79fa12cf5c59e
+prompt_idx=20 run2_argmax_digest=7dd830f54578866f3933a7f114c4ffd3adfeaa3d338b92b35fc79fa12cf5c59e
+prompt_idx=20 run1_gen_text=" 137.\n"
+prompt_idx=20 run2_gen_text=" 137.\n"
+prompt_idx=20 runs_identical=true
+CIS2_REF digest=815c6f72d7158650c7a4bf3cf2053fc35fd37e87c76abab156056e673cc4cf3a prompt_idx=20 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=21 prompt_tokens=[35, 38, 731, 216, 33, 34, 446]
+prompt_idx=21 run1_tokens=[35, 38, 731, 216, 33, 34, 446, 216, 33, 34, 32, 198, 198]
+prompt_idx=21 run2_tokens=[35, 38, 731, 216, 33, 34, 446, 216, 33, 34, 32, 198, 198]
+prompt_idx=21 run1_witness_digest=6ebb51722da45f7c53b773837d497b842c4c17766ce939f1a547985c8b26d5e5
+prompt_idx=21 run2_witness_digest=6ebb51722da45f7c53b773837d497b842c4c17766ce939f1a547985c8b26d5e5
+prompt_idx=21 run1_argmax_digest=63b477b4a824f175c25edad534508e4796d72d3a547d2183f1448b353d9cbaea
+prompt_idx=21 run2_argmax_digest=63b477b4a824f175c25edad534508e4796d72d3a547d2183f1448b353d9cbaea
+prompt_idx=21 run1_gen_text=" 120\n\n"
+prompt_idx=21 run2_gen_text=" 120\n\n"
+prompt_idx=21 runs_identical=true
+CIS2_REF digest=6ebb51722da45f7c53b773837d497b842c4c17766ce939f1a547985c8b26d5e5 prompt_idx=21 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=22 prompt_tokens=[39, 1232, 216, 35, 40, 446]
+prompt_idx=22 run1_tokens=[39, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=22 run2_tokens=[39, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=22 run1_witness_digest=80178fc9e74159e248004b1c8efe8a2aac86e8c91801b0be3005a4f2cfeba192
+prompt_idx=22 run2_witness_digest=80178fc9e74159e248004b1c8efe8a2aac86e8c91801b0be3005a4f2cfeba192
+prompt_idx=22 run1_argmax_digest=d5736e92238062fb67750e5c9be651225d5f3f7180bc43b50de15c658fd43b7d
+prompt_idx=22 run2_argmax_digest=d5736e92238062fb67750e5c9be651225d5f3f7180bc43b50de15c658fd43b7d
+prompt_idx=22 run1_gen_text=" 100\n\n"
+prompt_idx=22 run2_gen_text=" 100\n\n"
+prompt_idx=22 runs_identical=true
+CIS2_REF digest=80178fc9e74159e248004b1c8efe8a2aac86e8c91801b0be3005a4f2cfeba192 prompt_idx=22 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=23 prompt_tokens=[35, 39, 731, 216, 33, 35, 446]
+prompt_idx=23 run1_tokens=[35, 39, 731, 216, 33, 35, 446, 216, 33, 35, 198, 198, 504]
+prompt_idx=23 run2_tokens=[35, 39, 731, 216, 33, 35, 446, 216, 33, 35, 198, 198, 504]
+prompt_idx=23 run1_witness_digest=f2efef4526bac1a0e4ef13626962db954567ebdc4feb6a5c1abe4345e27b975e
+prompt_idx=23 run2_witness_digest=f2efef4526bac1a0e4ef13626962db954567ebdc4feb6a5c1abe4345e27b975e
+prompt_idx=23 run1_argmax_digest=7949376f80555ad1bd4e69f2b2f27aab01aacc8069b05cb3c6f5f0b89541be19
+prompt_idx=23 run2_argmax_digest=7949376f80555ad1bd4e69f2b2f27aab01aacc8069b05cb3c6f5f0b89541be19
+prompt_idx=23 run1_gen_text=" 13\n\nThe"
+prompt_idx=23 run2_gen_text=" 13\n\nThe"
+prompt_idx=23 runs_identical=true
+CIS2_REF digest=f2efef4526bac1a0e4ef13626962db954567ebdc4feb6a5c1abe4345e27b975e prompt_idx=23 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=24 prompt_tokens=[34, 36, 1232, 216, 39, 446]
+prompt_idx=24 run1_tokens=[34, 36, 1232, 216, 39, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=24 run2_tokens=[34, 36, 1232, 216, 39, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=24 run1_witness_digest=9684cb11f8fa734ef8e814d4c23e7d61a8eee9a0f5144d6cedd916793e61e065
+prompt_idx=24 run2_witness_digest=9684cb11f8fa734ef8e814d4c23e7d61a8eee9a0f5144d6cedd916793e61e065
+prompt_idx=24 run1_argmax_digest=d89e6368d7cd98c6a578850302c9af3aaabdfe2433c3b50b09d15b5888ca79b4
+prompt_idx=24 run2_argmax_digest=d89e6368d7cd98c6a578850302c9af3aaabdfe2433c3b50b09d15b5888ca79b4
+prompt_idx=24 run1_gen_text=" 10\n\nThe"
+prompt_idx=24 run2_gen_text=" 10\n\nThe"
+prompt_idx=24 runs_identical=true
+CIS2_REF digest=9684cb11f8fa734ef8e814d4c23e7d61a8eee9a0f5144d6cedd916793e61e065 prompt_idx=24 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=25 prompt_tokens=[35, 38, 731, 216, 37, 446]
+prompt_idx=25 run1_tokens=[35, 38, 731, 216, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=25 run2_tokens=[35, 38, 731, 216, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=25 run1_witness_digest=66e95749a0ef18bd2c92b7b4ed1dde8f5bbc3d3b2e0a8396baa887654ea700e8
+prompt_idx=25 run2_witness_digest=66e95749a0ef18bd2c92b7b4ed1dde8f5bbc3d3b2e0a8396baa887654ea700e8
+prompt_idx=25 run1_argmax_digest=ac834879d6167d215e33700578955e1e4ddf095bd945adf016002888007db60f
+prompt_idx=25 run2_argmax_digest=ac834879d6167d215e33700578955e1e4ddf095bd945adf016002888007db60f
+prompt_idx=25 run1_gen_text=" 100\n\n"
+prompt_idx=25 run2_gen_text=" 100\n\n"
+prompt_idx=25 runs_identical=true
+CIS2_REF digest=66e95749a0ef18bd2c92b7b4ed1dde8f5bbc3d3b2e0a8396baa887654ea700e8 prompt_idx=25 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=26 prompt_tokens=[35, 39, 1232, 216, 36, 446]
+prompt_idx=26 run1_tokens=[35, 39, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=26 run2_tokens=[35, 39, 1232, 216, 36, 446, 216, 37, 32, 30, 198, 198]
+prompt_idx=26 run1_witness_digest=804a24fa2a20e203e6064c59321bd7f2a0c001b7873344a77525b89133d91208
+prompt_idx=26 run2_witness_digest=804a24fa2a20e203e6064c59321bd7f2a0c001b7873344a77525b89133d91208
+prompt_idx=26 run1_argmax_digest=e0e105848a421b0089e45490799cc852cd457a7da79d4981cc6f74a05839475a
+prompt_idx=26 run2_argmax_digest=e0e105848a421b0089e45490799cc852cd457a7da79d4981cc6f74a05839475a
+prompt_idx=26 run1_gen_text=" 50.\n\n"
+prompt_idx=26 run2_gen_text=" 50.\n\n"
+prompt_idx=26 runs_identical=true
+CIS2_REF digest=804a24fa2a20e203e6064c59321bd7f2a0c001b7873344a77525b89133d91208 prompt_idx=26 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=27 prompt_tokens=[36, 32, 731, 216, 33, 36, 446]
+prompt_idx=27 run1_tokens=[36, 32, 731, 216, 33, 36, 446, 216, 33, 36, 32, 198, 198]
+prompt_idx=27 run2_tokens=[36, 32, 731, 216, 33, 36, 446, 216, 33, 36, 32, 198, 198]
+prompt_idx=27 run1_witness_digest=4f968d13447f7ac3c27b577a31fdc41aafc62fac2f01cc992d8ff522d837d5d0
+prompt_idx=27 run2_witness_digest=4f968d13447f7ac3c27b577a31fdc41aafc62fac2f01cc992d8ff522d837d5d0
+prompt_idx=27 run1_argmax_digest=05b17f89fdda1b2749ebfb9b7239aa4cdc8c581031e14c3d73eb89a75db49296
+prompt_idx=27 run2_argmax_digest=05b17f89fdda1b2749ebfb9b7239aa4cdc8c581031e14c3d73eb89a75db49296
+prompt_idx=27 run1_gen_text=" 140\n\n"
+prompt_idx=27 run2_gen_text=" 140\n\n"
+prompt_idx=27 runs_identical=true
+CIS2_REF digest=4f968d13447f7ac3c27b577a31fdc41aafc62fac2f01cc992d8ff522d837d5d0 prompt_idx=27 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=28 prompt_tokens=[35, 34, 1232, 216, 35, 37, 446]
+prompt_idx=28 run1_tokens=[35, 34, 1232, 216, 35, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=28 run2_tokens=[35, 34, 1232, 216, 35, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=28 run1_witness_digest=0b42170eea62a1a2b04add4a8728d58c612cdc086f5e9cf52f57ca49b6d2d9d5
+prompt_idx=28 run2_witness_digest=0b42170eea62a1a2b04add4a8728d58c612cdc086f5e9cf52f57ca49b6d2d9d5
+prompt_idx=28 run1_argmax_digest=53b4ab680516bbd0ee77681517bb3cb985b17b293af528b1d7c7a135a4ca143a
+prompt_idx=28 run2_argmax_digest=53b4ab680516bbd0ee77681517bb3cb985b17b293af528b1d7c7a135a4ca143a
+prompt_idx=28 run1_gen_text=" 100\n\n"
+prompt_idx=28 run2_gen_text=" 100\n\n"
+prompt_idx=28 runs_identical=true
+CIS2_REF digest=0b42170eea62a1a2b04add4a8728d58c612cdc086f5e9cf52f57ca49b6d2d9d5 prompt_idx=28 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=29 prompt_tokens=[34, 40, 731, 216, 34, 33, 446]
+prompt_idx=29 run1_tokens=[34, 40, 731, 216, 34, 33, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=29 run2_tokens=[34, 40, 731, 216, 34, 33, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=29 run1_witness_digest=0f1ddabed7c4f94193655eb5875523e28f665cd52b968c95b31fe5e78ff5bb31
+prompt_idx=29 run2_witness_digest=0f1ddabed7c4f94193655eb5875523e28f665cd52b968c95b31fe5e78ff5bb31
+prompt_idx=29 run1_argmax_digest=0e9a54925496fdc5a93cf02637b7fba2adad082173cecc6d3399f5be0bdfe5d2
+prompt_idx=29 run2_argmax_digest=0e9a54925496fdc5a93cf02637b7fba2adad082173cecc6d3399f5be0bdfe5d2
+prompt_idx=29 run1_gen_text=" 100\n\n"
+prompt_idx=29 run2_gen_text=" 100\n\n"
+prompt_idx=29 runs_identical=true
+CIS2_REF digest=0f1ddabed7c4f94193655eb5875523e28f665cd52b968c95b31fe5e78ff5bb31 prompt_idx=29 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=30 prompt_tokens=[35, 32, 1232, 216, 35, 40, 446]
+prompt_idx=30 run1_tokens=[35, 32, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=30 run2_tokens=[35, 32, 1232, 216, 35, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=30 run1_witness_digest=4beeb02ce8375fd9ce45ea476148d99f98cf85f5c9b3174f81864bfb4dcc3824
+prompt_idx=30 run2_witness_digest=4beeb02ce8375fd9ce45ea476148d99f98cf85f5c9b3174f81864bfb4dcc3824
+prompt_idx=30 run1_argmax_digest=6c5535c0fe9224aabf5dd6d04556782c590ab11d7d03b5b2f47312ab858773b6
+prompt_idx=30 run2_argmax_digest=6c5535c0fe9224aabf5dd6d04556782c590ab11d7d03b5b2f47312ab858773b6
+prompt_idx=30 run1_gen_text=" 100\n\n"
+prompt_idx=30 run2_gen_text=" 100\n\n"
+prompt_idx=30 runs_identical=true
+CIS2_REF digest=4beeb02ce8375fd9ce45ea476148d99f98cf85f5c9b3174f81864bfb4dcc3824 prompt_idx=30 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=31 prompt_tokens=[35, 32, 731, 216, 34, 36, 446]
+prompt_idx=31 run1_tokens=[35, 32, 731, 216, 34, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=31 run2_tokens=[35, 32, 731, 216, 34, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=31 run1_witness_digest=8eb06913b5547a78d1867d84e6e395e5b73eb76fb2345c5e1d5fe0831a5ead17
+prompt_idx=31 run2_witness_digest=8eb06913b5547a78d1867d84e6e395e5b73eb76fb2345c5e1d5fe0831a5ead17
+prompt_idx=31 run1_argmax_digest=163df68e0d79db56aed543ad515458b0b09e75fef9cdfac93ab9df05d8ff39bc
+prompt_idx=31 run2_argmax_digest=163df68e0d79db56aed543ad515458b0b09e75fef9cdfac93ab9df05d8ff39bc
+prompt_idx=31 run1_gen_text=" 100\n\n"
+prompt_idx=31 run2_gen_text=" 100\n\n"
+prompt_idx=31 runs_identical=true
+CIS2_REF digest=8eb06913b5547a78d1867d84e6e395e5b73eb76fb2345c5e1d5fe0831a5ead17 prompt_idx=31 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=32 prompt_tokens=[34, 32, 1232, 216, 33, 38, 446]
+prompt_idx=32 run1_tokens=[34, 32, 1232, 216, 33, 38, 446, 216, 34, 38, 198, 198, 504]
+prompt_idx=32 run2_tokens=[34, 32, 1232, 216, 33, 38, 446, 216, 34, 38, 198, 198, 504]
+prompt_idx=32 run1_witness_digest=17881bdd385d06dfcea533d9ee69fe1dfeb19b22860af5a2dde9a9c153785cd5
+prompt_idx=32 run2_witness_digest=17881bdd385d06dfcea533d9ee69fe1dfeb19b22860af5a2dde9a9c153785cd5
+prompt_idx=32 run1_argmax_digest=0cad3b6ed02d9bd6ae6f83027815c626c0ff581f75c40828b77a47aeafed17d7
+prompt_idx=32 run2_argmax_digest=0cad3b6ed02d9bd6ae6f83027815c626c0ff581f75c40828b77a47aeafed17d7
+prompt_idx=32 run1_gen_text=" 26\n\nThe"
+prompt_idx=32 run2_gen_text=" 26\n\nThe"
+prompt_idx=32 runs_identical=true
+CIS2_REF digest=17881bdd385d06dfcea533d9ee69fe1dfeb19b22860af5a2dde9a9c153785cd5 prompt_idx=32 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=33 prompt_tokens=[33, 38, 731, 216, 33, 34, 446]
+prompt_idx=33 run1_tokens=[33, 38, 731, 216, 33, 34, 446, 216, 33, 34, 32, 198, 198]
+prompt_idx=33 run2_tokens=[33, 38, 731, 216, 33, 34, 446, 216, 33, 34, 32, 198, 198]
+prompt_idx=33 run1_witness_digest=225f7b335a94198b668d559a85078cd94b9ac277e5b1e37cd78a55051b2a3069
+prompt_idx=33 run2_witness_digest=225f7b335a94198b668d559a85078cd94b9ac277e5b1e37cd78a55051b2a3069
+prompt_idx=33 run1_argmax_digest=6d293c22e0e3ada9664de2388121ea0c420576488ab4815dd075db040f5eceaa
+prompt_idx=33 run2_argmax_digest=6d293c22e0e3ada9664de2388121ea0c420576488ab4815dd075db040f5eceaa
+prompt_idx=33 run1_gen_text=" 120\n\n"
+prompt_idx=33 run2_gen_text=" 120\n\n"
+prompt_idx=33 runs_identical=true
+CIS2_REF digest=225f7b335a94198b668d559a85078cd94b9ac277e5b1e37cd78a55051b2a3069 prompt_idx=33 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=34 prompt_tokens=[38, 1232, 216, 35, 39, 446]
+prompt_idx=34 run1_tokens=[38, 1232, 216, 35, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=34 run2_tokens=[38, 1232, 216, 35, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=34 run1_witness_digest=82d62c4336d9ef70fbbbaa904912979b10c54d31c8cab048101aafbe114136c3
+prompt_idx=34 run2_witness_digest=82d62c4336d9ef70fbbbaa904912979b10c54d31c8cab048101aafbe114136c3
+prompt_idx=34 run1_argmax_digest=0e86eb04c68bb9262dbb008e55e80185894b236db9a2576adb74bda625588739
+prompt_idx=34 run2_argmax_digest=0e86eb04c68bb9262dbb008e55e80185894b236db9a2576adb74bda625588739
+prompt_idx=34 run1_gen_text=" 100\n\n"
+prompt_idx=34 run2_gen_text=" 100\n\n"
+prompt_idx=34 runs_identical=true
+CIS2_REF digest=82d62c4336d9ef70fbbbaa904912979b10c54d31c8cab048101aafbe114136c3 prompt_idx=34 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=35 prompt_tokens=[35, 36, 731, 216, 34, 32, 446]
+prompt_idx=35 run1_tokens=[35, 36, 731, 216, 34, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=35 run2_tokens=[35, 36, 731, 216, 34, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=35 run1_witness_digest=5a8d3abf6c15ce0f8fc203ad5466938e2d12149180c2fe326d902442a7d13bdf
+prompt_idx=35 run2_witness_digest=5a8d3abf6c15ce0f8fc203ad5466938e2d12149180c2fe326d902442a7d13bdf
+prompt_idx=35 run1_argmax_digest=bb208c6a2296fff0971c1dfcd1a1e4c4502eaa910cb7a68de179423b1e04e544
+prompt_idx=35 run2_argmax_digest=bb208c6a2296fff0971c1dfcd1a1e4c4502eaa910cb7a68de179423b1e04e544
+prompt_idx=35 run1_gen_text=" 100\n\n"
+prompt_idx=35 run2_gen_text=" 100\n\n"
+prompt_idx=35 runs_identical=true
+CIS2_REF digest=5a8d3abf6c15ce0f8fc203ad5466938e2d12149180c2fe326d902442a7d13bdf prompt_idx=35 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=36 prompt_tokens=[35, 34, 1232, 216, 34, 34, 446]
+prompt_idx=36 run1_tokens=[35, 34, 1232, 216, 34, 34, 446, 216, 33, 36, 36, 30, 198]
+prompt_idx=36 run2_tokens=[35, 34, 1232, 216, 34, 34, 446, 216, 33, 36, 36, 30, 198]
+prompt_idx=36 run1_witness_digest=fa136ead3852761d5bfa99d670a43d5aee2ac837932458c1fc4b6f1224c7cc1d
+prompt_idx=36 run2_witness_digest=fa136ead3852761d5bfa99d670a43d5aee2ac837932458c1fc4b6f1224c7cc1d
+prompt_idx=36 run1_argmax_digest=234f5849fac088e939a7c97c4e1f83b51c74eaac73b3516cae55126192a4eeb4
+prompt_idx=36 run2_argmax_digest=234f5849fac088e939a7c97c4e1f83b51c74eaac73b3516cae55126192a4eeb4
+prompt_idx=36 run1_gen_text=" 144.\n"
+prompt_idx=36 run2_gen_text=" 144.\n"
+prompt_idx=36 runs_identical=true
+CIS2_REF digest=fa136ead3852761d5bfa99d670a43d5aee2ac837932458c1fc4b6f1224c7cc1d prompt_idx=36 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=37 prompt_tokens=[34, 41, 731, 216, 33, 41, 446]
+prompt_idx=37 run1_tokens=[34, 41, 731, 216, 33, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=37 run2_tokens=[34, 41, 731, 216, 33, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=37 run1_witness_digest=21d1bc9cfee5dab735fa5b269c288fbbb574b2f4a20a8eba31e90754653226f3
+prompt_idx=37 run2_witness_digest=21d1bc9cfee5dab735fa5b269c288fbbb574b2f4a20a8eba31e90754653226f3
+prompt_idx=37 run1_argmax_digest=f53f85ffb4da79a587d3179a326f5ffb247f400165ba0d7edcc8734be6c23062
+prompt_idx=37 run2_argmax_digest=f53f85ffb4da79a587d3179a326f5ffb247f400165ba0d7edcc8734be6c23062
+prompt_idx=37 run1_gen_text=" 100\n\n"
+prompt_idx=37 run2_gen_text=" 100\n\n"
+prompt_idx=37 runs_identical=true
+CIS2_REF digest=21d1bc9cfee5dab735fa5b269c288fbbb574b2f4a20a8eba31e90754653226f3 prompt_idx=37 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=38 prompt_tokens=[35, 41, 1232, 216, 37, 446]
+prompt_idx=38 run1_tokens=[35, 41, 1232, 216, 37, 446, 216, 38, 32, 198, 198, 504]
+prompt_idx=38 run2_tokens=[35, 41, 1232, 216, 37, 446, 216, 38, 32, 198, 198, 504]
+prompt_idx=38 run1_witness_digest=4be7f75502eea54377ed97fa9bfe1c492a87d3801ec69410d418ff54063e102b
+prompt_idx=38 run2_witness_digest=4be7f75502eea54377ed97fa9bfe1c492a87d3801ec69410d418ff54063e102b
+prompt_idx=38 run1_argmax_digest=3c3a0edafa6dd0fc1611cdc250e25134eace2af60755ed2c3d67085d88dee47f
+prompt_idx=38 run2_argmax_digest=3c3a0edafa6dd0fc1611cdc250e25134eace2af60755ed2c3d67085d88dee47f
+prompt_idx=38 run1_gen_text=" 60\n\nThe"
+prompt_idx=38 run2_gen_text=" 60\n\nThe"
+prompt_idx=38 runs_identical=true
+CIS2_REF digest=4be7f75502eea54377ed97fa9bfe1c492a87d3801ec69410d418ff54063e102b prompt_idx=38 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=39 prompt_tokens=[35, 35, 731, 216, 40, 446]
+prompt_idx=39 run1_tokens=[35, 35, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=39 run2_tokens=[35, 35, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=39 run1_witness_digest=3fd207919be0c00b28d202c11cc4c797670f3fe23fc8f29555c84b735f2a20ff
+prompt_idx=39 run2_witness_digest=3fd207919be0c00b28d202c11cc4c797670f3fe23fc8f29555c84b735f2a20ff
+prompt_idx=39 run1_argmax_digest=97fe4dab64597b3d0de3ff2180ee0b0720a93ead244259694c6f07f99e7ef9e2
+prompt_idx=39 run2_argmax_digest=97fe4dab64597b3d0de3ff2180ee0b0720a93ead244259694c6f07f99e7ef9e2
+prompt_idx=39 run1_gen_text=" 100\n\n"
+prompt_idx=39 run2_gen_text=" 100\n\n"
+prompt_idx=39 runs_identical=true
+CIS2_REF digest=3fd207919be0c00b28d202c11cc4c797670f3fe23fc8f29555c84b735f2a20ff prompt_idx=39 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=40 prompt_tokens=[34, 39, 1232, 216, 33, 33, 446]
+prompt_idx=40 run1_tokens=[34, 39, 1232, 216, 33, 33, 446, 216, 33, 40, 198, 198, 504]
+prompt_idx=40 run2_tokens=[34, 39, 1232, 216, 33, 33, 446, 216, 33, 40, 198, 198, 504]
+prompt_idx=40 run1_witness_digest=2369c907dd8a60a909ba59ab48f02da49faba5deab77b2395bccbc8d2e005423
+prompt_idx=40 run2_witness_digest=2369c907dd8a60a909ba59ab48f02da49faba5deab77b2395bccbc8d2e005423
+prompt_idx=40 run1_argmax_digest=f951c54012b01d36b0c15c90fd7395d7e68f9b018749e806a3af6794aa5c1731
+prompt_idx=40 run2_argmax_digest=f951c54012b01d36b0c15c90fd7395d7e68f9b018749e806a3af6794aa5c1731
+prompt_idx=40 run1_gen_text=" 18\n\nThe"
+prompt_idx=40 run2_gen_text=" 18\n\nThe"
+prompt_idx=40 runs_identical=true
+CIS2_REF digest=2369c907dd8a60a909ba59ab48f02da49faba5deab77b2395bccbc8d2e005423 prompt_idx=40 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=41 prompt_tokens=[34, 34, 731, 216, 33, 32, 446]
+prompt_idx=41 run1_tokens=[34, 34, 731, 216, 33, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=41 run2_tokens=[34, 34, 731, 216, 33, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=41 run1_witness_digest=8300f5479f3c202524b1bcdab92f467186f90238164a3e7b103113de2d07aace
+prompt_idx=41 run2_witness_digest=8300f5479f3c202524b1bcdab92f467186f90238164a3e7b103113de2d07aace
+prompt_idx=41 run1_argmax_digest=6d7fd3c5c1e9621b58dae21b84956f03283e7b074129d576c4082218706f0b06
+prompt_idx=41 run2_argmax_digest=6d7fd3c5c1e9621b58dae21b84956f03283e7b074129d576c4082218706f0b06
+prompt_idx=41 run1_gen_text=" 100\n\n"
+prompt_idx=41 run2_gen_text=" 100\n\n"
+prompt_idx=41 runs_identical=true
+CIS2_REF digest=8300f5479f3c202524b1bcdab92f467186f90238164a3e7b103113de2d07aace prompt_idx=41 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=42 prompt_tokens=[35, 34, 1232, 216, 34, 39, 446]
+prompt_idx=42 run1_tokens=[35, 34, 1232, 216, 34, 39, 446, 216, 33, 32, 40, 30, 198]
+prompt_idx=42 run2_tokens=[35, 34, 1232, 216, 34, 39, 446, 216, 33, 32, 40, 30, 198]
+prompt_idx=42 run1_witness_digest=d3351042e400ec4999937a648b7a752220a0871d0be5e2f8980fc18b3e6de894
+prompt_idx=42 run2_witness_digest=d3351042e400ec4999937a648b7a752220a0871d0be5e2f8980fc18b3e6de894
+prompt_idx=42 run1_argmax_digest=29a4f84d89e6098c30caa352a8309b96004f412aa436a822eeb6eeaddea26e86
+prompt_idx=42 run2_argmax_digest=29a4f84d89e6098c30caa352a8309b96004f412aa436a822eeb6eeaddea26e86
+prompt_idx=42 run1_gen_text=" 108.\n"
+prompt_idx=42 run2_gen_text=" 108.\n"
+prompt_idx=42 runs_identical=true
+CIS2_REF digest=d3351042e400ec4999937a648b7a752220a0871d0be5e2f8980fc18b3e6de894 prompt_idx=42 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=43 prompt_tokens=[37, 731, 216, 35, 446]
+prompt_idx=43 run1_tokens=[37, 731, 216, 35, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=43 run2_tokens=[37, 731, 216, 35, 446, 216, 33, 32, 198, 198, 504]
+prompt_idx=43 run1_witness_digest=e0802ae810500fab4cd0cf5343a230973169acad900d4d3c92c03f99df77954f
+prompt_idx=43 run2_witness_digest=e0802ae810500fab4cd0cf5343a230973169acad900d4d3c92c03f99df77954f
+prompt_idx=43 run1_argmax_digest=820c44fe76147e46e9c83a88e02ef8991fea80f73a435eb0433ec0ab16cb0ca0
+prompt_idx=43 run2_argmax_digest=820c44fe76147e46e9c83a88e02ef8991fea80f73a435eb0433ec0ab16cb0ca0
+prompt_idx=43 run1_gen_text=" 10\n\nThe"
+prompt_idx=43 run2_gen_text=" 10\n\nThe"
+prompt_idx=43 runs_identical=true
+CIS2_REF digest=e0802ae810500fab4cd0cf5343a230973169acad900d4d3c92c03f99df77954f prompt_idx=43 prompt_toks=5 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=44 prompt_tokens=[35, 38, 1232, 216, 35, 39, 446]
+prompt_idx=44 run1_tokens=[35, 38, 1232, 216, 35, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=44 run2_tokens=[35, 38, 1232, 216, 35, 39, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=44 run1_witness_digest=924bcd94006c316a6ab5c058baef0d2c08a1e55e30b938739bc239b7c28bb5b7
+prompt_idx=44 run2_witness_digest=924bcd94006c316a6ab5c058baef0d2c08a1e55e30b938739bc239b7c28bb5b7
+prompt_idx=44 run1_argmax_digest=6bee8ed5dc2fe037195f7b6d5586623f9a5cc8cf0c2979f52ed85bfda8ffd548
+prompt_idx=44 run2_argmax_digest=6bee8ed5dc2fe037195f7b6d5586623f9a5cc8cf0c2979f52ed85bfda8ffd548
+prompt_idx=44 run1_gen_text=" 100\n\n"
+prompt_idx=44 run2_gen_text=" 100\n\n"
+prompt_idx=44 runs_identical=true
+CIS2_REF digest=924bcd94006c316a6ab5c058baef0d2c08a1e55e30b938739bc239b7c28bb5b7 prompt_idx=44 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=45 prompt_tokens=[34, 34, 731, 216, 34, 33, 446]
+prompt_idx=45 run1_tokens=[34, 34, 731, 216, 34, 33, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=45 run2_tokens=[34, 34, 731, 216, 34, 33, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=45 run1_witness_digest=f38628dba2a526eb07e6ac17a1910991ea0fd25a1aff5cbe44b21599665ab296
+prompt_idx=45 run2_witness_digest=f38628dba2a526eb07e6ac17a1910991ea0fd25a1aff5cbe44b21599665ab296
+prompt_idx=45 run1_argmax_digest=bbf2ef9af6417c1186f400ed876bc31600f3857ba1dedef952c7a5df84f689d7
+prompt_idx=45 run2_argmax_digest=bbf2ef9af6417c1186f400ed876bc31600f3857ba1dedef952c7a5df84f689d7
+prompt_idx=45 run1_gen_text=" 100\n\n"
+prompt_idx=45 run2_gen_text=" 100\n\n"
+prompt_idx=45 runs_identical=true
+CIS2_REF digest=f38628dba2a526eb07e6ac17a1910991ea0fd25a1aff5cbe44b21599665ab296 prompt_idx=45 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=46 prompt_tokens=[34, 35, 1232, 216, 35, 41, 446]
+prompt_idx=46 run1_tokens=[34, 35, 1232, 216, 35, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=46 run2_tokens=[34, 35, 1232, 216, 35, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=46 run1_witness_digest=77e55198cb00b7e84b7e0208c8fc428782982656dc85da4862885eb2f2ad37f0
+prompt_idx=46 run2_witness_digest=77e55198cb00b7e84b7e0208c8fc428782982656dc85da4862885eb2f2ad37f0
+prompt_idx=46 run1_argmax_digest=3b070ae64404cb38c8ffa0172bb9f5fc50dc64f2146866d778cb7d309eb6d009
+prompt_idx=46 run2_argmax_digest=3b070ae64404cb38c8ffa0172bb9f5fc50dc64f2146866d778cb7d309eb6d009
+prompt_idx=46 run1_gen_text=" 100\n\n"
+prompt_idx=46 run2_gen_text=" 100\n\n"
+prompt_idx=46 runs_identical=true
+CIS2_REF digest=77e55198cb00b7e84b7e0208c8fc428782982656dc85da4862885eb2f2ad37f0 prompt_idx=46 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=47 prompt_tokens=[35, 40, 731, 216, 35, 34, 446]
+prompt_idx=47 run1_tokens=[35, 40, 731, 216, 35, 34, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=47 run2_tokens=[35, 40, 731, 216, 35, 34, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=47 run1_witness_digest=8968bfeebfa9b34cdec175dbd5764fcfb0d19d7390c10e924f8ceb87b6568da2
+prompt_idx=47 run2_witness_digest=8968bfeebfa9b34cdec175dbd5764fcfb0d19d7390c10e924f8ceb87b6568da2
+prompt_idx=47 run1_argmax_digest=67ec4ca845b4082ff48b65af7003e03ba210e15d70900b944419e7454fa87e60
+prompt_idx=47 run2_argmax_digest=67ec4ca845b4082ff48b65af7003e03ba210e15d70900b944419e7454fa87e60
+prompt_idx=47 run1_gen_text=" 100\n\n"
+prompt_idx=47 run2_gen_text=" 100\n\n"
+prompt_idx=47 runs_identical=true
+CIS2_REF digest=8968bfeebfa9b34cdec175dbd5764fcfb0d19d7390c10e924f8ceb87b6568da2 prompt_idx=47 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=48 prompt_tokens=[35, 32, 1232, 216, 37, 446]
+prompt_idx=48 run1_tokens=[35, 32, 1232, 216, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=48 run2_tokens=[35, 32, 1232, 216, 37, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=48 run1_witness_digest=5f64410850ff4187e3c4276dd2c6b9cb30031a40299a872d4f675ccae816cc89
+prompt_idx=48 run2_witness_digest=5f64410850ff4187e3c4276dd2c6b9cb30031a40299a872d4f675ccae816cc89
+prompt_idx=48 run1_argmax_digest=243633cd9b2a1014b6e09ed35670ea36b617c30cecca2c84aa9060a9e93beba3
+prompt_idx=48 run2_argmax_digest=243633cd9b2a1014b6e09ed35670ea36b617c30cecca2c84aa9060a9e93beba3
+prompt_idx=48 run1_gen_text=" 100\n\n"
+prompt_idx=48 run2_gen_text=" 100\n\n"
+prompt_idx=48 runs_identical=true
+CIS2_REF digest=5f64410850ff4187e3c4276dd2c6b9cb30031a40299a872d4f675ccae816cc89 prompt_idx=48 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=49 prompt_tokens=[33, 40, 731, 216, 38, 446]
+prompt_idx=49 run1_tokens=[33, 40, 731, 216, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=49 run2_tokens=[33, 40, 731, 216, 38, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=49 run1_witness_digest=38edeb945a4839b83faf29dfe887e36302c9caabaafbb2847e9f5e2eb4d4928c
+prompt_idx=49 run2_witness_digest=38edeb945a4839b83faf29dfe887e36302c9caabaafbb2847e9f5e2eb4d4928c
+prompt_idx=49 run1_argmax_digest=b34079fabe93824db02e8671c59b97f35e774f93fd7cd4495c2435c4a00811b1
+prompt_idx=49 run2_argmax_digest=b34079fabe93824db02e8671c59b97f35e774f93fd7cd4495c2435c4a00811b1
+prompt_idx=49 run1_gen_text=" 100\n\n"
+prompt_idx=49 run2_gen_text=" 100\n\n"
+prompt_idx=49 runs_identical=true
+CIS2_REF digest=38edeb945a4839b83faf29dfe887e36302c9caabaafbb2847e9f5e2eb4d4928c prompt_idx=49 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=50 prompt_tokens=[35, 33, 1232, 216, 37, 446]
+prompt_idx=50 run1_tokens=[35, 33, 1232, 216, 37, 446, 216, 33, 32, 30, 198, 198]
+prompt_idx=50 run2_tokens=[35, 33, 1232, 216, 37, 446, 216, 33, 32, 30, 198, 198]
+prompt_idx=50 run1_witness_digest=f2b35063fb3a8903d4c567274f8e8a41c88674179138bbe4ce7b3fd2558b7221
+prompt_idx=50 run2_witness_digest=f2b35063fb3a8903d4c567274f8e8a41c88674179138bbe4ce7b3fd2558b7221
+prompt_idx=50 run1_argmax_digest=2361766156ed7691ab31b5c8bfe160c3ef77004d2acb51e4cff38a8facf2abc2
+prompt_idx=50 run2_argmax_digest=2361766156ed7691ab31b5c8bfe160c3ef77004d2acb51e4cff38a8facf2abc2
+prompt_idx=50 run1_gen_text=" 10.\n\n"
+prompt_idx=50 run2_gen_text=" 10.\n\n"
+prompt_idx=50 runs_identical=true
+CIS2_REF digest=f2b35063fb3a8903d4c567274f8e8a41c88674179138bbe4ce7b3fd2558b7221 prompt_idx=50 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=51 prompt_tokens=[34, 32, 731, 216, 36, 446]
+prompt_idx=51 run1_tokens=[34, 32, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=51 run2_tokens=[34, 32, 731, 216, 36, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=51 run1_witness_digest=59278d22dcffad935532bfb6177365f890263321c3bb322bada733f340dfd3df
+prompt_idx=51 run2_witness_digest=59278d22dcffad935532bfb6177365f890263321c3bb322bada733f340dfd3df
+prompt_idx=51 run1_argmax_digest=2a0f38b578b868266bdc917fd29d9c56053f7b435ac457ab8f06f0e521c0323f
+prompt_idx=51 run2_argmax_digest=2a0f38b578b868266bdc917fd29d9c56053f7b435ac457ab8f06f0e521c0323f
+prompt_idx=51 run1_gen_text=" 100\n\n"
+prompt_idx=51 run2_gen_text=" 100\n\n"
+prompt_idx=51 runs_identical=true
+CIS2_REF digest=59278d22dcffad935532bfb6177365f890263321c3bb322bada733f340dfd3df prompt_idx=51 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=52 prompt_tokens=[35, 39, 1232, 216, 34, 41, 446]
+prompt_idx=52 run1_tokens=[35, 39, 1232, 216, 34, 41, 446, 216, 35, 38, 30, 198, 198]
+prompt_idx=52 run2_tokens=[35, 39, 1232, 216, 34, 41, 446, 216, 35, 38, 30, 198, 198]
+prompt_idx=52 run1_witness_digest=71ca36a8121b3d315ba9a34b296d4f26d95dd68d0920f38f840dee67eac1e9bf
+prompt_idx=52 run2_witness_digest=71ca36a8121b3d315ba9a34b296d4f26d95dd68d0920f38f840dee67eac1e9bf
+prompt_idx=52 run1_argmax_digest=beec03e39b414171cda63ceb174e8e780e12843d23aa1689bed0ff96cb1c1e93
+prompt_idx=52 run2_argmax_digest=beec03e39b414171cda63ceb174e8e780e12843d23aa1689bed0ff96cb1c1e93
+prompt_idx=52 run1_gen_text=" 36.\n\n"
+prompt_idx=52 run2_gen_text=" 36.\n\n"
+prompt_idx=52 runs_identical=true
+CIS2_REF digest=71ca36a8121b3d315ba9a34b296d4f26d95dd68d0920f38f840dee67eac1e9bf prompt_idx=52 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=53 prompt_tokens=[34, 37, 731, 216, 33, 41, 446]
+prompt_idx=53 run1_tokens=[34, 37, 731, 216, 33, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=53 run2_tokens=[34, 37, 731, 216, 33, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=53 run1_witness_digest=e8d19b009c9f2cdbedcc55d7fcb1024ee30f4127390e523f44ec4bda7cd06ecf
+prompt_idx=53 run2_witness_digest=e8d19b009c9f2cdbedcc55d7fcb1024ee30f4127390e523f44ec4bda7cd06ecf
+prompt_idx=53 run1_argmax_digest=67bc7cd96b57eb02cc64a4a8337dca1d0bf5e1354d8545ab90adae8a9b28af8c
+prompt_idx=53 run2_argmax_digest=67bc7cd96b57eb02cc64a4a8337dca1d0bf5e1354d8545ab90adae8a9b28af8c
+prompt_idx=53 run1_gen_text=" 100\n\n"
+prompt_idx=53 run2_gen_text=" 100\n\n"
+prompt_idx=53 runs_identical=true
+CIS2_REF digest=e8d19b009c9f2cdbedcc55d7fcb1024ee30f4127390e523f44ec4bda7cd06ecf prompt_idx=53 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=54 prompt_tokens=[34, 35, 1232, 216, 34, 446]
+prompt_idx=54 run1_tokens=[34, 35, 1232, 216, 34, 446, 216, 33, 36, 198, 198, 504]
+prompt_idx=54 run2_tokens=[34, 35, 1232, 216, 34, 446, 216, 33, 36, 198, 198, 504]
+prompt_idx=54 run1_witness_digest=7a6d44f89a3591911d9ccfdf59ec156842a6e72487be2eda73b6e006b9b85514
+prompt_idx=54 run2_witness_digest=7a6d44f89a3591911d9ccfdf59ec156842a6e72487be2eda73b6e006b9b85514
+prompt_idx=54 run1_argmax_digest=f49114cd49339734a87c8cfcfb16350c51d384db61899bf4e8255ccedbc107a6
+prompt_idx=54 run2_argmax_digest=f49114cd49339734a87c8cfcfb16350c51d384db61899bf4e8255ccedbc107a6
+prompt_idx=54 run1_gen_text=" 14\n\nThe"
+prompt_idx=54 run2_gen_text=" 14\n\nThe"
+prompt_idx=54 runs_identical=true
+CIS2_REF digest=7a6d44f89a3591911d9ccfdf59ec156842a6e72487be2eda73b6e006b9b85514 prompt_idx=54 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=55 prompt_tokens=[35, 32, 731, 216, 34, 35, 446]
+prompt_idx=55 run1_tokens=[35, 32, 731, 216, 34, 35, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=55 run2_tokens=[35, 32, 731, 216, 34, 35, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=55 run1_witness_digest=046a8aecf2aadd2088dfed7e4b07cc73164121355b3af866ce158a4b2f7192ee
+prompt_idx=55 run2_witness_digest=046a8aecf2aadd2088dfed7e4b07cc73164121355b3af866ce158a4b2f7192ee
+prompt_idx=55 run1_argmax_digest=3600855681a42a4fa4e923ca7fc5fe0aacec2d28e06ffec39c2e72de7faba73c
+prompt_idx=55 run2_argmax_digest=3600855681a42a4fa4e923ca7fc5fe0aacec2d28e06ffec39c2e72de7faba73c
+prompt_idx=55 run1_gen_text=" 100\n\n"
+prompt_idx=55 run2_gen_text=" 100\n\n"
+prompt_idx=55 runs_identical=true
+CIS2_REF digest=046a8aecf2aadd2088dfed7e4b07cc73164121355b3af866ce158a4b2f7192ee prompt_idx=55 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=56 prompt_tokens=[33, 33, 1232, 216, 36, 32, 446]
+prompt_idx=56 run1_tokens=[33, 33, 1232, 216, 36, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=56 run2_tokens=[33, 33, 1232, 216, 36, 32, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=56 run1_witness_digest=b5b2ad29f3c4c878c2bb31eb2f88bcc59f6097307c535108f5307f56ae9420a4
+prompt_idx=56 run2_witness_digest=b5b2ad29f3c4c878c2bb31eb2f88bcc59f6097307c535108f5307f56ae9420a4
+prompt_idx=56 run1_argmax_digest=03abdac0951a60375a7f3917cb18b4ae91235ca427921de7e304acc9d63fb73d
+prompt_idx=56 run2_argmax_digest=03abdac0951a60375a7f3917cb18b4ae91235ca427921de7e304acc9d63fb73d
+prompt_idx=56 run1_gen_text=" 100\n\n"
+prompt_idx=56 run2_gen_text=" 100\n\n"
+prompt_idx=56 runs_identical=true
+CIS2_REF digest=b5b2ad29f3c4c878c2bb31eb2f88bcc59f6097307c535108f5307f56ae9420a4 prompt_idx=56 prompt_toks=7 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=57 prompt_tokens=[35, 34, 731, 216, 40, 446]
+prompt_idx=57 run1_tokens=[35, 34, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=57 run2_tokens=[35, 34, 731, 216, 40, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=57 run1_witness_digest=a9ee3cd139d93b0bd9ee9bc63ffb83f6d096a0fd0f947a33829795575d3a0936
+prompt_idx=57 run2_witness_digest=a9ee3cd139d93b0bd9ee9bc63ffb83f6d096a0fd0f947a33829795575d3a0936
+prompt_idx=57 run1_argmax_digest=b0082de4742bcf42fdf2fb4a630c36ebfb8c6920c3f402f541ea68d8c20d63a4
+prompt_idx=57 run2_argmax_digest=b0082de4742bcf42fdf2fb4a630c36ebfb8c6920c3f402f541ea68d8c20d63a4
+prompt_idx=57 run1_gen_text=" 100\n\n"
+prompt_idx=57 run2_gen_text=" 100\n\n"
+prompt_idx=57 runs_identical=true
+CIS2_REF digest=a9ee3cd139d93b0bd9ee9bc63ffb83f6d096a0fd0f947a33829795575d3a0936 prompt_idx=57 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=58 prompt_tokens=[36, 1232, 216, 33, 36, 446]
+prompt_idx=58 run1_tokens=[36, 1232, 216, 33, 36, 446, 216, 33, 36, 36, 198, 198]
+prompt_idx=58 run2_tokens=[36, 1232, 216, 33, 36, 446, 216, 33, 36, 36, 198, 198]
+prompt_idx=58 run1_witness_digest=d26505cca5494664f915997c95c317fbe3e6395042dcbbb33588470b9eda361b
+prompt_idx=58 run2_witness_digest=d26505cca5494664f915997c95c317fbe3e6395042dcbbb33588470b9eda361b
+prompt_idx=58 run1_argmax_digest=e6c69d01ca79edf995eea0680753f065ea37f343269786689f8f80c6116ac948
+prompt_idx=58 run2_argmax_digest=e6c69d01ca79edf995eea0680753f065ea37f343269786689f8f80c6116ac948
+prompt_idx=58 run1_gen_text=" 144\n\n"
+prompt_idx=58 run2_gen_text=" 144\n\n"
+prompt_idx=58 runs_identical=true
+CIS2_REF digest=d26505cca5494664f915997c95c317fbe3e6395042dcbbb33588470b9eda361b prompt_idx=58 prompt_toks=6 gen_toks=6 dtype=fp32
+weights_sha256=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+tokenizer_sha256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+config_sha256=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+table_digest=23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d
+inv_freq_table_digest=da9f6dcfde0425588815509e874515cdcd3d6b8818b6d0136590052e7bbf6f12
+prompt_idx=59 prompt_tokens=[33, 41, 731, 216, 41, 446]
+prompt_idx=59 run1_tokens=[33, 41, 731, 216, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=59 run2_tokens=[33, 41, 731, 216, 41, 446, 216, 33, 32, 32, 198, 198]
+prompt_idx=59 run1_witness_digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95
+prompt_idx=59 run2_witness_digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95
+prompt_idx=59 run1_argmax_digest=34838d68dc67073ab1731b2a9f414a44d72b19de1e93ae02e6eddc68a0cb912f
+prompt_idx=59 run2_argmax_digest=34838d68dc67073ab1731b2a9f414a44d72b19de1e93ae02e6eddc68a0cb912f
+prompt_idx=59 run1_gen_text=" 100\n\n"
+prompt_idx=59 run2_gen_text=" 100\n\n"
+prompt_idx=59 runs_identical=true
+CIS2_REF digest=6c42040b26a9e0fe8e692d7165838c7fcf3997c34705cbc9e79bb7ef8172af95 prompt_idx=59 prompt_toks=6 gen_toks=6 dtype=fp32
+
+=== STDERR ===
+loading + widening weights (bf16 -> fp32, exact bit-shift, §3.5)...
+weights loaded.
+[prompt 0] token ids (7 toks): [34, 33, 1232, 216, 33, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=33
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=33
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 1] token ids (6 toks): [34, 38, 731, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 2] token ids (6 toks): [37, 1232, 216, 35, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 3] token ids (6 toks): [34, 36, 731, 216, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 4] token ids (6 toks): [35, 40, 1232, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=37
+[run1] step 2: token_id=32
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=37
+[run2] step 2: token_id=32
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 5] token ids (7 toks): [35, 35, 731, 216, 33, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 6] token ids (5 toks): [35, 1232, 216, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 7] token ids (7 toks): [34, 40, 731, 216, 34, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 8] token ids (6 toks): [37, 1232, 216, 33, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 9] token ids (6 toks): [35, 38, 731, 216, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 10] token ids (6 toks): [34, 40, 1232, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=37
+[run1] step 2: token_id=32
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=37
+[run2] step 2: token_id=32
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 11] token ids (6 toks): [35, 39, 731, 216, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 12] token ids (7 toks): [33, 37, 1232, 216, 35, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 13] token ids (6 toks): [35, 39, 731, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 14] token ids (7 toks): [35, 40, 1232, 216, 34, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 15] token ids (6 toks): [33, 37, 731, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=37
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=37
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 16] token ids (6 toks): [35, 1232, 216, 35, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 17] token ids (6 toks): [33, 41, 731, 216, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 18] token ids (7 toks): [34, 39, 1232, 216, 33, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=33
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=33
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 19] token ids (6 toks): [35, 37, 731, 216, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 20] token ids (7 toks): [35, 39, 1232, 216, 34, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=35
+[run1] step 3: token_id=39
+[run1] step 4: token_id=30
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=35
+[run2] step 3: token_id=39
+[run2] step 4: token_id=30
+[run2] step 5: token_id=198
+[prompt 21] token ids (7 toks): [35, 38, 731, 216, 33, 34, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=34
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=34
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 22] token ids (6 toks): [39, 1232, 216, 35, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 23] token ids (7 toks): [35, 39, 731, 216, 33, 35, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=35
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=35
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 24] token ids (6 toks): [34, 36, 1232, 216, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 25] token ids (6 toks): [35, 38, 731, 216, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 26] token ids (6 toks): [35, 39, 1232, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=37
+[run1] step 2: token_id=32
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=37
+[run2] step 2: token_id=32
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 27] token ids (7 toks): [36, 32, 731, 216, 33, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=36
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=36
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 28] token ids (7 toks): [35, 34, 1232, 216, 35, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 29] token ids (7 toks): [34, 40, 731, 216, 34, 33, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 30] token ids (7 toks): [35, 32, 1232, 216, 35, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 31] token ids (7 toks): [35, 32, 731, 216, 34, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 32] token ids (7 toks): [34, 32, 1232, 216, 33, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=34
+[run1] step 2: token_id=38
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=34
+[run2] step 2: token_id=38
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 33] token ids (7 toks): [33, 38, 731, 216, 33, 34, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=34
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=34
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 34] token ids (6 toks): [38, 1232, 216, 35, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 35] token ids (7 toks): [35, 36, 731, 216, 34, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 36] token ids (7 toks): [35, 34, 1232, 216, 34, 34, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=36
+[run1] step 3: token_id=36
+[run1] step 4: token_id=30
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=36
+[run2] step 3: token_id=36
+[run2] step 4: token_id=30
+[run2] step 5: token_id=198
+[prompt 37] token ids (7 toks): [34, 41, 731, 216, 33, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 38] token ids (6 toks): [35, 41, 1232, 216, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=38
+[run1] step 2: token_id=32
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=38
+[run2] step 2: token_id=32
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 39] token ids (6 toks): [35, 35, 731, 216, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 40] token ids (7 toks): [34, 39, 1232, 216, 33, 33, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=40
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=40
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 41] token ids (7 toks): [34, 34, 731, 216, 33, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 42] token ids (7 toks): [35, 34, 1232, 216, 34, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=40
+[run1] step 4: token_id=30
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=40
+[run2] step 4: token_id=30
+[run2] step 5: token_id=198
+[prompt 43] token ids (5 toks): [37, 731, 216, 35, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 44] token ids (7 toks): [35, 38, 1232, 216, 35, 39, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 45] token ids (7 toks): [34, 34, 731, 216, 34, 33, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 46] token ids (7 toks): [34, 35, 1232, 216, 35, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 47] token ids (7 toks): [35, 40, 731, 216, 35, 34, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 48] token ids (6 toks): [35, 32, 1232, 216, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 49] token ids (6 toks): [33, 40, 731, 216, 38, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 50] token ids (6 toks): [35, 33, 1232, 216, 37, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 51] token ids (6 toks): [34, 32, 731, 216, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 52] token ids (7 toks): [35, 39, 1232, 216, 34, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=35
+[run1] step 2: token_id=38
+[run1] step 3: token_id=30
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=35
+[run2] step 2: token_id=38
+[run2] step 3: token_id=30
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 53] token ids (7 toks): [34, 37, 731, 216, 33, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 54] token ids (6 toks): [34, 35, 1232, 216, 34, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=36
+[run1] step 3: token_id=198
+[run1] step 4: token_id=198
+[run1] step 5: token_id=504
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=36
+[run2] step 3: token_id=198
+[run2] step 4: token_id=198
+[run2] step 5: token_id=504
+[prompt 55] token ids (7 toks): [35, 32, 731, 216, 34, 35, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 56] token ids (7 toks): [33, 33, 1232, 216, 36, 32, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 57] token ids (6 toks): [35, 34, 731, 216, 40, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 58] token ids (6 toks): [36, 1232, 216, 33, 36, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=36
+[run1] step 3: token_id=36
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=36
+[run2] step 3: token_id=36
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
+[prompt 59] token ids (6 toks): [33, 41, 731, 216, 41, 446]
+[run1] step 0: token_id=216
+[run1] step 1: token_id=33
+[run1] step 2: token_id=32
+[run1] step 3: token_id=32
+[run1] step 4: token_id=198
+[run1] step 5: token_id=198
+[run2] step 0: token_id=216
+[run2] step 1: token_id=33
+[run2] step 2: token_id=32
+[run2] step 3: token_id=32
+[run2] step 4: token_id=198
+[run2] step 5: token_id=198
