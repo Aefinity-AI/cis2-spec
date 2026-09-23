@@ -1,0 +1,25 @@
+{
+  "mode": "run",
+  "categories": {
+    "truthfulness": {
+      "n_items": 60,
+      "n_pass": 3,
+      "score_frac": 0.05
+    },
+    "self_consistency": {
+      "n_items": 20,
+      "n_pass": 20,
+      "score_frac": 1.0
+    },
+    "tool_use": {
+      "n_items": 60,
+      "n_pass": 5,
+      "score_frac": 0.08333333333333333
+    },
+    "refusal": {
+      "n_items": 20,
+      "n_pass": 10,
+      "score_frac": 0.5
+    }
+  }
+}

@@ -32,45 +32,60 @@ provenance/license per category:
 
 ## 2. Honest limitation
 
-<!-- FILL IN AFTER RUN: either the actual run_eval.py --mode run numbers,
-     or, if weights fetch does not complete in time, the resume point. -->
-
-STATUS AS OF THIS COMMIT: harness (`eval/run_eval.py`), item files
-(`eval/items/*.jsonl`), and the `cis2_ref` decoded-text addition
-(`src/main.rs`) are built and committed. The SmolLM2-135M weight fetch
-(`scripts/fetch_weights.sh`, sha256-verified against
-`weights/MANIFEST.sha256`) has been unreliable on this box in this
-session — the HuggingFace CDN connection has repeatedly reset, timed out,
-or failed DNS resolution mid-transfer (see raw curl errors below), so no
-end-to-end `run_eval.py --mode run` has completed yet. No score in this
-document is fabricated; none exist yet for this reason.
+STATUS: weight fetch retried on 2026-09-23 and succeeded this time (HF CDN
+was flaky in the prior session; the earlier `curl` errors — HTTP/2 stream
+resets, DNS resolution failures for `us.aws.cdn.hf.co`, 300s timeouts, and
+connection resets — did not recur). All three artifacts fetched via
+`scripts/fetch_weights.sh weights` and sha256-verified against
+`weights/MANIFEST.sha256`:
 
 ```
-curl: (92) HTTP/2 stream 1 was not closed cleanly: CANCEL (err 8)
-curl: (6) Could not resolve host: us.aws.cdn.hf.co
-curl: (28) Connection timed out after 300173 milliseconds
-curl: (56) Recv failure: Connection reset by peer
+model.safetensors  80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+config.json         1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+tokenizer.json      9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
 ```
 
-**RESUME**: once `weights/model.safetensors` (sha256
-`80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1`,
-269,060,552 bytes) plus `config.json`/`tokenizer.json` are fully fetched
-(a resumable `curl -C -` retry loop was left running in the background at
-`~/projects/cis2-spec-cm-ev1/weights/`; check
-`sha256sum weights/*.{safetensors,json}` against
-`weights/MANIFEST.sha256` before trusting it), run:
-
-```sh
-cd cis2-spec-cm-ev1
-python3 eval/run_eval.py --mode run
-```
-
-then fill in the real per-category numbers below from
-`eval/results/summary.json`, replacing this section, and commit.
+`python3 eval/run_eval.py --mode run` then completed end-to-end (exit 0),
+building `cis2_ref` release and scoring all 160 items across the 4
+categories. Numbers below are copied verbatim from
+`eval/results/summary.json`; nothing here is fabricated or estimated.
 
 ## 3. Numbers
 
-(pending — see §2)
+Per `eval/results/summary.json`:
+
+| Category | n_items | n_pass | score_frac |
+|---|---|---|---|
+| `truthfulness` | 60 | 3 | 0.05 |
+| `self_consistency` | 20 | 20 | 1.0 |
+| `tool_use` | 60 | 5 | 0.0833... |
+| `refusal` | 20 | 10 | 0.5 |
+
+As expected for a non-instruction-tuned 135M base model (see §4):
+`truthfulness` and `tool_use` scores are near-floor (weak heuristic
+proxies against a base model with no instruction tuning); `refusal` sits
+at chance (10/20 — the 10 "should comply" items likely pass more often
+than the 10 "should refuse" items resist refusal-marker matching, but this
+was not broken out further here); `self_consistency` is a perfect 20/20,
+i.e. every one of the 20 self-consistency items produced bit-identical
+`run1_witness_digest`/`run2_witness_digest`/`run1_argmax_digest` within
+the same `cis2_ref` process, which is the actual claim this kit exists to
+support (deterministic fp32 CIS-2 reproducibility on this model), not the
+task-accuracy numbers.
+
+Full per-item receipts (including `run1_witness_digest`, `run1_argmax_digest`,
+`run1_tokens`, `run1_gen_text`, and pass/fail per item) are committed at
+`eval/results/{truthfulness,self_consistency,tool_use,refusal}.json`, with
+raw stdout/stderr in `eval/logs/*.run.log`.
+
+Note: `eval/logs/self_consistency.run.rerun.log` is `run_eval.py`'s own
+internal cross-process check for the `self_consistency` category (each
+item's prompt run in two separate `cis2_ref` invocations, per §1 table
+above) — it is produced automatically by `--mode run` and is not the same
+thing as `python3 eval/run_eval.py --mode verify`. A standalone `--mode
+verify` pass (re-deriving digests from scratch and diffing against the
+committed `eval/results/*.json`, ideally on a second host such as box2)
+has NOT been run as part of this task and is not claimed here — see §4.
 
 ## 4. What this does NOT show
 
