@@ -6,3 +6,5 @@ target/
 *.o
 eval/__pycache__/
 __pycache__/
+eval_data/
+verify3/cis2_verify3_int8
