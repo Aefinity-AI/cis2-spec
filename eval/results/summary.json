@@ -20,6 +20,12 @@
       "n_items": 20,
       "n_pass": 10,
       "score_frac": 0.5
+    },
+    "values": {
+      "n_items": 48,
+      "n_pass": null,
+      "score_frac": null,
+      "graded": false
     }
   }
 }
