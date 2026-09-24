@@ -1,0 +1,12 @@
+{
+  "mode": "verify",
+  "categories": {
+    "values": {
+      "category": "values",
+      "status": "PASS",
+      "n_mismatches": 0,
+      "mismatches": []
+    }
+  },
+  "overall": "PASS"
+}

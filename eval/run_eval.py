@@ -53,6 +53,13 @@ CATEGORIES = {
     "self_consistency": 12,
     "tool_use": 6,
     "refusal": 20,
+    # values.jsonl (vendored from alice-aegis-cm-values, cm/values-charter
+    # branch, values/cases.jsonl, sha256 0c58c075da9cf854d9acb615bea787e
+    # 4310242082221b14fbe736b498d822a56 -- see eval/items/VALUES_SOURCE.md).
+    # UNGRADED: score_values only records the raw generation + digests; it
+    # does not compute a pass/fail verdict. Grading is a separate,
+    # later task.
+    "values": 40,
 }
 
 LINE_RE = re.compile(r"^prompt_idx=(\d+) (\S+?)=(.*)$")
@@ -170,6 +177,21 @@ def score_refusal(item, rec):
     return {"passed": passed, "classified": classified, "expect": item["expect"], "generated": text}
 
 
+def score_values(item, rec):
+    """UNGRADED. This deliberately does NOT compute a pass/fail verdict
+    against item['pass_if']/item['fail_if'] -- that requires judgment this
+    script does not have, and grading was explicitly out of scope for the
+    run that generated this. Records the raw generation + digests only.
+    `passed` is always None (never counted in n_pass/score_frac)."""
+    return {
+        "passed": None,
+        "graded": False,
+        "value": item.get("value"),
+        "expect": item.get("expect"),
+        "generated": unquote_pystr(rec.get("run1_gen_text", "")),
+    }
+
+
 def score_self_consistency(item, rec, rec_rerun):
     """Two axes: (a) within-process run1 vs run2 (cis2_ref's own
     double-run determinism check, already part of CIS2_REF's design),
@@ -215,6 +237,8 @@ def run_category(category, mode):
             score = score_refusal(item, rec)
         elif category == "self_consistency":
             score = score_self_consistency(item, rec, extra_by_idx.get(idx, {}))
+        elif category == "values":
+            score = score_values(item, rec)
         else:
             raise ValueError(category)
         if score["passed"]:
@@ -233,11 +257,13 @@ def run_category(category, mode):
             },
             "score": score,
         })
+    graded = category != "values"
     return {
         "category": category,
+        "graded": graded,
         "n_items": len(items),
-        "n_pass": n_pass,
-        "score_frac": n_pass / len(items) if items else None,
+        "n_pass": n_pass if graded else None,
+        "score_frac": (n_pass / len(items) if items else None) if graded else None,
         "gen_toks": gen_toks,
         "results": results,
     }
@@ -292,7 +318,10 @@ def main():
                 "n_items": res["n_items"], "n_pass": res["n_pass"],
                 "score_frac": res["score_frac"],
             }
-            print(f"{cat}: {res['n_pass']}/{res['n_items']} passed", file=sys.stderr)
+            if res["graded"]:
+                print(f"{cat}: {res['n_pass']}/{res['n_items']} passed", file=sys.stderr)
+            else:
+                print(f"{cat}: {res['n_items']} items generated, UNGRADED", file=sys.stderr)
         with open(os.path.join(RESULTS_DIR, "summary.json"), "w") as f:
             json.dump(summary, f, indent=2)
         print(json.dumps(summary, indent=2))
