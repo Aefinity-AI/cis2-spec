@@ -302,6 +302,17 @@ void cis2_matvec(const float *w, const float *x, float *y, size_t out_features, 
     }
 }
 
+void cis2_matvec_batch(const float *w, const float **xs, float **ys,
+                        size_t out_features, size_t in_features, size_t batch_n)
+{
+    for (size_t o = 0; o < out_features; o++) {
+        const float *row = w + o * in_features;
+        for (size_t b = 0; b < batch_n; b++) {
+            ys[b][o] = cis2_dot_seq(row, xs[b], in_features);
+        }
+    }
+}
+
 /* ---- §8 RMSNorm ---- */
 void cis2_rmsnorm(const float *x, const float *weight, float eps, float *out, size_t n)
 {
