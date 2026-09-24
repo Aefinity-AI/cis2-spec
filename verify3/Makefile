@@ -28,6 +28,12 @@ INT8_SRCS = main_int8.c model.c model_int8.c quant.c mathpin.c tokenizer.c json.
 INT8_OBJS = $(INT8_SRCS:.c=.o)
 INT8_BIN = cis2_verify3_int8
 
+# small-2: ternary (BitNet-b1.58-style) per-output-channel weight
+# quantization / int32-accumulation path, purely additive alongside int8.
+TERNARY_SRCS = main_ternary.c model.c model_ternary.c quant.c quant_ternary.c mathpin.c tokenizer.c json.c sha256.c
+TERNARY_OBJS = $(TERNARY_SRCS:.c=.o)
+TERNARY_BIN = cis2_verify3_ternary
+
 all: $(BIN)
 
 $(BIN): $(OBJS)
@@ -38,6 +44,11 @@ int8: $(INT8_BIN)
 $(INT8_BIN): $(INT8_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(INT8_OBJS) $(LDFLAGS)
 
+ternary: $(TERNARY_BIN)
+
+$(TERNARY_BIN): $(TERNARY_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(TERNARY_OBJS) $(LDFLAGS)
+
 selftest: selftest.o mathpin.o tokenizer.o json.o sha256.o
 	$(CC) $(CFLAGS) -o $@ selftest.o mathpin.o tokenizer.o json.o sha256.o $(LDFLAGS)
 
@@ -45,6 +56,6 @@ selftest: selftest.o mathpin.o tokenizer.o json.o sha256.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(BIN) $(INT8_OBJS) $(INT8_BIN) selftest.o selftest
+	rm -f $(OBJS) $(BIN) $(INT8_OBJS) $(INT8_BIN) $(TERNARY_OBJS) $(TERNARY_BIN) selftest.o selftest
 
-.PHONY: all clean int8
+.PHONY: all clean int8 ternary
