@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Aefinity-AI/cis2-spec/tools/evidence_pack.schema.json",
+  "title": "CIS-2 Evidence Pack",
+  "description": "Schema for a single CIS-2 verifiable-inference evidence pack, documenting one receipt for an auditor/regulator. Deliberately contains NO timing/latency/performance fields by policy.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "receipt",
+    "canonical_weights_id",
+    "verifier",
+    "host_fingerprint",
+    "verdict",
+    "scope_disclaimer",
+    "acknowledgments"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "cis-evidence-pack/0.2"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "description": "ISO-8601 UTC timestamp this pack was generated"
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["source_path", "receipt_sha256", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "source_path": {"type": "string"},
+        "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "fields": {
+          "type": "object",
+          "description": "Digests/metadata parsed verbatim out of the receipt file (e.g. cis-digest, chain, model/embed/vocab hashes, token-ids). No values are fabricated; missing fields are simply absent."
+        },
+        "receipt_timestamp_utc": {"type": ["string", "null"]}
+      }
+    },
+    "canonical_weights_id": {
+      "type": "object",
+      "required": ["value", "method", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {"type": "string"},
+        "method": {
+          "type": "string",
+          "enum": [
+            "tools/canonical_weights_id.py",
+            "direct-sha256-of-weights-file",
+            "receipt-embedded-digest-not-independently-recomputed"
+          ]
+        },
+        "source": {"type": "string", "description": "path or provenance note"}
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "required": ["path", "sha256", "invocation", "output_source"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "version_string": {"type": ["string", "null"]},
+        "invocation": {"type": "string"},
+        "output_source": {
+          "type": "string",
+          "enum": ["provided-log-file", "invoked-by-evidence-pack"]
+        }
+      }
+    },
+    "host_fingerprint": {
+      "type": "object",
+      "required": ["isa", "platform", "pinned_env"],
+      "additionalProperties": false,
+      "properties": {
+        "isa": {"type": "string"},
+        "platform": {"type": "string"},
+        "cpu_model": {"type": ["string", "null"]},
+        "cpu_flags": {"type": "array", "items": {"type": "string"}},
+        "pinned_env": {
+          "type": "object",
+          "description": "Whether known pinning-relevant env vars/mechanisms are set (e.g. taskset affinity, RUSTFLAGS). No timing numbers.",
+          "additionalProperties": true
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["MATCH", "MISMATCH", "PASS", "FAIL", "VERIFY PASS", "VERIFY FAIL", "UNKNOWN"]
+    },
+    "verdict_raw_excerpt": {
+      "type": ["string", "null"],
+      "description": "Verbatim excerpt of the verifier output line(s) the verdict was parsed from"
+    },
+    "scope_disclaimer": {
+      "type": "string"
+    },
+    "acknowledgments": {
+      "type": "string",
+      "description": "Verbatim ACK block text from ACKNOWLEDGMENTS.md"
+    },
+    "render": {
+      "type": "object",
+      "properties": {
+        "format": {"type": "string", "enum": ["pdf-reportlab", "pdf-chromium", "markdown-fallback"]},
+        "fallback_disclosed": {"type": "boolean"}
+      }
+    }
+  }
+}
