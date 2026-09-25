@@ -1,0 +1,44 @@
+<html><body><pre># CIS-2 Evidence Pack
+
+schema_version: `cis-evidence-pack/0.2`  
+generated_at_utc: `2026-09-25T07:56:12Z`  
+verdict: **MATCH**
+
+## Scope
+This evidence pack documents ONE CIS-2 verifiable-inference receipt: that a specific, pinned set of model weights, config, and tokenizer, run through a specific reference verifier, reproduces a specific witness/decode digest bit-for-bit. It is Processing Integrity evidence for the inference computation step only. It contains no timing/latency numbers, no access-control, availability, or confidentiality evidence. An auditor should independently re-run the referenced verifier against the referenced inputs and confirm the digest match themselves; this pack is a transport format for what to feed the verifier, not a substitute for that re-verification.
+
+## Receipt
+- source_path: `/home/justinbrianthompson/projects/cis2-fp-cm-gpu2/gpu/kaggle_gpu2/receipts/gpu2-fp32-batched.receipt`
+- receipt_sha256: `9303b5af4ddb98568a19599b130647f67bb2b38e3ed09de010a46f42b29f6ae1`
+  - config: `batch1_fp32_seq`
+  - digest: `9a8e9234981858884e63559374146d0db0adf6761fa0d96993d4fd66430e64b7`
+  - vs_cpu_batch1: `MATCH`
+  - diffs: `0/576`
+
+## Canonical weights ID
+- value: `UNAVAILABLE`
+- method: `receipt-embedded-digest-not-independently-recomputed`
+- source: no weights file provided and no recognizable weights digest field in receipt
+
+## Verifier
+- path: `/home/justinbrianthompson/projects/cis2-fp-cm-gpu2/gpu/cis2_sweep_host`
+- sha256: `9793ed3eb2ed924793f1bf21a3993d452b2f3a152adab1845eba2df04236ce20`
+- invocation: `Rebuilt locally from gpu/cis2_sweep.cpp (g++ -std=c++17 -O2 -DCIS2_BATCH_GROUPED) for provenance pinning of the source that produced this SWEEP line; this local binary&#x27;s sha256 does NOT match the exact bits executed on Kaggle (Kaggle T4 kernel aefinityaiinc/gpu2-batch-int8 v2, COMPLETE, different toolchain/environment, real GPU+weights). verify-output is an excerpt of the committed Kaggle kernel log, not a fresh local re-run (no local GPU or model weights available on this box).`
+- output_source: provided-log-file
+- verdict excerpt: `61fa0d96993d4fd66430e64b7 vs_cpu_batch1=MATCH diffs=0/576`
+
+## Host fingerprint
+- isa: `x86_64`
+- platform: `Linux-6.6.147-09642-gea7f90d2e99e-x86_64-with-glibc2.41`
+- cpu_model: `Intel(R) Core(TM) i5-10210U CPU @ 1.60GHz`
+- cpu_flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 xsaves arat umip md_clear arch_capabilities
+- pinned_env: `{&quot;RUSTFLAGS&quot;: null, &quot;taskset_available&quot;: true, &quot;nproc&quot;: 8, &quot;in_container_cgroup_hint&quot;: false}`
+
+---
+
+## Acknowledgments
+
+A special thank you to Charles Seaman and Linda Blanchard, whose contributions have helped Aefinity AI stay on track.
+
+And a very special thank you to **Bonnie Rae Power**: an amazing woman, a great friend and neighbor, without whom Aefinity AI would have never had a chance to ever get started. Thank you, Bonnie, for your advice, care, encouragement, guidance, intuitive wisdom, and financial assistance.
+</pre></body></html>
