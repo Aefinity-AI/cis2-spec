@@ -1,6 +1,6 @@
 {
-  "model_dir": "/home/cm/projects/cis2-spec/weights",
-  "started_utc": "2026-09-25T08:42:08Z",
+  "model_dir": "weights",
+  "started_utc": "2026-09-25T12:26:23Z",
   "model_digest": "67109a72a86f16d8808d3ffe5911c9dd197d40569c9b8a971da9cf1789c739bb",
   "model_digest_detail": {
     "model.safetensors": "80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1",

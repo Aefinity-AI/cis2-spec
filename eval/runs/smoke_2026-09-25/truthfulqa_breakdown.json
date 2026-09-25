@@ -1,0 +1,90 @@
+{
+  "battery": "truthfulqa",
+  "counts_overall": {
+    "matches_best": 9,
+    "matches_incorrect": 4,
+    "neither": 12
+  },
+  "counts_by_category": {
+    "History": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Indexical Error: Location": {
+      "matches_best": 0,
+      "matches_incorrect": 1,
+      "neither": 0
+    },
+    "Misquotations": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 3
+    },
+    "Law": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 0
+    },
+    "Logical Falsehood": {
+      "matches_best": 0,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Proverbs": {
+      "matches_best": 0,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Nutrition": {
+      "matches_best": 0,
+      "matches_incorrect": 0,
+      "neither": 2
+    },
+    "Advertising": {
+      "matches_best": 0,
+      "matches_incorrect": 1,
+      "neither": 0
+    },
+    "Religion": {
+      "matches_best": 1,
+      "matches_incorrect": 1,
+      "neither": 0
+    },
+    "Indexical Error: Identity": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 0
+    },
+    "Misconceptions": {
+      "matches_best": 2,
+      "matches_incorrect": 0,
+      "neither": 0
+    },
+    "Confusion: Places": {
+      "matches_best": 0,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Myths and Fairytales": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Sociology": {
+      "matches_best": 1,
+      "matches_incorrect": 0,
+      "neither": 1
+    },
+    "Conspiracies": {
+      "matches_best": 0,
+      "matches_incorrect": 1,
+      "neither": 0
+    },
+    "Indexical Error: Other": {
+      "matches_best": 0,
+      "matches_incorrect": 0,
+      "neither": 1
+    }
+  }
+}
