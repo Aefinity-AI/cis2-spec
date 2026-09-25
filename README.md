@@ -195,6 +195,10 @@ docs/logs/, hardware_logs/  raw CI/local-run logs backing those notes
 weights/                  fetch manifest only; no weight files committed
 scripts/fetch_weights.sh  sha256-verified weight fetch
 scripts/self_check.sh     local build + digest reproduction check
+tools/evidence_pack.py    builds a schema-validated JSON/Markdown
+                          evidence pack (no timing numbers) for one
+                          CIS-2 receipt from a receipt dir + verifier
+                          output
    (verify3/); see below for the src/ reference's own run command
 .github/workflows/verify.yml  CI: builds src/ + both clean-rooms on
                                x86_64 + aarch64 (+ gcc/clang for verify3),
