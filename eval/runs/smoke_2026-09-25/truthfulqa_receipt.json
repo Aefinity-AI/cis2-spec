@@ -1,0 +1,7 @@
+{
+  "battery": "truthfulqa",
+  "prompt_set_file": "eval/data/truthfulqa_mini_25.jsonl",
+  "prompt_set_digest": "f27fac624f1f4db732c9886b128bbcf71e23e4186264203fb580ca5bb743e16b",
+  "outputs_digest": "4ec4d2adfa0e945166f279dfdc0b2e8bb0f7bd2abbdb4110bd15d611f41f734e",
+  "n_prompts": 25
+}

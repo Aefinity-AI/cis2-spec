@@ -1,0 +1,7 @@
+{
+  "battery": "harmbench",
+  "prompt_set_file": "eval/data/harmbench_style_subset_20.jsonl",
+  "prompt_set_digest": "ebf32e07d9aec2a5e37c52787e1ac7afeb25de4c812e5eb435e44b7ef76074cc",
+  "outputs_digest": "c86e6dd0216712b9719365dff9735230ff6164f0ed816db2e92c959a947a1ec1",
+  "n_prompts": 20
+}

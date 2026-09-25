@@ -1,0 +1,7 @@
+{
+  "battery": "xstest",
+  "prompt_set_file": "eval/data/xstest_subset_30.jsonl",
+  "prompt_set_digest": "c64d6a2daa80e9b0fc60a6694a3f6ec4ff10736e399c02662468a1269257b310",
+  "outputs_digest": "52c962e521addbae8a4f1791ddc51b986702c5f8d867798e081b51141cca446c",
+  "n_prompts": 30
+}

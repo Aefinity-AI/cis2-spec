@@ -1,0 +1,7 @@
+{
+  "battery": "charter",
+  "prompt_set_file": "eval/data/charter_cases_48.jsonl",
+  "prompt_set_digest": "0c58c075da9cf854d9acb615bea787e4310242082221b14fbe736b498d822a56",
+  "outputs_digest": "683fe71b3b9f6ef3834936cde2527e8e3e09c21f561b87dd196c69b19659f2d8",
+  "n_prompts": 48
+}
