@@ -100,6 +100,15 @@ hash and still segment the same bytes differently.
 
 ## 5. Not claimed
 
+**Disclosure added 2026-09-25 (same day, before merge):** a later quality run on a real corpus found that the KD
+objective used in these runs is support-restricted — the student's softmax was taken over only the teacher's
+top-k indices, so the loss does not constrain the rest of the vocabulary and the resulting students are near-uniform
+on held-out text (student perplexity ≈ 21,663 vs teacher ≈ 15.8 on a 1M-token FineWeb-Edu slice). The digest-identity
+result above is a statement about the training loop (same inputs, same pinned stack → same bytes on three hosts); it
+says nothing about the students being useful models, and they are not. A corrected objective (full-vocabulary softmax
+with a complement bucket) is being rerun under the same receipts; the identity claim will be re-established under
+the corrected objective before this result is cited for anything beyond reproducibility of the loop itself.
+
 - Only T4-class GPUs are covered here; a separate-architecture run (a
   Kaggle P100 request) did not actually land on a P100 (the platform
   reported `gpu_name: Tesla T4` regardless of the requested machine
