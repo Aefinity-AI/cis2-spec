@@ -379,3 +379,144 @@ void cis2_eval_teacher_forced(const cis2_model *m, const cis2_qmodel *qm, int us
     *nll_sum_out = ctx.nll_sum;
     *top1_matches_out = ctx.top1_matches;
 }
+
+uint32_t cis2_qdraft_next(const cis2_qmodel *qm, const uint32_t *tokens, size_t ntok)
+{
+    const cis2_model *m = qm->base;
+    float *logits = NULL;
+    forward_generic(m, qm, 1, tokens, ntok, &logits, NULL, NULL);
+    uint32_t next = argmax_logits(logits, m->cfg.vocab_size);
+    free(logits);
+    return next;
+}
+
+static void add_bias_opt_i8(float *x, const float *bias, size_t n)
+{
+    if (!bias) return;
+    for (size_t i = 0; i < n; i++) x[i] += bias[i];
+}
+
+float *cis2_qprocess_position(const cis2_qmodel *qm, cis2_decode_kv_cache *cache,
+                               size_t pos, uint32_t token_id, int need_logits)
+{
+    const cis2_model *m = qm->base;
+    size_t hidden = m->cfg.hidden_size;
+    size_t inter = m->cfg.intermediate_size;
+    size_t head_dim = m->head_dim;
+    size_t half = m->half;
+    size_t n_heads = m->cfg.num_attention_heads;
+    size_t n_kv = m->cfg.num_key_value_heads;
+    size_t nkv_dim = n_kv * head_dim;
+    size_t group = m->group;
+    float eps = m->cfg.rms_norm_eps;
+    float scale = cis2_rsqrt((float)head_dim);
+    size_t max_in = inter > hidden ? inter : hidden;
+
+    float *h = malloc(hidden * sizeof(float));
+    {
+        const int8_t *qrow = qm->embed.q + (size_t)token_id * hidden;
+        float escale = qm->embed.scale[token_id];
+        for (size_t i = 0; i < hidden; i++) h[i] = (float)qrow[i] * escale;
+    }
+
+    float *cos_p = malloc(half * sizeof(float));
+    float *sin_p = malloc(half * sizeof(float));
+    for (size_t i = 0; i < half; i++) {
+        float angle = (float)pos * m->inv_freq[i];
+        cos_p[i] = cis2_cos_pinned(angle);
+        sin_p[i] = cis2_sin_pinned(angle);
+    }
+
+    float *ln1 = malloc(hidden * sizeof(float));
+    float *ln2 = malloc(hidden * sizeof(float));
+    float *q = malloc(hidden * sizeof(float));
+    float *k_new = malloc(nkv_dim * sizeof(float));
+    float *v_new = malloc(nkv_dim * sizeof(float));
+    float *attn_out = malloc(hidden * sizeof(float));
+    float *o = malloc(hidden * sizeof(float));
+    float *gate = malloc(inter * sizeof(float));
+    float *up = malloc(inter * sizeof(float));
+    float *hid = malloc(inter * sizeof(float));
+    float *down = malloc(hidden * sizeof(float));
+    float *scores = malloc((pos + 1) * sizeof(float));
+    int8_t *qx_scratch = malloc(max_in * sizeof(int8_t));
+
+    for (size_t layer_i = 0; layer_i < m->cfg.num_hidden_layers; layer_i++) {
+        const cis2_layer *L = &m->layers[layer_i];
+        const cis2_qlayer *QL = &qm->layers[layer_i];
+        float *cache_k = cache->cache_k[layer_i];
+        float *cache_v = cache->cache_v[layer_i];
+
+        cis2_rmsnorm(h, L->input_layernorm, eps, ln1, hidden);
+
+        qmatvec(1, &QL->q_proj, NULL, ln1, q, hidden, hidden, qx_scratch);
+        add_bias_opt_i8(q, L->q_bias, hidden);
+        qmatvec(1, &QL->k_proj, NULL, ln1, k_new, nkv_dim, hidden, qx_scratch);
+        add_bias_opt_i8(k_new, L->k_bias, nkv_dim);
+        qmatvec(1, &QL->v_proj, NULL, ln1, v_new, nkv_dim, hidden, qx_scratch);
+        add_bias_opt_i8(v_new, L->v_bias, nkv_dim);
+
+        for (size_t qh = 0; qh < n_heads; qh++)
+            rope_apply_head(q + qh * head_dim, cos_p, sin_p, half);
+        for (size_t kh = 0; kh < n_kv; kh++)
+            rope_apply_head(k_new + kh * head_dim, cos_p, sin_p, half);
+
+        memcpy(cache_k + pos * nkv_dim, k_new, nkv_dim * sizeof(float));
+        memcpy(cache_v + pos * nkv_dim, v_new, nkv_dim * sizeof(float));
+
+        for (size_t qh = 0; qh < n_heads; qh++) {
+            size_t kv_head = qh / group;
+            const float *q_head = q + qh * head_dim;
+            for (size_t j = 0; j <= pos; j++) {
+                const float *k_j = cache_k + j * nkv_dim + kv_head * head_dim;
+                float d = cis2_dot_seq(q_head, k_j, head_dim);
+                scores[j] = d * scale;
+            }
+            float max_v = scores[0];
+            for (size_t j = 1; j <= pos; j++) if (scores[j] > max_v) max_v = scores[j];
+            for (size_t j = 0; j <= pos; j++) scores[j] = cis2_exp_pinned(scores[j] - max_v);
+            float denom = cis2_sum_seq(scores, pos + 1);
+            for (size_t j = 0; j <= pos; j++) scores[j] = scores[j] / denom;
+
+            float *out_head = attn_out + qh * head_dim;
+            for (size_t d = 0; d < head_dim; d++) {
+                float acc = 0.0f;
+                for (size_t j = 0; j <= pos; j++) {
+                    float pv = scores[j] * cache_v[j * nkv_dim + kv_head * head_dim + d];
+                    acc = acc + pv;
+                }
+                out_head[d] = acc;
+            }
+        }
+
+        qmatvec(1, &QL->o_proj, NULL, attn_out, o, hidden, hidden, qx_scratch);
+        for (size_t i = 0; i < hidden; i++) h[i] = h[i] + o[i];
+
+        cis2_rmsnorm(h, L->post_attention_layernorm, eps, ln2, hidden);
+
+        qmatvec(1, &QL->gate_proj, NULL, ln2, gate, inter, hidden, qx_scratch);
+        qmatvec(1, &QL->up_proj, NULL, ln2, up, inter, hidden, qx_scratch);
+        for (size_t i = 0; i < inter; i++) {
+            hid[i] = cis2_silu_pinned(gate[i]) * up[i];
+        }
+        qmatvec(1, &QL->down_proj, NULL, hid, down, hidden, inter, qx_scratch);
+        for (size_t i = 0; i < hidden; i++) h[i] = h[i] + down[i];
+    }
+
+    float *logits = NULL;
+    if (need_logits) {
+        float *hn = malloc(hidden * sizeof(float));
+        cis2_rmsnorm(h, m->norm_weight, eps, hn, hidden);
+        const cis2_qmat *qlm = qm->has_separate_lm_head ? &qm->lm_head : &qm->embed;
+        logits = malloc(m->cfg.vocab_size * sizeof(float));
+        qmatvec(1, qlm, NULL, hn, logits, m->cfg.vocab_size, hidden, qx_scratch);
+        free(hn);
+    }
+
+    free(h); free(cos_p); free(sin_p);
+    free(ln1); free(ln2); free(q); free(k_new); free(v_new);
+    free(attn_out); free(o); free(gate); free(up); free(hid); free(down); free(scores);
+    free(qx_scratch);
+
+    return logits;
+}

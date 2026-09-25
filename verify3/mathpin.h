@@ -37,6 +37,18 @@ float cis2_sum_seq(const float *a, size_t n);
 /* §5.2: y[o] = dot_seq(w[o,:], x), w row-major [out_features, in_features] */
 void cis2_matvec(const float *w, const float *x, float *y, size_t out_features, size_t in_features);
 
+/* spec-1: batched form of cis2_matvec -- computes ys[b][o] =
+ * dot_seq(w[o,:], xs[b], in_features) for b in [0, batch_n), for the SAME
+ * weight matrix w. Mathematically and bit-for-bit identical to calling
+ * cis2_matvec(w, xs[b], ys[b], out_features, in_features) once per b (each
+ * (b,o) output is an independent dot_seq reduction, unaffected by loop
+ * order), but streams each row of w from memory once and reuses it across
+ * all batch_n inputs instead of re-streaming w batch_n times -- this is
+ * the memory-bandwidth saving speculative decoding's batched target
+ * verification (model.c cis2_process_positions_batch) relies on. */
+void cis2_matvec_batch(const float *w, const float **xs, float **ys,
+                        size_t out_features, size_t in_features, size_t batch_n);
+
 /* §8 RMSNorm. out may alias x. */
 void cis2_rmsnorm(const float *x, const float *weight, float eps, float *out, size_t n);
 

@@ -72,4 +72,29 @@ void cis2_eval_teacher_forced(const cis2_model *m, const cis2_qmodel *qm, int us
                                double *nll_sum_out, size_t *top1_matches_out,
                                uint32_t *pred_ids_out);
 
+/* spec-1: one greedy draft step. Recomputes the full forward pass over
+ * tokens[0..ntok-1] (no KV cache -- this is the existing int8 path's
+ * existing behavior, unchanged) and returns argmax(logits at the last
+ * position), i.e. the int8 model's own greedy prediction of the next
+ * token. Used by the speculative-decoding driver (model_spec.c) to
+ * propose k draft tokens one at a time. Kept for reference/comparison;
+ * cis2_qprocess_position (below) is what the driver actually uses, since
+ * this O(ntok) per-call recompute makes whole-run drafting O(n_gen^2).
+ */
+uint32_t cis2_qdraft_next(const cis2_qmodel *qm, const uint32_t *tokens, size_t ntok);
+
+/* spec-1: incremental (KV-cache) single-position int8 forward step,
+ * mirroring model.c's cis2_process_position but with every weight matvec
+ * (q/k/v/o/gate/up/down/lm_head) going through the int8/int32 path
+ * (cis2_matvec_int8) instead of fp32 -- same KV-cache reuse discipline as
+ * fast-1 (each (layer,position) computed exactly once), applied to the
+ * draft model so proposing k tokens ahead costs O(k), not O(k*ntok).
+ * `cache` must be a cis2_decode_kv_cache allocated/owned by the caller
+ * (model.h's cis2_kv_cache_alloc/free -- the cache struct is just float
+ * K/V arrays, independent of weight dtype, so the same type is reused for
+ * both the fp32 target's cache and this int8 draft cache, as separate
+ * instances). Returns malloc'd logits[vocab] if need_logits, else NULL. */
+float *cis2_qprocess_position(const cis2_qmodel *qm, cis2_decode_kv_cache *cache,
+                               size_t pos, uint32_t token_id, int need_logits);
+
 #endif
