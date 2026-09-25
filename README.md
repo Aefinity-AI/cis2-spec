@@ -314,6 +314,13 @@ tools/evidence_pack.py    builds a schema-validated JSON/Markdown
   T4](docs/results/2026-09-19-GPU-BATCHED-FP32-DETERMINISM.md) — row-batched
   fp32 matches the CPU reference digest bit-for-bit at batch 1/4/8 on a
   T4; grouped-GEMM and int8 batching mismatch as designed.
+- [Cross-host deterministic knowledge distillation: two GPU hosts,
+  identical student checkpoints](docs/results/2026-09-25-DETERMINISTIC-KD-CROSS-HOST.md)
+  — a cached-teacher-logit KD training run reproduces bit-for-bit across
+  Kaggle and Lightning AI (AWS) T4 hosts once the tokenized fixture and
+  software stack are pinned; a disclosed negative shows an un-pinned
+  tokenizer version alone breaks cross-host identity upstream of any GPU
+  math.
 
 ## Related tooling
 
