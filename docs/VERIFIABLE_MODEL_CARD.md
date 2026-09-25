@@ -40,8 +40,9 @@ Worked example (base/teacher model used as the CIS-2 reference vector,
 weights_sha256   = 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
 config_sha256    = 1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
 tokenizer_sha256 = 9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
-licence_of_weights = PENDING — HuggingFaceTB/SmolLM2-135M's own model card is the
-  authority; not mirrored into this repo, so not retyped here from memory.
+licence_of_weights = apache-2.0 (HF Hub model metadata `license: apache-2.0` for
+  HuggingFaceTB/SmolLM2-135M, read via the Hub API 2026-09-25; the model card
+  on the Hub remains the authority and is not mirrored here).
 ```
 (source: `EXPECTED_DIGESTS.md`, primary normative vector, spec v0.3b)
 
@@ -241,10 +242,10 @@ precedes fm-7).
   no valid result yet: fm-4 was inconclusive and fm-4c is queued to
   re-run it; §6 stays PENDING (fm-7 not built).
 - `alice-model` is marked PRIVATE in its own README; no weights licence
-  has been set for any Aefinity-trained checkpoint referenced here, and
-  SmolLM2-135M's own licence text is not mirrored into this repo, so
-  §1's worked example leaves `licence_of_weights` PENDING rather than
-  retyping it from memory.
+  has been set for any Aefinity-trained checkpoint referenced here.
+  SmolLM2-135M and the fm-5/fm-7 teacher SmolLM2-360M both carry
+  `license: apache-2.0` in their Hub metadata (read 2026-09-25); the
+  Hub model cards remain the authority.
 - §3's teacher (SmolLM2-360M) is identified only by HF repo id in the
   source report, not a pinned `teacher_checkpoint_sha256` — a gap to
   close before this section is load-bearing.
