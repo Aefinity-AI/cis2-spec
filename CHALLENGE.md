@@ -59,8 +59,8 @@ your evidence.
 - Non-fp32 paths: quantized, int8, or mixed-precision runs.
 - Non-greedy decode, sampling, or batching — out of scope by spec §0.
 - GPU paths not already covered by `docs/GPU_RESULT.md`.
-- Timing differences of any kind — see `README.md`'s Rule A: no
-  tokens/sec figures, wall-clock only when explicitly labeled
+- Timing differences of any kind — project Rule A (no timing or
+  throughput claims): no tokens/sec figures, wall-clock only when explicitly labeled
   "(demo convenience, not throughput)".
 
 ## How to report

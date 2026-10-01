@@ -48,13 +48,18 @@ detailed enough to build a working, bit-exact implementation from, using none of
 code or dependencies.** It is evidence of specification sufficiency. It is not evidence of
 implementer independence.
 
-**The independent-implementer evidence is elsewhere, and it is the stronger asset.** The claim that
-*strangers* implemented this document down to identical bits rests on the earlier third-party
-implementations and the x86 / ARM / NVIDIA P100 reproductions — not on this crate. When the two are
-cited together, they should be cited for different things:
+**No outside party has reproduced these implementations yet.** `verify2/` (Rust) and `verify3/`
+(C) were written by isolated AI coding agents, each working from the specification text alone with
+no access to the reference implementation or to each other's work, and both operated by the same
+sole operator (Aefinity AI Inc.); their read-access boundary is recorded in
+`verify2/CLEANROOM_LOG.md` and `verify3/CLEANROOM_LOG.md`. This crate was written inside the same
+project, as described above. That supports specification sufficiency, but it is not evidence that
+unrelated people can implement the document to identical bits. The x86 / ARM / NVIDIA P100
+reproductions show matching pinned digests across hardware; they do not by themselves speak to
+authorship. When the pieces are cited together, they should be cited for different things:
 
-- third-party implementations → *strangers can do it* (independence)
-- this crate → *the document alone is sufficient, with no shared machinery* (sufficiency)
+- verify2 / verify3 / cis2-verify (one operator, separate read-access boundaries, no outside party yet) → *the document alone is sufficient, with no shared machinery* (sufficiency)
+- outside-party reproduction → not yet done
 
 Conflating them would weaken both.
 

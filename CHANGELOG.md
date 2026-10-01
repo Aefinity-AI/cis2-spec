@@ -5,6 +5,13 @@ clean-room verifiers. The reference implementation the spec was audited
 against lives in a separate repository (see README "Scope"); this
 changelog covers the spec text and verifiers published here.
 
+> **Correction note (2026-10-01).** The opening paragraph above says the
+> reference implementation lives in a separate repository. That is not
+> accurate for this tree: the reference implementation source is in `src/`
+> in this repository (alongside the verifiers). Older release entries below
+> are left unchanged as history. The README does not define "Rule A"; the
+> rule it refers to is: no timing or throughput claims.
+
 ## Errata against v0.3b
 
 Numbered corrections to the published v0.3b text. **No erratum here moves a
