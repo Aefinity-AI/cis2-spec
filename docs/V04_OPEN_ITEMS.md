@@ -3,7 +3,7 @@
 Tracking issues for prose-only open items called out in
 `docs/CIS2_SPEC_v0.3b.md`.
 
-- [#16](https://github.com/Aefinity-AI/cis2-spec/issues/16) — §15's
+- [#1](https://github.com/Aefinity-AI/cis2-spec/issues/1) — §15's
   conformance bar has carried a single (model, prompt, length) test vector
   since v0.1, unlike CIS-1's three-tier op-goldens/selftest/token-digest
   split; a future version should factor out op-level unit vectors

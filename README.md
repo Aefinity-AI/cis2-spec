@@ -33,10 +33,10 @@ That the model is aligned, refuses harmful requests, or is free of hallucination
 
 | Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Full run |
 | --- | --- | --- | --- | --- | --- |
-| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output in PR #21 |
-| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output in PR #21 |
-| box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | trimmed output in this PR |
-| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output in PR #21 |
+| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output kept in project records |
+| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output kept in project records |
+| box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | trimmed output kept in project records |
+| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output kept in project records |
 | Lightning AI Studio (AWS) | Intel Xeon Platinum 8488C (4 vCPU) | x86_64 AVX2/AVX-512 | Ubuntu 24.04, 6.8.0-1063-aws | — (only `scripts/self_check.sh` run, not `selfcheck.sh`) | [2026-09-25 note](docs/results/2026-09-25-LIGHTNING-STUDIO-SELFCHECK.md) |
 | phone | TBD | aarch64 (Android) | — | not yet run | pending |
 
