@@ -1,10 +1,46 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
+An open (Apache-2.0) specification and verifiers for bit-identical fp32 LLM
+inference "receipts".
+
+**What it is.** CIS-2 pins down every floating-point choice in an fp32
+transformer forward pass, so the same model on the same input gives the same
+bits on different machines. A short digest of those bits is a receipt that a
+third party can replay on its own hardware, without trusting the operator that
+produced it. It is for anyone who has to show that an output came from a
+specific model on a specific input: inference providers, audit and AI-governance
+platforms, evaluation labs.
+
+**What it is not.** It does not show that an answer is correct, safe or fair.
+It covers greedy decoding in fp32 only (no sampling, batching or quantization).
+The evidence so far is small open models (SmolLM2-135M is the pinned test
+vector), mostly on CPU; production bf16/GPU serving is outside the spec today.
+No unaffiliated party has reproduced it yet; every run listed below was done by
+the maintainer (see [HALL-OF-DIVERGENCE.md](HALL-OF-DIVERGENCE.md)).
+
+**Try it:** the command below, about 15 minutes, no account and no GPU.
+**Pilot it:** see [Work with us: paid pilots](#work-with-us-paid-pilots).
+
+## Work with us: paid pilots
+
+AEFINITY AI INC. runs paid pilots of 4 to 6 weeks, scoped to one pipeline:
+one of your inference pipelines emits CIS-2 receipts, our verifier replays them
+on a different machine, and you get a report of every mismatch plus a
+replayable artifact. Because the evidence is small models in fp32, the report
+also states how far your stack gets. Paid pilots; contact
+[justin.brian.thompson@gmail.com](mailto:justin.brian.thompson@gmail.com).
+Details: <https://aefinity-ai.github.io/pilot.html>.
+
 ## Reproduce this in <15 minutes
 
 ```
 git clone https://github.com/Aefinity-AI/cis2-spec && cd cis2-spec && ./selfcheck.sh
 ```
+
+Needs `git`, `curl`, `gcc`, `make`, `objdump` (binutils) and a Rust toolchain
+(`cargo`), plus network access to download the pinned SmolLM2-135M weights from
+Hugging Face (each file is checked against a pinned sha256). If you have no Rust
+toolchain, use the [shorter path](#shorter-path-digests-only) below.
 
 Expected output ends with (trimmed to the machine-fingerprint and summary
 lines; full log runs longer with build output in between):
@@ -23,22 +59,26 @@ user	0m53.911s
 sys	0m2.095s
 ```
 
+The summary reads `10 passed` when the optional Hugging Face mirror cross-check
+also runs; either is a pass. A non-zero `failed` count is a finding: see
+[Try to break it](#try-to-break-it).
+
 **What a successful self-check shows**  
 The same model weights + the same input produced bit-identical numerical results under the CIS-2 specification on the machine you just ran. An independent party can re-verify the result offline.
 
 **What it does not show**  
 That the model is aligned, refuses harmful requests, or is free of hallucinations. Those are separate properties of the model’s training and behavior.
 
-**Machines this has been run on**
+**Machines this has been run on** (all runs by the maintainer; box1 to box3 and penguin are the maintainer's own machines)
 
 | Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Full run |
 | --- | --- | --- | --- | --- | --- |
-| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | trimmed output kept in project records |
-| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | trimmed output kept in project records |
-| box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | trimmed output kept in project records |
-| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | trimmed output kept in project records |
+| box1 | Intel i5-5200U | x86_64 AVX2 | Linux 6.12.94+deb13-amd64 | 3m30s | log not published |
+| box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | log not published |
+| box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | log not published |
+| penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | log not published |
 | Lightning AI Studio (AWS) | Intel Xeon Platinum 8488C (4 vCPU) | x86_64 AVX2/AVX-512 | Ubuntu 24.04, 6.8.0-1063-aws | — (only `scripts/self_check.sh` run, not `selfcheck.sh`) | [2026-09-25 note](docs/results/2026-09-25-LIGHTNING-STUDIO-SELFCHECK.md) |
-| phone | TBD | aarch64 (Android) | — | not yet run | pending |
+| Android phone | not named in the repo record | aarch64 (Android) | — | `selfcheck.sh` not run on the device; the pinned §13.1 digests were reproduced on it through the KV-cache `verify3/` path | [2026-09-24 note, section 6](docs/results/2026-09-24-CROSS-ISA-TRAINING-RECEIPT.md) |
 
 One caveat on the penguin row: that machine's resolver could not reach the
 Hugging Face LFS CDN host at run time, so the three pinned artifacts were
@@ -52,15 +92,18 @@ later step ran normally on that host.
 Given a normative specification (`docs/CIS2_SPEC_v0.3b.md`) for
 an fp32 transformer forward pass (pinned floating-point environment,
 pinned reduction order, pinned transcendental polynomials, pinned digest
-format), independently-written implementations reproduce **bit-identical**
+format), implementations written from the spec text alone reproduce **bit-identical**
 full-logit output digests:
 
 - across instruction set architectures (x86_64 and aarch64),
 - across compilers and optimization levels (gcc, clang, rustc; `-O0`
   through `-O3`/`-Os`),
 - across languages (Rust and C, written by separate clean-room passes that
-  never read each other's source or the reference implementation),
-- across model families and decode horizons (see `EXPECTED_DIGESTS.md`),
+  never read each other's source or the reference implementation; the passes
+  were isolated AI coding agents run by one operator, see [Provenance](#provenance)),
+- across model families and decode horizons (informative evidence from the
+  reference implementation `src/`; see `EXPECTED_DIGESTS.md` for which spec
+  version each vector was run against),
 - and, as of 2026-09-08, across the CPU/GPU boundary: a CUDA implementation
   on an NVIDIA Tesla P100 reproduces the primary normative `CIS2_REF`
   digest bit-for-bit, with a byte-identical per-step trace
@@ -69,8 +112,12 @@ full-logit output digests:
 for a pinned (model, prompt, decode-length) test vector, matching a
 PyTorch/`transformers` oracle within floating-point tolerance.
 
-**Where to get it.** Tagged release:
-[`v0.3b`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.3b). The
+**Where to get it.** Tagged release of the spec this README describes:
+[`v0.3b`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.3b). The later
+tags [`v0.4`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.4) and
+[`v0.4.1`](https://github.com/Aefinity-AI/cis2-spec/releases/tag/v0.4.1) add
+agent-tool-call receipts and a receipt-gating prototype (design notes in
+`docs/design/`) and do not change the v0.3b spec text or digests. The
 spec, the five op-level conformance vectors, `EXPECTED_DIGESTS.md` and
 `docs/GPU_RESULT.md` are also mirrored on Hugging Face as
 [`aefinityAIINC/cis2-conformance`](https://huggingface.co/datasets/aefinityAIINC/cis2-conformance),
@@ -131,7 +178,7 @@ Expected last line:
 PASS: all digests match the pinned CIS-2 v0.3b test vector.
 ```
 
-**Independent reproduction.** The machine/compiler/ISA classes this
+**Environments checked.** The machine/compiler/ISA classes this
 repository documents as already having reproduced the primary `CIS2_REF`
 digest above are listed in `EXPECTED_DIGESTS.md`, `docs/GPU_RESULT.md`,
 and `.github/workflows/verify.yml` (currently: x86_64 and aarch64
@@ -252,8 +299,8 @@ payment). Report via
 [`divergence-report.yml`](.github/ISSUE_TEMPLATE/divergence-report.yml)
 or [`reproduction-report.yml`](.github/ISSUE_TEMPLATE/reproduction-report.yml),
 or open one directly:
-[divergence](../../issues/new?template=divergence-report.yml) /
-[reproduction](../../issues/new?template=reproduction-report.yml).
+[divergence](https://github.com/Aefinity-AI/cis2-spec/issues/new?template=divergence-report.yml) /
+[reproduction](https://github.com/Aefinity-AI/cis2-spec/issues/new?template=reproduction-report.yml).
 
 ## Paper and citation
 
@@ -315,7 +362,7 @@ tools/mcp/                MCP server tooling
 
 ## Related tooling
 
-[`receipt-view`](https://github.com/Aefinity-AI/alice-aegis/blob/cm/rc1-receipt-viewer/demo/agent-trace/receipt-view.py)
+[`receipt-view`](https://github.com/Aefinity-AI/alice-aegis/blob/main/demo/agent-trace/receipt-view.py)
 (in the `alice-aegis` repository, `demo/agent-trace/`) is a single-file,
 stdlib-only Python tool that turns an `agent_trace` agent-episode receipt
 (the sibling artifact to this repo's CIS-2 witness digests, hash-chaining
@@ -327,7 +374,7 @@ reimplemented hashing/replay) and its own README documents a 4-case
 mutation test (changed token, changed tool-result, a flipped bit in an
 intermediate decode-chain digest, and a reordered step), each correctly
 caught and correctly attributed to the right step. See
-[`demo/agent-trace/receipt-view-README.md`](https://github.com/Aefinity-AI/alice-aegis/blob/cm/rc1-receipt-viewer/demo/agent-trace/receipt-view-README.md).
+[`demo/agent-trace/receipt-view-README.md`](https://github.com/Aefinity-AI/alice-aegis/blob/main/demo/agent-trace/receipt-view-README.md).
 
 ## Acknowledgments
 
