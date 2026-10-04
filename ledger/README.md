@@ -4,8 +4,7 @@ This page is a public list of fingerprints of the records in our private experim
 short code that stands in for a record without revealing it. Lines marked backfill were published after the
 records they cover already existed. For a line marked backfill, the fingerprint shows that the record existed by
 the date the line was published here, and nothing more. It does not show when the record was really written.
-Today every line on this page is marked backfill, so this page does not yet show that any pass mark
-came before its result.
+Today 161 of the 165 lines on this page are marked backfill.
 
 The original times are kept in our private history. We can share them with a client under a confidentiality
 agreement, which is a signed promise to keep what we share private.
@@ -109,8 +108,8 @@ Every record has its own random salt, so one revealed record tells you nothing a
 
 ## What this page reveals
 
-At the time of this export the ledger holds 161 lines. They cover 57 registered experiments, and
-45 of them have a verdict line. 161 of the 161 lines are marked backfill.
+At the time of this export the ledger holds 165 lines. They cover 58 registered experiments, and
+48 of them have a verdict line. 161 of the 165 lines are marked backfill.
 
 The page also shows which kinds of line each experiment number has. So it shows which experiments had their pass
 mark amended before the run, which have not started, which are running and which have a verdict. The order of
