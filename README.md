@@ -355,6 +355,10 @@ tools/evidence_pack.py    builds a schema-validated JSON/Markdown
                           CIS-2 receipt from a receipt dir + verifier
                           output
 tools/mcp/                MCP server tooling
+ledger/                   fingerprint ledger of our private experiment
+                          register: salted, chained sha256 fingerprints,
+                          no experiment content (limits stated in
+                          ledger/README.md)
 .github/workflows/verify.yml  CI: builds src/ + both clean-rooms on
                                x86_64 + aarch64 (+ gcc/clang for verify3),
                                fails on any digest mismatch
