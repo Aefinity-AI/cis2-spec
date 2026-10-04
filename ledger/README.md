@@ -4,7 +4,7 @@ This page is a public list of fingerprints of the records in our private experim
 short code that stands in for a record without revealing it. Lines marked backfill were published after the
 records they cover already existed. For a line marked backfill, the fingerprint shows that the record existed by
 the date the line was published here, and nothing more. It does not show when the record was really written.
-Today 161 of the 180 lines on this page are marked backfill.
+Today 161 of the 184 lines on this page are marked backfill.
 
 The original times are kept in our private history. We can share them with a client under a confidentiality
 agreement, which is a signed promise to keep what we share private.
@@ -44,6 +44,10 @@ was tested or what was found. The limits are listed below, and they matter.
   guess either, because the salt is unknown.
 * `verify_ledger.py` is a short program that checks the page. It needs Python 3 and nothing else installed, and
   it needs no network.
+* `LEDGER.tsv.ots` is a timestamp proof made with OpenTimestamps (https://opentimestamps.org), a free public
+  service for dating files. It ties the exact content of `LEDGER.tsv` to a public time record that does not
+  depend on us or on GitHub. The proof is pending when it is made. After a few hours, run
+  `ots upgrade LEDGER.tsv.ots` and then `ots verify LEDGER.tsv.ots` (both need the free OpenTimestamps program).
 
 ## What this can show
 
@@ -86,10 +90,10 @@ was tested or what was found. The limits are listed below, and they matter.
 ## Where the dates come from
 
 We do not write dates into the ledger ourselves. The commit dates in a git history (the log of changes kept by
-the public repository) are set by whoever makes the commit, so do not rely on them alone. Rely on the time that
-GitHub records for each push and each merged pull request, shown on the Activity page of the public repository
-that hosts this page. This page ships without an OpenTimestamps proof for now, so that record is the whole of the
-dating evidence.
+the public repository) are set by whoever makes the commit, so do not rely on them alone. Rely on two outside
+records. One is the time that GitHub records for each push and each merged pull request, shown on the Activity
+page of the public repository that hosts this page. The other is the OpenTimestamps proof `LEDGER.tsv.ots`, which
+dates the file as a whole. You can check it with the `ots verify` command of the free OpenTimestamps program.
 
 ## How a client under a confidentiality agreement checks one record
 
@@ -104,8 +108,8 @@ Every record has its own random salt, so one revealed record tells you nothing a
 
 ## What this page reveals
 
-At the time of this export the ledger holds 180 lines. They cover 61 registered experiments, and
-52 of them have a verdict line. 161 of the 180 lines are marked backfill.
+At the time of this export the ledger holds 184 lines. They cover 63 registered experiments, and
+53 of them have a verdict line. 161 of the 184 lines are marked backfill.
 
 The page also shows which kinds of line each experiment number has. So it shows which experiments had their pass
 mark amended before the run, which have not started, which are running and which have a verdict. The order of
