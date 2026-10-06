@@ -173,9 +173,3 @@ device used for the cap-1c training result above.
 - No mismatch was found in cap-1b, cap-1c, or cap-1d, so nothing above
   is pinned as a general guarantee — each is reported as an observed
   result for its specific configuration and host set.
-
-## Acknowledgments
-
-A special thank you to Charles Seaman and Linda Blanchard, whose contributions have helped Aefinity AI stay on track.
-
-And a very special thank you to **Bonnie Rae Power**: an amazing woman, a great friend and neighbor, without whom Aefinity AI would have never had a chance to ever get started. Thank you, Bonnie, for your advice, care, encouragement, guidance, intuitive wisdom, and financial assistance.

@@ -116,9 +116,3 @@ mark amended before the run, which have not started, which are running and which
 the lines, and the times at which lines are added from now on, show when we work and roughly how long an
 experiment takes. Apart from these counts and line kinds, the page shows nothing about what was tested or what
 was found.
-
-## Acknowledgments
-
-A special thank you to Charles Seaman and Linda Blanchard, whose contributions have helped Aefinity AI stay on track.
-
-And a very special thank you to **Bonnie Rae Power**: an amazing woman, a great friend and neighbor, without whom Aefinity AI would have never had a chance to ever get started. Thank you, Bonnie, for your advice, care, encouragement, guidance, intuitive wisdom, and financial assistance.

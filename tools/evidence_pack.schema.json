@@ -12,8 +12,7 @@
     "verifier",
     "host_fingerprint",
     "verdict",
-    "scope_disclaimer",
-    "acknowledgments"
+    "scope_disclaimer"
   ],
   "additionalProperties": false,
   "properties": {
