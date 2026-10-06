@@ -379,9 +379,3 @@ mutation test (changed token, changed tool-result, a flipped bit in an
 intermediate decode-chain digest, and a reordered step), each correctly
 caught and correctly attributed to the right step. See
 [`demo/agent-trace/receipt-view-README.md`](https://github.com/Aefinity-AI/alice-aegis/blob/main/demo/agent-trace/receipt-view-README.md).
-
-## Acknowledgments
-
-A special thank you to Charles Seaman and Linda Blanchard, whose contributions have helped Aefinity AI stay on track.
-
-And a very special thank you to **Bonnie Rae Power**: an amazing woman, a great friend and neighbor, without whom Aefinity AI would have never had a chance to ever get started. Thank you, Bonnie, for your advice, care, encouragement, guidance, intuitive wisdom, and financial assistance.

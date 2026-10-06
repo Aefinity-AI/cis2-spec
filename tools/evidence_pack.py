@@ -402,10 +402,11 @@ def render_markdown(pack: dict) -> str:
     lines.append(f"- cpu_model: `{hf.get('cpu_model')}`")
     lines.append(f"- cpu_flags: {' '.join(hf.get('cpu_flags', []))}")
     lines.append(f"- pinned_env: `{json.dumps(hf['pinned_env'])}`")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append(pack["acknowledgments"])
+    if pack.get("acknowledgments"):
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+        lines.append(pack["acknowledgments"])
     return "\n".join(lines)
 
 
@@ -424,7 +425,7 @@ def main():
     ap.add_argument("--verify-invocation", default=None, help="human-readable description of how --verify-output was produced")
     ap.add_argument("--weights-file", default=None, help="path to the model weights file, for canonical-weights-id computation")
     ap.add_argument("--alt-repo", default=None, help="additional repo root to search for tools/canonical_weights_id.py")
-    ap.add_argument("--ack-file", required=True, type=Path, help="path to ACKNOWLEDGMENTS.md (block appended verbatim)")
+    ap.add_argument("--ack-file", default=None, type=Path, help="optional: path to ACKNOWLEDGMENTS.md (block appended verbatim)")
     ap.add_argument("--out-dir", required=True, type=Path)
     ap.add_argument("--schema", default=None, type=Path, help="path to evidence_pack.schema.json (default: alongside this script)")
     args = ap.parse_args()
@@ -441,7 +442,7 @@ def main():
     canonical_weights_id = compute_canonical_weights_id(args, receipt_fields)
     verifier_info, verdict, excerpt = get_verifier_info(args)
     host_fp = get_host_fingerprint()
-    ack_text = load_ack_block(args.ack_file)
+    ack_text = load_ack_block(args.ack_file) if args.ack_file else None
 
     pack = {
         "schema_version": SCHEMA_VERSION,
@@ -458,8 +459,9 @@ def main():
         "verdict": verdict,
         "verdict_raw_excerpt": excerpt,
         "scope_disclaimer": SCOPE_DISCLAIMER,
-        "acknowledgments": ack_text,
     }
+    if ack_text:
+        pack["acknowledgments"] = ack_text
 
     errors = validate_against_schema(pack, schema)
     if errors:
