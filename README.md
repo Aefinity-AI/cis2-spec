@@ -27,9 +27,9 @@ AEFINITY AI INC. runs paid pilots of 4 to 6 weeks, scoped to one pipeline:
 one of your inference pipelines emits CIS-2 receipts, our verifier replays them
 on a different machine, and you get a report of every mismatch plus a
 replayable artifact. Because the evidence is small models in fp32, the report
-also states how far your stack gets. Paid pilots; contact
-[justin.brian.thompson@gmail.com](mailto:justin.brian.thompson@gmail.com).
-Details: <https://aefinity-ai.github.io/pilot.html>.
+also states how far your stack gets. Paid pilots; contact us through the pilot page
+<https://aefinity-ai.github.io/pilot.html> or open a GitHub issue on this
+repository.
 
 ## Reproduce this in <15 minutes
 
