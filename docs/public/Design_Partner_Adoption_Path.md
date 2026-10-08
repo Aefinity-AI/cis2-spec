@@ -64,7 +64,7 @@ CIS-2 does not solve alignment, jailbreaks, or hallucination. It makes the float
 
 ## Next conversation
 
-Contact: justin.brian.thompson@gmail.com  
+Contact: https://aefinity-ai.github.io/pilot.html (or a GitHub issue on Aefinity-AI/cis2-spec)  
 Company site: https://aefinity-ai.github.io/  
 Full public materials: https://github.com/Aefinity-AI/cis2-spec/tree/main/docs/public
 

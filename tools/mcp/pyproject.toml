@@ -3,7 +3,7 @@ name = "cis2-mcp"
 version = "0.1.0"
 description = "Stdio MCP server exposing the CIS-2 verify3 clean-room verifier as tools."
 authors = [
-    { name = "cm", email = "justin.brian.thompson@gmail.com" }
+    { name = "cm", email = "100016477+Ranger3143@users.noreply.github.com" }
 ]
 requires-python = ">=3.10"
 dependencies = [

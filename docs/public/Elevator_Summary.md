@@ -51,6 +51,6 @@ A related manuscript is under confidential peer review. **Venue and submission d
 - AI safety framing: https://github.com/Aefinity-AI/cis2-spec/blob/main/docs/public/CIS2_and_AI_Safety.md
 - Design partner path: https://github.com/Aefinity-AI/cis2-spec/blob/main/docs/public/Design_Partner_Adoption_Path.md
 - Company site: https://aefinity-ai.github.io/
-- Contact: justin.brian.thompson@gmail.com
+- Contact: https://aefinity-ai.github.io/pilot.html (or a GitHub issue on Aefinity-AI/cis2-spec)
 
 Aefinity AI Inc. · Orange, Texas · 2026
