@@ -7,7 +7,7 @@ These documents explain the contribution of bit-identical inference in plain lan
 | Document | Purpose |
 |----------|---------|
 | [Elevator Summary](Elevator_Summary.md) | One-page overview for design partners and safety researchers |
-| [Paper Status](Paper_Status.md) | Preprint / review status (venue omitted during double-blind review) |
+| [Paper Status](Paper_Status.md) | Preprint / publication status |
 | [CIS-2 and AI Safety](CIS2_and_AI_Safety.md) | Where computational integrity sits in the overall AI safety landscape |
 | [Safety Case Contribution](Safety_Case_Contribution.md) | What CIS-2 can and cannot supply as evidence in an AI safety case |
 | [Safety Researcher FAQ](Safety_Researcher_FAQ.md) | Short answers on scope, limits, continuous validation, and how to try it |
