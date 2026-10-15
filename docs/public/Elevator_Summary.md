@@ -37,7 +37,7 @@ A PASS means an independent machine produced bit-identical results under the spe
 - Public challenge and issue templates for external reproductions and divergence reports.
 
 ## Research paper status
-A write-up was submitted to SaTML 2027 and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere. See [Paper Status](Paper_Status.md). An arXiv ID will be linked when a preprint is public.
+A write-up was submitted to a peer-reviewed security conference and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere. See [Paper Status](Paper_Status.md). An arXiv ID will be linked when a preprint is public.
 
 ## Who this is for
 - Organizations that need checkable provenance for high-stakes or regulated AI decisions.

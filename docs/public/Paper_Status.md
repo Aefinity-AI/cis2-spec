@@ -6,7 +6,7 @@ Last updated: 2026-10-15
 
 ## Publication status
 
-A write-up was submitted to SaTML 2027 and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere.
+A write-up was submitted to a peer-reviewed security conference and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere.
 
 ## arXiv preprint
 
