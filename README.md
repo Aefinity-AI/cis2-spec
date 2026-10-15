@@ -200,7 +200,7 @@ Plain-language explanations, AI safety framing, continuous-validation tools, and
 - [Continuous Validation of Bit-Identical Inference](docs/public/Continuous_Validation_of_Bit_Identical_Inference.md)
 - [Continuous Validation Experiment](docs/public/Continuous_Validation_Experiment.md)
 - [Continuous Validation Monitor](docs/public/Continuous_Validation_Monitor_Sketch.md) — see also `scripts/cis2_monitor.sh`
-- [Paper Status](docs/public/Paper_Status.md) — preprint / review status (no venue listed during double-blind review)
+- [Paper Status](docs/public/Paper_Status.md) — preprint / publication status
 - [How Outsiders Can Help](docs/public/How_Outsiders_Can_Help.md)
 - [Index of public materials](docs/public/README.md)
 
@@ -304,7 +304,7 @@ or open one directly:
 
 ## Paper and citation
 
-A related manuscript is under confidential peer review. Venue and submission details are omitted here during double-blind review (see [docs/public/Paper_Status.md](docs/public/Paper_Status.md)).
+A write-up was submitted to SaTML 2027 and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere. See [docs/public/Paper_Status.md](docs/public/Paper_Status.md).
 
 Cite the open-source software via `CITATION.cff`. An arXiv ID will be linked when a preprint is public.
 

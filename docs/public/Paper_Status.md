@@ -1,14 +1,12 @@
 # Paper and preprint status
 **Aefinity AI · CIS-2 related research**  
-Last updated: 2026-09-27
+Last updated: 2026-10-15
 
 ---
 
-## Peer-reviewed venues
+## Publication status
 
-A manuscript related to bit-exact inference receipts and integrity checks is under confidential peer review. **No venue, submission number, or under-review status is listed here** while double-blind review is in progress, to avoid behaviors that could inform reviewers of author identity.
-
-This page will be updated after the review process concludes (acceptance, rejection, or withdrawal).
+A write-up was submitted to SaTML 2027 and was not accepted at initial review (reason given: the scope of the core result was too narrow). Our next step is independent reproduction before resubmitting anywhere.
 
 ## arXiv preprint
 
@@ -18,7 +16,7 @@ This page will be updated after the review process concludes (acceptance, reject
 | **Blocker** | First-time submitter endorsement requirement for the target subject class |
 | **When available** | This page and `CITATION.cff` will be updated with the arXiv ID once the preprint is online |
 
-Posting a preprint is generally allowed by many venues; authors should still avoid promotional posts that intentionally link the public identity to an anonymized submission during review.
+Posting a preprint is generally allowed by many venues; authors should still check each venue's policy before posting.
 
 ## How to cite the software today
 
@@ -34,7 +32,7 @@ After a formal publication or arXiv posting, prefer the archival citation; keep 
 
 ## Related public evidence (already online)
 
-These artifacts are independent of any under-review manuscript and may be used and cited on their own terms:
+These artifacts are independent of any manuscript and may be used and cited on their own terms:
 
 - [Bitflip head-to-head](../results/2026-09-13-BITFLIP-HEADTOHEAD.md)
 - [Embedding substitution head-to-head](../results/2026-09-17-EMBED-SUBSTITUTION-HEADTOHEAD.md)
