@@ -77,7 +77,7 @@ That the model is aligned, refuses harmful requests, or is free of hallucination
 | box2 | Intel Celeron N4020 | x86_64 scalar (no AVX2) | Linux 6.12.94+deb13-amd64 | 5m58s (margin under the <10min target is thin) | log not published |
 | box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | log not published |
 | penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | log not published |
-| Lightning AI Studio (AWS) | Intel Xeon Platinum 8488C (4 vCPU) | x86_64 AVX2/AVX-512 | Ubuntu 24.04, 6.8.0-1063-aws | — (only `scripts/self_check.sh` run, not `selfcheck.sh`) | [2026-09-25 note](docs/results/2026-09-25-LIGHTNING-STUDIO-SELFCHECK.md) |
+| Lightning AI Studio (AWS) | Intel Xeon Platinum 8488C (4 vCPU) | x86_64 (AVX-512-capable CPU; generic build, no AVX-512 code path exercised) | Ubuntu 24.04, 6.8.0-1063-aws | — (self-check only: `scripts/self_check.sh` run with `-mno-fma`, not `selfcheck.sh`) | [2026-09-25 note](docs/results/2026-09-25-LIGHTNING-STUDIO-SELFCHECK.md) |
 | Android phone | not named in the repo record | aarch64 (Android) | — | `selfcheck.sh` not run on the device; the pinned §13.1 digests were reproduced on it through the KV-cache `verify3/` path | [2026-09-24 note, section 6](docs/results/2026-09-24-CROSS-ISA-TRAINING-RECEIPT.md) |
 
 One caveat on the penguin row: that machine's resolver could not reach the
