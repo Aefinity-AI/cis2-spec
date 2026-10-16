@@ -42,9 +42,26 @@ jobs:
             arch_label: x86_64
           - os: ubuntu-24.04-arm
             arch_label: aarch64
+          - os: macos-15
+            arch_label: aarch64
+          - os: macos-15-intel
+            arch_label: x86_64
+          - os: windows-2025
+            arch_label: x86_64
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
+      # macOS ships BSD grep/coreutils; the steps below use grep -P,
+      # sha256sum and nice, so put the GNU versions first on PATH.
+      - name: GNU userland (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils grep
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: uname (assert matches expected arch)
         run: |
@@ -52,13 +69,14 @@ jobs:
           if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
             [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
           else
-            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+            { [ "$U" = "aarch64" ] || [ "$U" = "arm64" ]; } || { echo "expected aarch64, got $U"; exit 1; }
           fi
 
       - name: Install Rust (pinned via rust-toolchain.toml)
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: "1.98.0"
+          components: ${{ matrix.os == 'windows-2025' && 'llvm-tools' || '' }}
 
       - name: Fetch pinned weights (SmolLM2-135M)
         run: |
@@ -70,7 +88,18 @@ jobs:
 
       - name: FMA gate (objdump, zero fused multiply-add on decode path)
         run: |
-          objdump -d target/release/cis2_ref > /tmp/disasm_ref.txt
+          case "$RUNNER_OS" in
+            Windows)
+              # MSVC target: no binutils objdump; use rustup's llvm-objdump.
+              OBJDUMP="$(rustc --print sysroot)/lib/rustlib/x86_64-pc-windows-msvc/bin/llvm-objdump.exe"
+              BIN=target/release/cis2_ref.exe ;;
+            *)
+              # macOS: Xcode's objdump is llvm-objdump (handles Mach-O).
+              OBJDUMP=objdump
+              BIN=target/release/cis2_ref ;;
+          esac
+          "$OBJDUMP" -d "$BIN" > /tmp/disasm_ref.txt
+          [ -s /tmp/disasm_ref.txt ] || { echo "empty disassembly - gate would be vacuous"; exit 1; }
           if grep -Ei 'vfmadd|vfnmadd|vfmsub|vfnmsub|fmadd|fmsub|fmla|fmls' /tmp/disasm_ref.txt; then
             echo "FMA-family instruction found in disassembly — spec §1.4 violation"
             exit 1
@@ -80,7 +109,8 @@ jobs:
       - name: Run reference and check witness digest
         run: |
           set -euo pipefail
-          OUT=$(nice ./target/release/cis2_ref | tee /tmp/reference_output.txt)
+          BIN=./target/release/cis2_ref; [ "$RUNNER_OS" = Windows ] && BIN=./target/release/cis2_ref.exe
+          OUT=$($BIN | tee /tmp/reference_output.txt)
           witness=$(echo "$OUT" | grep -oP '(?<=^CIS2_REF digest=)[0-9a-f]+' | head -1 || true)
           echo "witness: got=$witness expected=$EXPECTED_WITNESS"
           [ "$witness" = "$EXPECTED_WITNESS" ] || { echo "MISMATCH: witness digest"; exit 1; }
@@ -204,9 +234,22 @@ jobs:
             arch_label: x86_64
           - os: ubuntu-24.04-arm
             arch_label: aarch64
+          - os: macos-15
+            arch_label: aarch64
+          - os: macos-15-intel
+            arch_label: x86_64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      # macOS ships BSD grep/coreutils; the steps below use grep -P,
+      # sha256sum and nice, so put the GNU versions first on PATH.
+      - name: GNU userland (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils grep
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: uname (assert matches expected arch)
         run: |
@@ -214,7 +257,7 @@ jobs:
           if [ "${{ matrix.arch_label }}" = "x86_64" ]; then
             [ "$U" = "x86_64" ] || { echo "expected x86_64, got $U"; exit 1; }
           else
-            [ "$U" = "aarch64" ] || { echo "expected aarch64, got $U"; exit 1; }
+            { [ "$U" = "aarch64" ] || [ "$U" = "arm64" ]; } || { echo "expected aarch64, got $U"; exit 1; }
           fi
 
       - name: Install Rust (pinned via rust-toolchain.toml)
@@ -406,11 +449,27 @@ jobs:
           - os: ubuntu-24.04-arm
             arch_label: aarch64
             cc: clang
+          - os: macos-15
+            arch_label: aarch64
+            cc: clang
+          - os: macos-15-intel
+            arch_label: x86_64
+            cc: clang
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
+      # macOS ships BSD grep/coreutils; the steps below use grep -P,
+      # sha256sum and nice, so put the GNU versions first on PATH.
+      - name: GNU userland (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils grep
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
+
       - name: Install toolchain
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc clang binutils curl
