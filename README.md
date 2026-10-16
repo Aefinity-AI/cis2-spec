@@ -203,6 +203,7 @@ Plain-language explanations, AI safety framing, continuous-validation tools, and
 - [Paper Status](docs/public/Paper_Status.md) — preprint / publication status
 - [How Outsiders Can Help](docs/public/How_Outsiders_Can_Help.md)
 - [Index of public materials](docs/public/README.md)
+- [Plain-language note: what bit-identical inference and receipts buy for trust](docs/NOTE.md)
 
 Existing concrete demonstrations that the full-logit witness digest catches alterations token-level checks can miss:
 
