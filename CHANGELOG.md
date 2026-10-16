@@ -16,6 +16,8 @@ changelog covers the spec text and verifiers published here.
 
 - docs: `docs/REPRODUCTIONS.md` adds a reproduction table for the pinned `CIS2_REF` digests (`gen_toks` 16 and 128) on lab hosts: Rust reference on an SSE4.2-only CPU, C++ reference on an AVX2 CPU, and CUDA on sm_75, with cleaned logs `hardware_logs/w1_digest_box2_2026-10-16.log` and `hardware_logs/w1_digest_box6_2026-10-16.log`. Tree-reduction variant rows are marked CANDIDATE (no pinned value). No pinned digest changes.
 
+- docs: `docs/results/2026-10-16-OPENCL-BACKEND.md` and an OpenCL section in `docs/REPRODUCTIONS.md`: an OpenCL 1.2 port of the C++ reference reproduces the pinned digests on pocl, NVIDIA OpenCL and an Intel iGPU (software divide/sqrt build), and the iGPU with hardware divide/sqrt diverges as a negative control. Rows are CANDIDATE-PENDING-LEG until the pre-registered leg finishes. No pinned digest changes.
+
 ## Errata against v0.3b
 
 Numbered corrections to the published v0.3b text. **No erratum here moves a
