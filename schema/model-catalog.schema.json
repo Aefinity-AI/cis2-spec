@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Aefinity-AI/cis2-spec/schema/model-catalog.schema.json",
+  "title": "Model catalog record",
+  "description": "One record per model artifact: identity, training manifest, CIS-2 conformance digests, eval results, licence. Draft v0.1.",
+  "type": "object",
+  "required": ["schema_version", "record_id", "model_name", "licence", "artifact_ref", "training", "inference_conformance", "eval"],
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "source": { "type": "string", "minLength": 1, "description": "Path, URL or commit identifying the log or report the value was read from." },
+    "host": {
+      "type": "object",
+      "required": ["host", "cpu_or_gpu"],
+      "additionalProperties": false,
+      "properties": {
+        "host": { "type": "string", "minLength": 1 },
+        "cpu_or_gpu": { "type": "string", "minLength": 1 },
+        "framework_version": { "type": "string" },
+        "kernel_pin": { "type": "string", "description": "Forced-kernel environment settings, or the literal string none." }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": { "const": "model-catalog/0.1" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "model_name": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1, "description": "SPDX identifier, UNLICENSED, PROPRIETARY, or unknown-needs-decision." },
+    "artifact_ref": {
+      "type": "object",
+      "required": ["weights_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "model_id": { "type": "string" },
+        "weights_sha256": { "$ref": "#/$defs/sha256" },
+        "config_sha256": { "$ref": "#/$defs/sha256" },
+        "tokenizer_sha256": { "$ref": "#/$defs/sha256" },
+        "repo": { "type": "string" },
+        "commit": { "type": "string" }
+      }
+    },
+    "training": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["run", "not_run", "third_party"] },
+        "note": { "type": "string" },
+        "seed": { "type": "integer" },
+        "total_steps": { "type": "integer", "minimum": 1 },
+        "model_config": { "type": "object" },
+        "param_counts": {
+          "type": "object",
+          "required": ["total"],
+          "properties": { "total": { "type": "integer" }, "trainable": { "type": "integer" } }
+        },
+        "data_sha256": { "$ref": "#/$defs/sha256" },
+        "checkpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step", "checkpoint_sha256", "host"],
+            "additionalProperties": false,
+            "properties": {
+              "step": { "type": "integer", "minimum": 0 },
+              "loss": { "type": "number" },
+              "checkpoint_sha256": { "$ref": "#/$defs/sha256" },
+              "host": { "type": "string" }
+            }
+          }
+        },
+        "hosts": { "type": "array", "items": { "$ref": "#/$defs/host" } },
+        "determinism_claim": {
+          "type": "object",
+          "required": ["level", "source"],
+          "additionalProperties": false,
+          "properties": {
+            "level": { "enum": ["unverified", "same-machine-reproducible", "cross-machine-bit-identical"] },
+            "cross_machine_status": { "enum": ["not_attempted", "unresolved", "confirmed-match", "confirmed-mismatch"] },
+            "note": { "type": "string" },
+            "source": { "type": "array", "items": { "$ref": "#/$defs/source" }, "minItems": 1 }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "run" } }, "required": ["status"] },
+          "then": { "required": ["seed", "total_steps", "checkpoints", "hosts", "determinism_claim"] }
+        },
+        {
+          "if": {
+            "properties": { "determinism_claim": { "properties": { "level": { "const": "cross-machine-bit-identical" } }, "required": ["level"] } },
+            "required": ["determinism_claim"]
+          },
+          "then": { "properties": { "hosts": { "minItems": 2 }, "determinism_claim": { "properties": { "cross_machine_status": { "const": "confirmed-match" } }, "required": ["cross_machine_status"] } } }
+        }
+      ]
+    },
+    "inference_conformance": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["run", "not_run"] },
+        "spec": { "type": "string" },
+        "spec_version": { "type": "string" },
+        "test_vector": { "type": "string" },
+        "digests": {
+          "type": "object",
+          "required": ["witness", "argmax", "table", "inv_freq"],
+          "additionalProperties": false,
+          "properties": {
+            "witness": { "$ref": "#/$defs/sha256" },
+            "argmax": { "$ref": "#/$defs/sha256" },
+            "table": { "$ref": "#/$defs/sha256" },
+            "inv_freq": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "hosts_replayed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["host", "cpu_or_gpu", "result"],
+            "additionalProperties": false,
+            "properties": {
+              "host": { "type": "string" },
+              "cpu_or_gpu": { "type": "string" },
+              "result": { "enum": ["PASS", "FAIL"] }
+            }
+          }
+        },
+        "overall_result": { "enum": ["MATCH", "MISMATCH", "PARTIAL"] },
+        "source": { "$ref": "#/$defs/source" }
+      },
+      "if": { "properties": { "status": { "const": "run" } }, "required": ["status"] },
+      "then": { "required": ["spec", "spec_version", "digests", "hosts_replayed", "overall_result", "source"] }
+    },
+    "eval": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["run", "not_run"] },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["metric", "value", "host", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "metric": { "type": "string", "minLength": 1 },
+              "value": { "type": "number" },
+              "host": { "type": "string", "minLength": 1 },
+              "source": { "$ref": "#/$defs/source" },
+              "commit": { "type": "string" },
+              "eval_data_sha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "status": { "const": "run" } }, "required": ["status"] },
+      "then": { "required": ["results"], "properties": { "results": { "minItems": 1 } } }
+    },
+    "publish_status": { "type": "string" }
+  }
+}
