@@ -1,0 +1,18 @@
+# GitHub Actions job 116897776528 of run 38878051258 (cis2-spec commit eb70f3b9aa4c12cfdde48ff7aa0ad050ea6bb10e, PR #52), 2026-10-16.
+# Cleaned per docs/REPRODUCTIONS.md 'How to add a row': timestamps, timing and runner identifiers removed; full log: https://github.com/Aefinity-AI/cis2-spec/actions/runs/38878051258/job/116897776528
+macOS
+15.7.9
+Image: macos-15-arm64
+Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337
+  WEIGHTS_SHA256: 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+rustc 1.98.0 (88d9e12ae 2026-08-18)
+host: aarch64-apple-darwin
+release: 1.98.0
+  expected=80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+  got=     80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+  expected=1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+  got=     1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843
+  expected=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+  got=     9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+witness: got=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df
+PASS: reference (aarch64) matches CIS2_REF

@@ -78,6 +78,7 @@ That the model is aligned, refuses harmful requests, or is free of hallucination
 | box3 | Intel Celeron N4020C | x86_64 scalar (sse4_2 only, no AVX2) | Linux 6.12.94+deb13-amd64 | 8m32s (margin under the <10min target is thin) | log not published |
 | penguin | Intel i5-10210U | x86_64 AVX2 | Linux 6.6.147-09642-gea7f90d2e99e (ChromeOS Crostini container, Debian 13) | 1m58s | log not published |
 | Lightning AI Studio (AWS) | Intel Xeon Platinum 8488C (4 vCPU) | x86_64 (AVX-512-capable CPU; generic build, no AVX-512 code path exercised) | Ubuntu 24.04, 6.8.0-1063-aws | — (self-check only: `scripts/self_check.sh` run with `-mno-fma`, not `selfcheck.sh`) | [2026-09-25 note](docs/results/2026-09-25-LIGHTNING-STUDIO-SELFCHECK.md) |
+| GitHub-hosted runners (CI, every push) | not fixed: Apple Silicon (`macos-15`), Intel x86_64 (`macos-15-intel`, `windows-2025`) | aarch64 (macOS), x86_64 (macOS, Windows MSVC target) | macOS 15.7.9 / Windows 10.0.26100 (image releases pinned in `docs/REPRODUCTIONS.md`) | — (CI runs the reference, `cis2-verify/` and `verify3/`, not `selfcheck.sh`) | [`docs/REPRODUCTIONS.md`](docs/REPRODUCTIONS.md), CI cells E–G |
 | Android phone | not named in the repo record | aarch64 (Android) | — | `selfcheck.sh` not run on the device; the pinned §13.1 digests were reproduced on it through the KV-cache `verify3/` path | [2026-09-24 note, section 6](docs/results/2026-09-24-CROSS-ISA-TRAINING-RECEIPT.md) |
 
 One caveat on the penguin row: that machine's resolver could not reach the
@@ -95,7 +96,8 @@ pinned reduction order, pinned transcendental polynomials, pinned digest
 format), implementations written from the spec text alone reproduce **bit-identical**
 full-logit output digests:
 
-- across instruction set architectures (x86_64 and aarch64),
+- across instruction set architectures (x86_64 and aarch64) and operating
+  systems (Linux, macOS on Apple Silicon and Intel, Windows on the MSVC target),
 - across compilers and optimization levels (gcc, clang, rustc; `-O0`
   through `-O3`/`-Os`),
 - across languages (Rust and C, written by separate clean-room passes that
@@ -181,9 +183,11 @@ PASS: all digests match the pinned CIS-2 v0.3b test vector.
 **Environments checked.** The machine/compiler/ISA classes this
 repository documents as already having reproduced the primary `CIS2_REF`
 digest above are listed in `EXPECTED_DIGESTS.md`, `docs/GPU_RESULT.md`,
-and `.github/workflows/verify.yml` (currently: x86_64 and aarch64
-GitHub Actions runners, gcc and clang, and — as of 2026-09-08 — an
-NVIDIA Tesla P100 CUDA implementation). This is not a claim that no other
+and `.github/workflows/verify.yml` (currently: Linux x86_64 and aarch64,
+macOS Apple Silicon and Intel, and Windows x86_64 (MSVC target) GitHub
+Actions runners, gcc and clang, and — as of 2026-09-08 — an
+NVIDIA Tesla P100 CUDA implementation; the macOS and Windows cells since
+2026-10-16, see `docs/REPRODUCTIONS.md`). This is not a claim that no other
 environment could diverge; it is a record of which environments have been
 checked and are re-checked on every push by CI.
 
@@ -342,7 +346,8 @@ cis2-verify/              further from-spec verifier; NOT a clean room,
 kits/                     verification kit (receipts + verify script)
 eval/, prompts/           mini eval harness and prompt sets
 docs/GPU_RESULT.md        CPU/GPU bit-identity result (P100, 2026-09-08)
-docs/REPRODUCTIONS.md     reproduction table: Rust ref (SSE4.2), C++ (AVX2), CUDA sm_75
+docs/REPRODUCTIONS.md     reproduction table: Rust ref (SSE4.2), C++ (AVX2), CUDA sm_61/sm_75,
+                          macOS arm64/Intel and Windows MSVC CI cells
 docs/                     spec, E15*/E2x-E4x evidence and result notes
 docs/results/             dated result write-ups (see Results)
 docs/design/              receipt design notes
