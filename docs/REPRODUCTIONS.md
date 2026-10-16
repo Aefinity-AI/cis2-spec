@@ -99,3 +99,14 @@ Every row above is a lab-run row (pre-registered leg, ledger batches 38 and 39);
 1. Run the verification kit (`kits/`) or `scripts/self_check.sh` on your hardware for `gen_toks=16`, and for `gen_toks=128` where your implementation supports it, against the pinned weights (`scripts/fetch_weights.sh` checks the sha256).
 2. Copy the `row ...` and build/toolchain lines from your output. Remove every timing field (`wall_s=...`, durations, throughput) and reduce start/done stamps to dates. Replace hostnames, IP addresses, user names and home paths with a host-class label.
 3. Save the cleaned text as `hardware_logs/<tag>_<date>.log` and add one table row per `gen_toks` value to the table above: date, CPU and ISA class, implementation, compiler version, source commit (or source hash), weights sha256 prefix, digest in full, outcome. Use MATCH only when the digest equals the pinned value; use CANDIDATE for a variant with no pinned value; report a mismatch as it is (see `HALL-OF-DIVERGENCE.md`).
+
+## Coverage-vector rows (informative digest, no pinned value)
+
+Constructed 175 KB model, `gen_toks` 8, files in [`vectors/coverage-v1/`](../vectors/coverage-v1/README.md), write-up in [`docs/results/2026-10-16-COVERAGE-VECTOR.md`](results/2026-10-16-COVERAGE-VECTOR.md). Same C++ source (note 2) and flags as the host rows above, g++ 14.2.0 (Debian 14.2.0-19). Each host also built the M01 and M15 mutants: M01 gives `93ecb8384ec59629f60232aa5a184d50c38ca15cf94ee613de1e41bffe2d47f0` and M15 gives `68dd35c5d2a969754d6fdccfda579642df43e1f4b97cc00016e32b6684b90d85` on all four hosts (both MOVED relative to the reference). The reference was run twice per host with identical digests.
+
+| date (UTC) | host class | implementation | weights sha256 prefix | gen_toks | digest | outcome |
+|---|---|---|---|---|---|---|
+| 2026-10-16 | Lab host C: Intel Core i7-7700HQ, AVX2 + FMA | C++ reference, host build | 677a5a25 | 8 | `4660d6c33b6c0d51529b4be43687c004c8b7c0d8804439999b5af32683528734` | MATCH (M01 MOVED, M15 MOVED) |
+| 2026-10-16 | Lab host D: Intel Core i5-5200U, AVX2 + FMA | C++ reference, host build | 677a5a25 | 8 | `4660d6c33b6c0d51529b4be43687c004c8b7c0d8804439999b5af32683528734` | MATCH (M01 MOVED, M15 MOVED) |
+| 2026-10-16 | Lab host A: Intel Celeron N4020, SSE4.2 only | C++ reference, host build | 677a5a25 | 8 | `4660d6c33b6c0d51529b4be43687c004c8b7c0d8804439999b5af32683528734` | MATCH (M01 MOVED, M15 MOVED) |
+| 2026-10-16 | Lab host H: Intel Celeron N4020C, SSE4.2 only | C++ reference, host build | 677a5a25 | 8 | `4660d6c33b6c0d51529b4be43687c004c8b7c0d8804439999b5af32683528734` | MATCH (M01 MOVED, M15 MOVED) |
