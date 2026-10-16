@@ -1,0 +1,22 @@
+=== W1 digest reproduction, lab host B, 2026-10-16 ===
+Rule A: no timing numbers. Hostnames replaced; start/done reduced to dates.
+
+=== cis2-digest-labB start 2026-10-16 host=lab host B (i9-9980HK + RTX 2070 Max-Q) cpu=Intel(R) Core(TM) i9-9980HK CPU flags=avx2,fma,sse4_2,
+sha256 model.safetensors = 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+sha256 ids16 = 4b6618b64fe0fd9c261dd30789ec69a4f84c05114820df9e45c4d2c8fac40faf
+sources sha256: 10e08ea20584151f (cat of host.cpp math.h model.h fpenv.h sha256.h consts.inc)
+g++ g++ (Debian 14.2.0-19) 14.2.0; nvcc Build cuda_12.4.r12.4/compiler.34097967_0; nvidia-smi: NVIDIA GeForce RTX 2070 with Max-Q Design, 550.163.01
+build host-gcc: g++ -std=c++17 -O2 -ffp-contract=off -fexcess-precision=standard -fno-fast-math -I gpu -o cis2_host_gcc gpu/cis2_host.cpp
+row host-gcc gen_toks=16 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929 MATCH rc=0
+row host-gcc gen_toks=128 digest=22f69ad87a615d66a77efaca8b1172d22bdfb4bd5092ceffd302e35669a050f6 expected=22f69ad87a615d66 MATCH rc=0
+build host-gcc-tree: g++ -std=c++17 -O2 -ffp-contract=off -fexcess-precision=standard -fno-fast-math -I gpu -DCIS2_REDUCTION_TREE -o cis2_host_gcc_tree gpu/cis2_host.cpp
+row host-gcc-tree gen_toks=16 digest=3f3b1ffceca02e8e0e78d5c653963480ea988ef41a378acc5393006ad378e1b3 expected=none CANDIDATE rc=0
+row host-gcc-tree gen_toks=128 digest=112661fbfcb11440ae7d27c43e45135f8a6ff9f6bc01189d756c76dac96a0fdf expected=none CANDIDATE rc=0
+build cuda: nvcc -x cu -std=c++17 -O2 -fmad=false -ftz=true -prec-div=true -prec-sqrt=true --extended-lambda -DCIS2_CUDA_FTZ=1 -arch=sm_75 -I gpu -o cis2_cuda gpu/cis2_host.cpp
+row cuda-sm_75 gen_toks=16 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929 MATCH rc=0
+row cuda-sm_75 gen_toks=128 digest=22f69ad87a615d66a77efaca8b1172d22bdfb4bd5092ceffd302e35669a050f6 expected=22f69ad87a615d66 MATCH rc=0
+build cuda-tree: nvcc -x cu -std=c++17 -O2 -fmad=false -ftz=true -prec-div=true -prec-sqrt=true --extended-lambda -DCIS2_CUDA_FTZ=1 -arch=sm_75 -I gpu -DCIS2_REDUCTION_TREE -o cis2_cuda_tree gpu/cis2_host.cpp
+row cuda-sm_75-tree gen_toks=16 digest=3f3b1ffceca02e8e0e78d5c653963480ea988ef41a378acc5393006ad378e1b3 expected=none CANDIDATE rc=0
+row cuda-sm_75-tree gen_toks=128 digest=112661fbfcb11440ae7d27c43e45135f8a6ff9f6bc01189d756c76dac96a0fdf expected=none CANDIDATE rc=0
+RESULT: OK cis2-digest-labB host16=MATCH host128=MATCH tree16=CANDIDATE tree128=CANDIDATE cuda16=MATCH cuda128=MATCH cudatree16=CANDIDATE cudatree128=CANDIDATE weights=80521b40 ids=4b6618b6
+=== cis2-digest-labB done 2026-10-16
