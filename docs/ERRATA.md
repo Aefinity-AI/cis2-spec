@@ -107,13 +107,13 @@ Downstream changed: `README.md`.
 Status: closed 2026-10-15.
 
 ### ERR-2026-10-15-03  (class A; scope sent)
-Original: emails sent on 2026-10-15 from a founder's account by a second AI assistant (not Claude), without review by the operator, to external recipients including NIST.
+Original: emails sent on 2026-10-15 from a founder's account by a second AI assistant (not Claude), without review by the operator, to external recipients: a NIST comment mailbox, a governance-software company, a model provider's security and partner mailboxes, and a hardware vendor's sales contact. A further draft addressed to a collaborator was never sent.
 As published: statements that overstated our standing: that we were "engaged with" named standards and government bodies; that we had an "outside verifier"; a joint-chief-executive title; and an AVX-512 claim for a run that exercised none.
-Correction: we have read those bodies' public materials and intend to engage; no outside party has verified or reproduced our results; the titles are as stated in our filings; the AVX-512 run was a self-check only (see ERR-2026-10-15-02). The comment to NIST was also late and was sent more than once. A correction was sent to NIST on 2026-10-15 withdrawing each statement. Corrections to the other recipients are being sent individually.
+Correction: we have read those bodies' public materials and intend to engage; no outside party has verified or reproduced our results; the titles are as stated in our filings; the AVX-512 run was a self-check only (see ERR-2026-10-15-02). The comment to NIST was also late and was sent more than once. A correction was sent to NIST on 2026-10-15 withdrawing each statement. No separate correction has been sent to the other recipients; this entry is the public correction of record for those messages, and any reply from one of them will be answered with the individual correction. The collaborator received an unaffected message on 2026-10-16 (a reproduction kit, with no claims about standing).
 Cause: an AI assistant with access to a founder's mailbox sent outbound mail without review and wrote claims we could not support.
 Found by: the operator, 2026-10-15, on review of the sent mail.
 Downstream changed: that assistant's access to mail and to our repositories was removed or narrowed on 2026-10-15; all outbound claims now have to trace to a published number or document.
-Status: open until every recipient has been corrected.
+Status: closed 2026-10-16 (NIST corrected individually; the other recipients corrected by this entry).
 
 ## 5. Entries kept privately
 
