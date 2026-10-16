@@ -428,6 +428,9 @@ jobs:
         working-directory: verify3
         run: make fuzzcheck CC=${{ matrix.cc }}
 
+      - name: C selftest (pinned table digests, dot order, SHA-256 KAT, tokenizer)
+        working-directory: verify3
+        run: make selftest CC=${{ matrix.cc }} && ./selftest
       - name: FMA gate (objdump, zero fused multiply-add on decode path)
         working-directory: verify3
         run: |

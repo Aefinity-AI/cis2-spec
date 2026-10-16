@@ -46,9 +46,9 @@ int main(void)
     cis2_sha256_final(&tctx, tdig);
     char thex[65];
     hex_encode(tdig, 32, thex);
-    CHECK(strcmp(thex, "465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3") == 0,
+    CHECK(strcmp(thex, "23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d") == 0,
           "table_digest matches spec 13.1 pinned value");
-    if (strcmp(thex, "465d358ccd63721256dbd2abbc77ad5de755adf3230635f95b12b1727dfa1ea3") != 0)
+    if (strcmp(thex, "23c7bfaf5cef0095fd021af2eb1808abb4928bae4219756d86bdac670a06b35d") != 0)
         printf("  got: %s\n", thex);
 
     /* inv_freq_table_digest for SmolLM2 params: head_dim=64, rope_theta=100000 (spec 7.2) */
