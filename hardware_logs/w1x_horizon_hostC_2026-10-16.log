@@ -1,0 +1,19 @@
+=== cis2-horizon lab host C start 2026-10-16 cpu=Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz flags=avx2,fma,sse4_2,
+sha256 model.safetensors = 80521b40281d6ce74e35c9282c22539e75aa0ac8578892b2a59955ef78d55da1
+sha256 ids16 = 4b6618b64fe0fd9c261dd30789ec69a4f84c05114820df9e45c4d2c8fac40faf
+sources sha256: 10e08ea20584151f
+g++ g++ (Debian 14.2.0-19) 14.2.0; nvcc Build cuda_12.4.r12.4/compiler.34097967_0
+build host-gcc: g++ -std=c++17 -O2 -ffp-contract=off -fexcess-precision=standard -fno-fast-math -I gpu -o cis2_host_gcc_h gpu/cis2_host.cpp
+row host-gcc gen_toks=16 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929 MATCH rc=0
+row host-gcc gen_toks=256 digest=8824a22600faa57bcee3a00c8139f4ee3ddc4d1be3188ec1426aa596c3515cc2 expected=none CANDIDATE rc=0
+row host-gcc gen_toks=512 digest=d8cdafd4f5f7204b44c2ff7287cff310ecad7868006c462e1aaf67c0bf6ad4a6 expected=none CANDIDATE rc=0
+row host-gcc gen_toks=1024 digest=d46c3208976dfeac0e02ef262c15a02c611fca32124c81b7bd3d077356e1471f expected=none CANDIDATE rc=0
+row host-gcc gen_toks=2048 digest=4924cacf1ad9d90ba0e90516612b296aa2dca5068c8158ecdf9d4d44f142f86a expected=none CANDIDATE rc=0
+build cuda: nvcc -x cu -std=c++17 -O2 -fmad=false -ftz=true -prec-div=true -prec-sqrt=true --extended-lambda -DCIS2_CUDA_FTZ=1 -arch=sm_61 -I gpu -o cis2_cuda_h gpu/cis2_host.cpp
+row cuda-sm_61 gen_toks=16 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929 MATCH rc=0
+row cuda-sm_61 gen_toks=256 digest=8824a22600faa57bcee3a00c8139f4ee3ddc4d1be3188ec1426aa596c3515cc2 expected=none CANDIDATE rc=0
+row cuda-sm_61 gen_toks=512 digest=d8cdafd4f5f7204b44c2ff7287cff310ecad7868006c462e1aaf67c0bf6ad4a6 expected=none CANDIDATE rc=0
+row cuda-sm_61 gen_toks=1024 digest=d46c3208976dfeac0e02ef262c15a02c611fca32124c81b7bd3d077356e1471f expected=none CANDIDATE rc=0
+row cuda-sm_61 gen_toks=2048 digest=4924cacf1ad9d90ba0e90516612b296aa2dca5068c8158ecdf9d4d44f142f86a expected=none CANDIDATE rc=0
+RESULT: OK cis2-horizon-host-c host16=MATCH host256=CANDIDATE host512=CANDIDATE host1024=CANDIDATE host2048=CANDIDATE cuda16=MATCH cuda256=CANDIDATE cuda512=CANDIDATE cuda1024=CANDIDATE cuda2048=CANDIDATE weights=80521b40 ids=4b6618b6
+=== cis2-horizon lab host C done 2026-10-16

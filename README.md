@@ -105,7 +105,10 @@ full-logit output digests:
   were isolated AI coding agents run by one operator, see [Provenance](#provenance)),
 - across model families and decode horizons (informative evidence from the
   reference implementation `src/`; see `EXPECTED_DIGESTS.md` for which spec
-  version each vector was run against),
+  version each vector was run against; as of 2026-10-16 the C++ port decodes
+  SmolLM2-135M for 256, 512, 1024 and 2048 tokens to one digest per length on
+  two AVX2+FMA hosts, two SSE4.2-only hosts and a CUDA sm_61 build, see the
+  long-horizon section there),
 - and, as of 2026-09-08, across the CPU/GPU boundary: a CUDA implementation
   on an NVIDIA Tesla P100 reproduces the primary normative `CIS2_REF`
   digest bit-for-bit, with a byte-identical per-step trace
