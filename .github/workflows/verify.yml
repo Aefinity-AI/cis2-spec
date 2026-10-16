@@ -59,9 +59,10 @@ jobs:
       - name: GNU userland (macOS only)
         if: runner.os == 'macOS'
         run: |
-          brew install coreutils grep
+          brew install coreutils grep gnu-sed
           echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
           echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: uname (assert matches expected arch)
         run: |
@@ -247,9 +248,10 @@ jobs:
       - name: GNU userland (macOS only)
         if: runner.os == 'macOS'
         run: |
-          brew install coreutils grep
+          brew install coreutils grep gnu-sed
           echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
           echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: uname (assert matches expected arch)
         run: |
@@ -464,9 +466,10 @@ jobs:
       - name: GNU userland (macOS only)
         if: runner.os == 'macOS'
         run: |
-          brew install coreutils grep
+          brew install coreutils grep gnu-sed
           echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
           echo "$(brew --prefix grep)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: Install toolchain
         if: runner.os == 'Linux'
