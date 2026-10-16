@@ -212,6 +212,7 @@ Plain-language explanations, AI safety framing, continuous-validation tools, and
 Existing concrete demonstrations that the full-logit witness digest catches alterations token-level checks can miss:
 
 - [Single-weight corruption head-to-head](docs/results/2026-09-13-BITFLIP-HEADTOHEAD.md)
+- [Real-weight tamper study (2026-10-16): 162 single-element edits to the pinned SmolLM2-135M weights, all caught by the full-logit witness body, 12 by the greedy tokens](docs/results/2026-10-16-REAL-WEIGHT-TAMPER.md)
 - [Realistic embedding substitution head-to-head](docs/results/2026-09-17-EMBED-SUBSTITUTION-HEADTOHEAD.md)
 - [Continuous validation experiment (2026-09-27)](docs/results/2026-09-27-CONTINUOUS-VALIDATION.md)
 
@@ -320,6 +321,7 @@ Apache-2.0. See `LICENSE` and `NOTICE`.
 ## Results
 
 - [Single-weight corruption head-to-head](docs/results/2026-09-13-BITFLIP-HEADTOHEAD.md)
+- [Real-weight tamper study: four receipt levels, three hosts (2026-10-16)](docs/results/2026-10-16-REAL-WEIGHT-TAMPER.md)
 - [Receipt-verified EVAL-60 and tamper detection](docs/results/2026-09-13-RECEIPT-VERIFIED-EVAL60.md)
 - [Realistic embedding substitution head-to-head](docs/results/2026-09-17-EMBED-SUBSTITUTION-HEADTOHEAD.md)
 - [GPU batched fp32 determinism](docs/results/2026-09-19-GPU-BATCHED-FP32-DETERMINISM.md)
