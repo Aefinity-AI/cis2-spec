@@ -342,6 +342,7 @@ cis2-verify/              further from-spec verifier; NOT a clean room,
 kits/                     verification kit (receipts + verify script)
 eval/, prompts/           mini eval harness and prompt sets
 docs/GPU_RESULT.md        CPU/GPU bit-identity result (P100, 2026-09-08)
+docs/REPRODUCTIONS.md     reproduction table: Rust ref (SSE4.2), C++ (AVX2), CUDA sm_75
 docs/                     spec, E15*/E2x-E4x evidence and result notes
 docs/results/             dated result write-ups (see Results)
 docs/design/              receipt design notes

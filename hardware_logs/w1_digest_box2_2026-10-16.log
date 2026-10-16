@@ -1,0 +1,11 @@
+=== W1 digest reproduction, lab host A, 2026-10-16 ===
+Rule A: no timing numbers. Hostnames replaced; start/done reduced to dates.
+
+=== cis2-rustref-labA start 2026-10-16 host=lab host A (Celeron N4020) cpu=Intel(R) Celeron(R) N4020 CPU flags=sse4_2,
+source commit 4240cb1f651aba90eddc9394da9084bb6aae50d1 (public cis2-spec); weights sha256 80521b40281d6ce7; cargo cargo 1.98.0 (797e8a9bc 2026-08-05)
+build rc=0
+binary sha256 42be560cd2b67755
+row rust-ref gen_toks=16 digest=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df expected=d82743059d1db929e710236fe4ec37f89e6f932524801345a006980f7c3cc9df MATCH rc=0
+row rust-ref gen_toks=128 digest=22f69ad87a615d66a77efaca8b1172d22bdfb4bd5092ceffd302e35669a050f6 expected=22f69ad87a615d66a77efaca8b1172d22bdfb4bd5092ceffd302e35669a050f6 MATCH rc=0
+RESULT: OK cis2-rustref-labA rust16=MATCH rust128=MATCH weights=80521b40 source=4240cb1f
+=== cis2-rustref-labA done 2026-10-16
