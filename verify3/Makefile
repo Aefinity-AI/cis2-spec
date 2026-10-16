@@ -44,7 +44,18 @@ selftest: selftest.o mathpin.o tokenizer.o json.o sha256.o
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-clean:
-	rm -f $(OBJS) $(BIN) $(INT8_OBJS) $(INT8_BIN) selftest.o selftest
+# Malformed-input regression: feeds tests/malformed/*.safetensors to
+# cis2_model_load() in child processes; every file must be rejected with exit
+# status 95 and no sanitizer report. Sanitizers are used when the compiler
+# accepts them.
+FUZZ_SRCS = tests/malformed_driver.c model.c mathpin.c json.c sha256.c
+SAN_FLAGS := $(shell echo 'int main(void){return 0;}' | $(CC) -x c - -fsanitize=address,undefined -o /dev/null >/dev/null 2>&1 && echo -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer)
 
-.PHONY: all clean int8
+fuzzcheck: $(FUZZ_SRCS) $(wildcard tests/malformed/*.safetensors)
+	$(CC) $(CFLAGS) -g $(SAN_FLAGS) -o malformed_driver $(FUZZ_SRCS) $(LDFLAGS)
+	./malformed_driver tests/malformed/*.safetensors
+
+clean:
+	rm -f $(OBJS) $(BIN) $(INT8_OBJS) $(INT8_BIN) selftest.o selftest malformed_driver
+
+.PHONY: all clean int8 fuzzcheck

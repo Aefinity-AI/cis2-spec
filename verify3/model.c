@@ -27,10 +27,11 @@ static char *read_whole_file(const char *path, size_t *out_len)
 {
     FILE *f = fopen(path, "rb");
     if (!f) return NULL;
-    fseek(f, 0, SEEK_END);
+    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return NULL; }
     long sz = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    if (sz < 0 || fseek(f, 0, SEEK_SET) != 0) { fclose(f); return NULL; }
     char *buf = malloc((size_t)sz + 1);
+    if (!buf) { fclose(f); return NULL; }
     size_t rd = fread(buf, 1, (size_t)sz, f);
     buf[rd] = '\0';
     fclose(f);
@@ -40,13 +41,31 @@ static char *read_whole_file(const char *path, size_t *out_len)
 
 /* ---- safetensors ---- */
 
+/* Upper bound on the JSON header of a safetensors file (the format's own
+ * reference loader uses the same 100 MB cap). */
+#define ST_MAX_HEADER_LEN ((uint64_t)100 * 1000 * 1000)
+
+typedef struct { uint64_t start, end; } st_range;
+
 typedef struct {
     char *raw; size_t raw_len;
     const uint8_t *data; size_t data_len;
     json_value *header;
+    st_range *seen; size_t n_seen, cap_seen; /* ranges of tensors already read */
 } st_file;
 
 static st_file g_st;
+
+/* Every malformed-input rejection goes through here: same exit status as the
+ * pre-existing "cannot open" / "tensor not found" failures. */
+static void st_fatal(const char *what, const char *name)
+{
+    if (name)
+        fprintf(stderr, "CIS2_VERIFY3 FATAL: safetensors: %s ('%s')\n", what, name);
+    else
+        fprintf(stderr, "CIS2_VERIFY3 FATAL: safetensors: %s\n", what);
+    exit(95);
+}
 
 static void st_open(const char *path)
 {
@@ -57,15 +76,36 @@ static void st_open(const char *path)
         exit(95);
     }
     g_st.raw_len = len;
+    if (len < 8) st_fatal("file shorter than the 8-byte length prefix", NULL);
     uint64_t header_len = 0;
     for (int i = 0; i < 8; i++) header_len |= ((uint64_t)(uint8_t)g_st.raw[i]) << (8 * i);
-    char *header_json = malloc(header_len + 1);
-    memcpy(header_json, g_st.raw + 8, header_len);
+    /* overflow-safe: raw_len >= 8 is established above */
+    if (header_len > (uint64_t)(len - 8)) st_fatal("header length exceeds file size", NULL);
+    if (header_len > ST_MAX_HEADER_LEN) st_fatal("header length exceeds cap", NULL);
+    char *header_json = malloc((size_t)header_len + 1);
+    if (!header_json) st_fatal("out of memory for header", NULL);
+    memcpy(header_json, g_st.raw + 8, (size_t)header_len);
     header_json[header_len] = '\0';
     g_st.header = json_parse(header_json);
     free(header_json);
+    if (!g_st.header) st_fatal("header is not valid JSON", NULL);
+    if (g_st.header->type != JSON_OBJECT) st_fatal("header JSON is not an object", NULL);
     g_st.data = (const uint8_t *)(g_st.raw + 8 + header_len);
-    g_st.data_len = g_st.raw_len - 8 - header_len;
+    g_st.data_len = g_st.raw_len - 8 - (size_t)header_len;
+    g_st.seen = NULL; g_st.n_seen = 0; g_st.cap_seen = 0;
+}
+
+/* A JSON number that is a non-negative integer exactly representable in a
+ * double (< 2^53). */
+static int json_as_nonneg_int(const json_value *v, uint64_t *out)
+{
+    if (!v || v->type != JSON_NUMBER) return 0;
+    double d = v->u.number;
+    if (!(d >= 0.0) || d >= 9007199254740992.0) return 0; /* also rejects NaN/inf */
+    uint64_t u = (uint64_t)d;
+    if ((double)u != d) return 0;
+    *out = u;
+    return 1;
 }
 
 static float *st_get_tensor(const char *name, size_t expect_numel)
@@ -75,6 +115,7 @@ static float *st_get_tensor(const char *name, size_t expect_numel)
         fprintf(stderr, "CIS2_VERIFY3 FATAL: tensor '%s' not found in safetensors header\n", name);
         exit(95);
     }
+    if (ent->type != JSON_OBJECT) st_fatal("tensor entry is not an object", name);
     json_value *dtype = json_obj_get(ent, "dtype");
     const char *dt = json_as_cstring(dtype);
     if (!dt || strcmp(dt, "BF16") != 0) {
@@ -82,17 +123,53 @@ static float *st_get_tensor(const char *name, size_t expect_numel)
         exit(95);
     }
     json_value *offsets = json_obj_get(ent, "data_offsets");
-    long start = (long)json_as_number(json_array_get(offsets, 0));
-    long end = (long)json_as_number(json_array_get(offsets, 1));
-    size_t nbytes = (size_t)(end - start);
+    if (json_array_len(offsets) != 2) st_fatal("data_offsets is not a 2-element array", name);
+    uint64_t start, end;
+    if (!json_as_nonneg_int(json_array_get(offsets, 0), &start) ||
+        !json_as_nonneg_int(json_array_get(offsets, 1), &end))
+        st_fatal("data_offsets entries are not non-negative integers", name);
+    if (start > end) st_fatal("data_offsets start is after end", name);
+    if (end > (uint64_t)g_st.data_len) st_fatal("data_offsets exceed the data section", name);
+    uint64_t nbytes64 = end - start;
+    if (nbytes64 % 2 != 0) st_fatal("BF16 byte count is odd", name);
+    size_t nbytes = (size_t)nbytes64;
     size_t numel = nbytes / 2;
     if (expect_numel != 0 && numel != expect_numel) {
         fprintf(stderr, "CIS2_VERIFY3 FATAL: tensor '%s' numel mismatch (got %zu expected %zu)\n",
                 name, numel, expect_numel);
         exit(95);
     }
+    /* shape (when it is an array of non-negative integers) must agree with the byte count */
+    json_value *shape = json_obj_get(ent, "shape");
+    if (!shape || shape->type != JSON_ARRAY) st_fatal("shape is missing or not an array", name);
+    {
+        uint64_t prod = 1;
+        for (size_t i = 0; i < json_array_len(shape); i++) {
+            uint64_t d;
+            if (!json_as_nonneg_int(json_array_get(shape, i), &d)) st_fatal("shape entry is not a non-negative integer", name);
+            if (d != 0 && prod > UINT64_MAX / d) st_fatal("shape product overflows", name);
+            prod *= d;
+        }
+        if (prod != (uint64_t)numel) st_fatal("shape product does not match data_offsets", name);
+    }
+    /* no two tensors may share bytes */
+    if (nbytes64 != 0) {
+        for (size_t i = 0; i < g_st.n_seen; i++)
+            if (start < g_st.seen[i].end && g_st.seen[i].start < end)
+                st_fatal("data_offsets overlap another tensor", name);
+        if (g_st.n_seen == g_st.cap_seen) {
+            size_t nc = g_st.cap_seen ? g_st.cap_seen * 2 : 64;
+            st_range *ns = realloc(g_st.seen, nc * sizeof(st_range));
+            if (!ns) st_fatal("out of memory", name);
+            g_st.seen = ns; g_st.cap_seen = nc;
+        }
+        g_st.seen[g_st.n_seen].start = start;
+        g_st.seen[g_st.n_seen].end = end;
+        g_st.n_seen++;
+    }
     const uint8_t *src = g_st.data + start;
     float *out = malloc(numel * sizeof(float));
+    if (!out && numel != 0) st_fatal("out of memory", name);
     for (size_t i = 0; i < numel; i++) {
         uint16_t b = (uint16_t)src[2 * i] | ((uint16_t)src[2 * i + 1] << 8);
         uint32_t bits = ((uint32_t)b) << 16;
@@ -126,6 +203,7 @@ cis2_model *cis2_model_load(const char *safetensors_path, const char *config_jso
     }
 
     cis2_model *m = calloc(1, sizeof(cis2_model));
+    if (!m) { fprintf(stderr, "CIS2_VERIFY3 FATAL: out of memory\n"); exit(95); }
     m->cfg.hidden_size = (size_t)json_as_number(json_obj_get(cfgroot, "hidden_size"));
     m->cfg.intermediate_size = (size_t)json_as_number(json_obj_get(cfgroot, "intermediate_size"));
     m->cfg.num_hidden_layers = (size_t)json_as_number(json_obj_get(cfgroot, "num_hidden_layers"));
@@ -139,6 +217,11 @@ cis2_model *cis2_model_load(const char *safetensors_path, const char *config_jso
     m->cfg.vocab_size = (size_t)json_as_number(json_obj_get(cfgroot, "vocab_size"));
     json_free(cfgroot);
 
+    if (m->cfg.hidden_size == 0 || m->cfg.num_attention_heads == 0 ||
+        m->cfg.num_key_value_heads == 0) {
+        fprintf(stderr, "CIS2_VERIFY3 FATAL: config.json has a zero size field\n");
+        exit(95);
+    }
     m->head_dim = m->cfg.hidden_size / m->cfg.num_attention_heads;
     m->half = m->head_dim / 2;
     m->group = m->cfg.num_attention_heads / m->cfg.num_key_value_heads;
@@ -198,6 +281,7 @@ cis2_model *cis2_model_load(const char *safetensors_path, const char *config_jso
     }
 
     free(g_st.raw);
+    free(g_st.seen);
     json_free(g_st.header);
     memset(&g_st, 0, sizeof(g_st));
 

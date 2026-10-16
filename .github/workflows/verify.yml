@@ -424,6 +424,10 @@ jobs:
         working-directory: verify3
         run: make CC=${{ matrix.cc }}
 
+      - name: Malformed safetensors regression (fuzzcheck)
+        working-directory: verify3
+        run: make fuzzcheck CC=${{ matrix.cc }}
+
       - name: FMA gate (objdump, zero fused multiply-add on decode path)
         working-directory: verify3
         run: |
