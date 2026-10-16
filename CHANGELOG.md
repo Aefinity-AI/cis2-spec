@@ -786,6 +786,33 @@ counters, the integer pre-filters, two regression tests);
 `layerdump` builds and `e40_ldctrl` passes both assertions, `check_no_fma.sh`
 PASS, `selftest` PASS, section 13.1 reference decode unchanged.
 
+### E-15 (2026-10-16) --- section 12.1 binds the artifact bytes, so no edit to `model.safetensors` leaves `CIS2_REF` unchanged
+
+**What v0.3b says.** Section 12.1 item 1 feeds the raw 32-byte
+`weights_sha256` of `model.safetensors` into the witness chain, then the
+tokenizer and config digests (items 2 and 3), before any computed value.
+
+**What it never said in plain words.** Because of item 1, a change to *any*
+byte of `model.safetensors` --- including an edit confined to the JSON
+header, with every tensor byte and data offset unchanged --- moves
+`CIS2_REF`. A pre-registered tamper study (w1x-tamper, ledger batch 34)
+expected a header-only control to leave the witness unchanged, and was
+scored not met on that clause for exactly this reason
+(`docs/results/2026-10-16-REAL-WEIGHT-TAMPER.md`). The spec was right; the
+expectation was wrong.
+
+**What section 12.1 should add**, after item 5:
+
+> The witness binds the artifact bytes, not only the computation: items 1
+> to 3 are digests of the files as stored, so any change to those files
+> moves `CIS2_REF` even when every computed value in items 6 and 7 is
+> unchanged. A verifier that wants to separate "the file changed" from "the
+> computation changed" compares the two parts separately: the file digests
+> of items 1 to 5, and a digest over items 6 and 7 alone (the witness
+> *body*). The body is not a pinned value in v0.3b.
+
+No pinned digest moves; the reference and the verifiers are unchanged.
+
 ## Repository releases
 
 Version numbers above name the *specification* document. The section
