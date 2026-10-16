@@ -151,7 +151,7 @@ cis2_tokenizer *cis2_tokenizer_load(const char *json_text)
     json_value *model = json_obj_get(root, "model");
     json_value *vocab_j = json_obj_get(model, "vocab");
     json_value *merges_j = json_obj_get(model, "merges");
-    if (!vocab_j || !merges_j) {
+    if (!vocab_j || !merges_j || vocab_j->type != JSON_OBJECT) {
         fprintf(stderr, "CIS2_VERIFY3 FATAL: tokenizer.json missing model.vocab/model.merges\n");
         exit(96);
     }
