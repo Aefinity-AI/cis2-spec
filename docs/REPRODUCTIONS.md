@@ -45,6 +45,17 @@ Notes
 3. Host A's CPU has SSE4.2 only; hosts B, C and D have AVX2 and FMA (host D is a Broadwell part with no CUDA device, so it has host rows only). Host C's GPU is a Pascal part (sm_61) with 4 GB of memory, host B's a Turing part (sm_75); both produce the pinned digests and the same tree-variant candidates. The host g++ build is compiled with `-ffp-contract=off`, and the CUDA build with `-fmad=false`, so no fused multiply-add is used on either.
 4. CI cells E, F and G are GitHub-hosted runners, so the exact CPU model is not fixed (Apple Silicon M-series for `macos-15` arm64; Intel x86_64 for `macos-15-intel` and `windows-2025`); what is pinned is the runner image release, the Rust toolchain and the commit. They are the first macOS and Windows reproductions of `CIS2_REF`, and the Windows cell is the first on the MSVC target (`x86_64-pc-windows-msvc`). Each runner also verified the three artifact pins (weights, config, tokenizer) before running. Only the 16-token vector is checked in CI.
 
+## Long-horizon rows (informative digests, no pinned value)
+
+Same artifacts, flags and C++ source (sha256 prefix 10e08ea20584151f, note 2) as the host rows above, decoded for 256 to 2048 greedy tokens. Lab host H is a second Intel Celeron N4020C (SSE4.2 only, no AVX), a different machine from host A's N4020. Every run reproduced the pinned 16-token digest as a sanity row before the longer rows. The values are listed in `EXPECTED_DIGESTS.md` (long-horizon section) as informative; AGREE n/n means n builds produced one identical digest. Cleaned logs (no timing, by policy): [`hardware_logs/w1x_horizon_hostA_2026-10-16.log`](../hardware_logs/w1x_horizon_hostA_2026-10-16.log), [`hardware_logs/w1x_horizon_hostC_2026-10-16.log`](../hardware_logs/w1x_horizon_hostC_2026-10-16.log) (g++ and CUDA sm_61 rows), [`hardware_logs/w1x_horizon_hostD_2026-10-16.log`](../hardware_logs/w1x_horizon_hostD_2026-10-16.log) (host D, the Broadwell AVX2+FMA host of note 3), [`hardware_logs/w1x_horizon_hostH_2026-10-16.log`](../hardware_logs/w1x_horizon_hostH_2026-10-16.log). The 2048-token rows of hosts A and H come from a second run on each host (same source, flags and artifacts), appended to their logs.
+
+| date (UTC) | gen_toks | digest | builds that produced it | outcome |
+|---|---|---|---|---|
+| 2026-10-16 | 256 | `8824a22600faa57bcee3a00c8139f4ee3ddc4d1be3188ec1426aa596c3515cc2` | host C g++ (AVX2+FMA); host C CUDA sm_61; host D g++ (AVX2+FMA); host A g++ (SSE4.2); host H g++ (SSE4.2) | AGREE 5/5 |
+| 2026-10-16 | 512 | `d8cdafd4f5f7204b44c2ff7287cff310ecad7868006c462e1aaf67c0bf6ad4a6` | same five builds | AGREE 5/5 |
+| 2026-10-16 | 1024 | `d46c3208976dfeac0e02ef262c15a02c611fca32124c81b7bd3d077356e1471f` | same five builds | AGREE 5/5 |
+| 2026-10-16 | 2048 | `4924cacf1ad9d90ba0e90516612b296aa2dca5068c8158ecdf9d4d44f142f86a` | same five builds | AGREE 5/5 |
+
 ## How to add a row
 
 1. Run the verification kit (`kits/`) or `scripts/self_check.sh` on your hardware for `gen_toks=16`, and for `gen_toks=128` where your implementation supports it, against the pinned weights (`scripts/fetch_weights.sh` checks the sha256).

@@ -129,6 +129,29 @@ a second model family with a different `rope_theta` and vocab size.
 | 16  | `2c9f623589520aba9cc557edf53185808086f5f6f81cab5e78ee136d0375344c` |
 | 128 | `dccd55e68a44eae3d62e36092295b40f980a07e1be72aadf37fe14ca306b20e7` |
 
+## Informative: SmolLM2-135M long-horizon digests (spec v0.3b, `gen_toks` 256 to 2048)
+
+Same model, prompt, artifacts and settings as the §13.1 vector, decoded for
+256, 512, 1024 and 2048 greedy tokens with the C++ reference port
+(`cis2_host.cpp`: host build with g++, and the CUDA build of the same
+source). These values are informative, not normative: no clean-room
+implementation has run them yet, so the spec does not pin them. Each value
+was produced identically by every build that ran it; the builds and the
+cleaned logs are listed in the long-horizon section of
+[`docs/REPRODUCTIONS.md`](docs/REPRODUCTIONS.md). The 16-token row of
+every one of those runs equals the pinned `d82743059d1db929…`.
+
+| gen_toks | `CIS2_REF` digest | builds that agree (2026-10-16) |
+|---|---|---|
+| 256  | `8824a22600faa57bcee3a00c8139f4ee3ddc4d1be3188ec1426aa596c3515cc2` | g++ host build on two AVX2+FMA hosts (lab hosts C and D) and on two SSE4.2-only hosts (lab hosts A and H); CUDA sm_61 (host C) |
+| 512  | `d8cdafd4f5f7204b44c2ff7287cff310ecad7868006c462e1aaf67c0bf6ad4a6` | same five builds |
+| 1024 | `d46c3208976dfeac0e02ef262c15a02c611fca32124c81b7bd3d077356e1471f` | same five builds |
+| 2048 | `4924cacf1ad9d90ba0e90516612b296aa2dca5068c8158ecdf9d4d44f142f86a` | same five builds |
+
+A disagreement at any of these lengths on a build that reproduces the
+16-token vector would be recorded here as a divergence, not silently
+dropped.
+
 ## Scale/horizon evidence: Qwen2.5-1.5B and SmolLM2-135M at longer horizons
 
 A later hardening pass confirmed x86_64/aarch64 digest equality (not
