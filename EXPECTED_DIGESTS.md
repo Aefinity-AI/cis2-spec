@@ -48,9 +48,11 @@ CIS2_REF (witness digest) = a0c563ef804f50413b7fb6619ae4afe9b51b1ffa7655e9442213
 Superseded by the v0.3b vector above; `scripts/self_check.sh` now targets
 v0.3b's `CIS2_REF`.
 
-**Note:** the informative 128-token, Qwen2.5-0.5B, and scale/horizon
-vectors below were generated and confirmed against spec v0.2 only; they
-have not been re-run against v0.3b as part of this port.
+**Note:** the informative scale/horizon vectors below were generated and
+confirmed against spec v0.2 only; they have not been re-run against v0.3b as
+part of this port. The Qwen2.5-0.5B section was re-run against v0.3b on
+2026-10-16 and now lists v0.3b values; its earlier v0.2 digests are kept there
+as history.
 
 ## GPU confirmation of the §13.1 normative vector
 
@@ -123,11 +125,35 @@ fixed constant, and `rope_theta=100000` is shared with 135M).
 
 Not a §13.1 test vector; exercises §7's general RoPE construction against
 a second model family with a different `rope_theta` and vocab size.
+Qwen2.5-0.5B, prompt `"Once upon a time"`, greedy decode, weights sha256
+prefix `88c14255`, prompt-ids sha256 prefix `53ea8e67`.
 
-| gen_toks | `CIS2_REF` digest |
-|---|---|
-| 16  | `2c9f623589520aba9cc557edf53185808086f5f6f81cab5e78ee136d0375344c` |
-| 128 | `dccd55e68a44eae3d62e36092295b40f980a07e1be72aadf37fe14ca306b20e7` |
+**Spec v0.3b values.** Each value was produced identically by every build
+that ran it (2026-10-16): the C++ host build with g++ on two AVX2+FMA hosts
+(lab hosts C and D) and two SSE4.2-only hosts (lab hosts A and H), and the
+CUDA sm_61 build on host C. The "tree" rows use the tree-reduction variant
+(`-DCIS2_REDUCTION_TREE`), as for the SmolLM2-135M candidates in
+[`docs/REPRODUCTIONS.md`](docs/REPRODUCTIONS.md). The CUDA build ran on host C
+only; all other rows are host builds.
+
+| gen_toks | variant | `CIS2_REF` digest | status |
+|---|---|---|---|
+| 16  | sequential | `c9dff099d927a6dda91514c260c7207de7aca4b361291e57fae390a352392e62` | reproduced on all five builds; equals the witness digest published in `docs/E28_LAYER_ORACLE.md` and `docs/E37_QWEN_ORACLE_SWEEP.md` |
+| 128 | sequential | `6083b14e67813edf4507ffb1432bcb23fd4b25bf2dc30a9ab22e32244e048eb2` | informative candidate; the four host builds and the CUDA build agree |
+| 16  | tree | `df2534e41eede40674885c7de2a5a448a4c32129e0b44e95b54692b9890e9a80` | informative candidate; the four host builds and the CUDA tree build agree |
+| 128 | tree | `a62ed378daf4cc7f326c22659ac054251b6d20dbb976768f3f6a622626947859` | informative candidate; the four host builds and the CUDA tree build agree |
+
+No clean-room implementation has run the 128-token or tree rows yet, so the
+spec does not pin them. Run table: the Qwen2.5-0.5B section of
+[`docs/REPRODUCTIONS.md`](docs/REPRODUCTIONS.md).
+
+**v0.2-only digests (superseded).** An earlier version of this section listed
+`2c9f623589520aba9cc557edf53185808086f5f6f81cab5e78ee136d0375344c` (16 tokens)
+and `dccd55e68a44eae3d62e36092295b40f980a07e1be72aadf37fe14ca306b20e7`
+(128 tokens). Those two values were generated against spec v0.2 only
+([`docs/E15d_v0.2_DIGESTS.md`](docs/E15d_v0.2_DIGESTS.md)); they were not
+re-run against v0.3b, and the v0.3b 16-token value above differs from the
+v0.2 one. Treat them as v0.2 history, not as v0.3b expectations.
 
 ## Informative: SmolLM2-135M long-horizon digests (spec v0.3b, `gen_toks` 256 to 2048)
 

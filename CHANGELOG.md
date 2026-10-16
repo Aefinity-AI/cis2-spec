@@ -14,6 +14,7 @@ changelog covers the spec text and verifiers published here.
 
 ## Unreleased
 
+- docs: `EXPECTED_DIGESTS.md` Qwen2.5-0.5B section corrected: the two digests it listed (`2c9f6235...`, `dccd55e6...`) were v0.2-only and are now marked as such; the v0.3b values (16 tokens `c9dff099...`, plus informative 128-token and tree-variant candidates) were reproduced by five builds on four lab hosts, with run rows in `docs/REPRODUCTIONS.md`. No pinned digest changes.
 - docs: `docs/REPRODUCTIONS.md` adds a reproduction table for the pinned `CIS2_REF` digests (`gen_toks` 16 and 128) on lab hosts: Rust reference on an SSE4.2-only CPU, C++ reference on an AVX2 CPU, and CUDA on sm_75, with cleaned logs `hardware_logs/w1_digest_box2_2026-10-16.log` and `hardware_logs/w1_digest_box6_2026-10-16.log`. Tree-reduction variant rows are marked CANDIDATE (no pinned value). No pinned digest changes.
 
 - docs: `docs/results/2026-10-16-OPENCL-BACKEND.md` and an OpenCL section in `docs/REPRODUCTIONS.md`: an OpenCL 1.2 port of the C++ reference reproduces the pinned digests on pocl, NVIDIA OpenCL and an Intel iGPU (software divide/sqrt build), and the iGPU with hardware divide/sqrt diverges as a negative control. Rows are CANDIDATE-PENDING-LEG until the pre-registered leg finishes. No pinned digest changes.
