@@ -216,6 +216,7 @@ Existing concrete demonstrations that the full-logit witness digest catches alte
 
 - [Single-weight corruption head-to-head](docs/results/2026-09-13-BITFLIP-HEADTOHEAD.md)
 - [Real-weight tamper study (2026-10-16): 162 single-element edits to the pinned SmolLM2-135M weights, all caught by the full-logit witness body, 12 by the greedy tokens](docs/results/2026-10-16-REAL-WEIGHT-TAMPER.md)
+- [OpenCL backend (2026-10-16): pocl, NVIDIA OpenCL and an Intel iGPU with software divide/sqrt reproduce the pinned digests; the iGPU hardware divide/sqrt diverges (negative control); rows pending the pre-registered leg](docs/results/2026-10-16-OPENCL-BACKEND.md)
 - [Realistic embedding substitution head-to-head](docs/results/2026-09-17-EMBED-SUBSTITUTION-HEADTOHEAD.md)
 - [Continuous validation experiment (2026-09-27)](docs/results/2026-09-27-CONTINUOUS-VALIDATION.md)
 
