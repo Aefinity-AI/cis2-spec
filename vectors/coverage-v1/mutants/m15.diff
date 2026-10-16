@@ -1,0 +1,11 @@
+--- gpu/cis2_model.h	2026-10-16 10:38:02.018533411 +0000
++++ gpu-m15/cis2_model.h	2026-10-16 10:38:27.006749759 +0000
+@@ -843,7 +843,7 @@
+   int best_idx = 0;
+   float best_val = logits_host[0];
+   for (int i = 0; i < n; ++i) {
+-    if (logits_host[i] > best_val) {
++    if (logits_host[i] >= best_val) {  /* MUTANT M15: strict > -> >= */
+       best_val = logits_host[i];
+       best_idx = i;
+     }

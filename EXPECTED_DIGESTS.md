@@ -152,6 +152,22 @@ A disagreement at any of these lengths on a build that reproduces the
 16-token vector would be recorded here as a divergence, not silently
 dropped.
 
+## Informative: coverage vector (tiny constructed model, `gen_toks` 8)
+
+A 175 KB model with seeded random weights (seed 20261016), hidden 64, 2 layers,
+vocab 32, 4-token prompt `3,11,22,8`, files under
+[`vectors/coverage-v1/`](vectors/coverage-v1/README.md). The lm_head rows 5 and
+17 are byte-identical (an exact logit tie that is the maximum at every step),
+and row 29 holds bf16 subnormals (a subnormal logit unless the section 1.3
+FTZ/DAZ pin flushes it). It is informative, not normative. The value below was
+produced by the C++ host build with the sequential reduction order on four
+hosts (two AVX2+FMA, two SSE4.2-only), and the 8 generated ids are `5` each
+time. Write-up: [`docs/results/2026-10-16-COVERAGE-VECTOR.md`](docs/results/2026-10-16-COVERAGE-VECTOR.md).
+
+| gen_toks | `CIS2_REF` digest | builds that agree (2026-10-16) |
+|---|---|---|
+| 8 | `4660d6c33b6c0d51529b4be43687c004c8b7c0d8804439999b5af32683528734` | g++ host build on lab hosts C and D (AVX2+FMA) and lab hosts A and H (SSE4.2 only) |
+
 ## Scale/horizon evidence: Qwen2.5-1.5B and SmolLM2-135M at longer horizons
 
 A later hardening pass confirmed x86_64/aarch64 digest equality (not
