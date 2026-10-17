@@ -30,7 +30,7 @@ leading 16 hex characters (full values in
 - inv_freq_table: `da9f6dcfde042558...`
 
 The self-check script has been run end to end by the maintainer on four of
-the maintainer's own machines (box1, box2, box3, penguin), covering x86_64
+the maintainer's own machines, covering x86_64
 with and without AVX2, and reproduced the pinned digests. The machine table,
 including a note on one machine where the weights were copied over the LAN,
 is in the [README](../README.md). Each run finishes with a summary line

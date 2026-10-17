@@ -1,5 +1,7 @@
 # CIS-2 — Canonical Floating-Point Semantics for fp32 Transformer Inference
 
+> Status (2026-10-17): CIS-2 development is paused and archived at https://github.com/Aefinity-AI/cis2-lab-archive. AEFINITY AI INC.'s current work is A.L.I.C.E. bare-metal inference with CIS-1 receipts: https://aefinityai.com
+
 An open (Apache-2.0) specification and verifiers for bit-identical fp32 LLM
 inference "receipts".
 
@@ -19,17 +21,11 @@ No unaffiliated party has reproduced it yet; every run listed below was done by
 the maintainer (see [HALL-OF-DIVERGENCE.md](HALL-OF-DIVERGENCE.md)).
 
 **Try it:** the command below, about 15 minutes, no account and no GPU.
-**Pilot it:** see [Work with us: paid pilots](#work-with-us-paid-pilots).
+**Talk to us:** see [Work with us](#work-with-us).
 
-## Work with us: paid pilots
+## Work with us
 
-AEFINITY AI INC. runs paid pilots of 4 to 6 weeks, scoped to one pipeline:
-one of your inference pipelines emits CIS-2 receipts, our verifier replays them
-on a different machine, and you get a report of every mismatch plus a
-replayable artifact. Because the evidence is small models in fp32, the report
-also states how far your stack gets. Paid pilots; contact us through the pilot page
-<https://aefinity-ai.github.io/pilot.html> or open a GitHub issue on this
-repository.
+To get in touch with AEFINITY AI INC., use <https://aefinityai.com/contact/>.
 
 ## Reproduce this in <15 minutes
 
@@ -49,7 +45,7 @@ lines; full log runs longer with build output in between):
 == machine fingerprint ==
 cpu_model: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
 isa_flags(relevant): avx,avx2,fma,sse4_2
-os: Linux aefinity-box 6.12.94+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64 GNU/Linux
+os: Linux <hostname> 6.12.94+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64 GNU/Linux
 
 == SUMMARY: 9 passed, 0 failed ==
 PASS: all reproducible pinned digests match this repository's own EXPECTED_DIGESTS.md.
@@ -69,7 +65,7 @@ The same model weights + the same input produced bit-identical numerical results
 **What it does not show**  
 That the model is aligned, refuses harmful requests, or is free of hallucinations. Those are separate properties of the model’s training and behavior.
 
-**Machines this has been run on** (all runs by the maintainer; box1 to box3 and penguin are the maintainer's own machines)
+**Machines this has been run on** (all runs by the maintainer; the machines are the maintainer's own)
 
 | Machine | CPU | ISA | OS/kernel | selfcheck.sh wall-clock (demo convenience, not throughput) | Full run |
 | --- | --- | --- | --- | --- | --- |
@@ -228,7 +224,7 @@ Both clean-room verifiers in this repository, `verify2/` (Rust) and
 Claude Code), each operating from `docs/CIS2_SPEC_v0.3b.md` alone, with no
 access to the reference implementation and no access to each
 other's work. Both agents were operated by the same sole author/operator
-(Aefinity AI Inc.) on the same day; the independence claim rests on the
+(AEFINITY AI INC.) on the same day; the independence claim rests on the
 clean-room read-access boundary enforced during each implementation pass,
 not on separate human authors or separate calendar days. Each
 implementation directory contains a `CLEANROOM_LOG.md` recording, in
