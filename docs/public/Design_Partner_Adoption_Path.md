@@ -1,4 +1,6 @@
 # Design Partner Adoption Path
+
+> Status (2026-10-17): CIS-2 development is paused and archived at https://github.com/Aefinity-AI/cis2-lab-archive. AEFINITY AI INC.'s current work is A.L.I.C.E. bare-metal inference with CIS-1 receipts: https://aefinityai.com
 **From first self-check to continuous integrity monitoring**  
 Aefinity AI · September 2026
 

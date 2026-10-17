@@ -17,16 +17,16 @@ every field except the folded-in `commit` hash and the resulting trace-chain
 digest (rebuilt from a later commit) — the underlying episode content
 (prompt, tokens, tool call, tool output) did not change.
 
-- **box1** = `aefinity-box` (Intel i5-5200U, AVX2/FMA).
-- **box2** = `aefinity-box2` (Intel Celeron N4020, no AVX2/FMA), reached at
-  `192.168.10.21`.
+- **box1** = `host-a` (Intel i5-5200U, AVX2/FMA).
+- **box2** = `host-b` (Intel Celeron N4020, no AVX2/FMA), reached at
+  `<host-ip>`.
 
 ## Table
 
 | Machine | Gen time WITH receipts | Gen time WITHOUT receipts | Receipt size | Verify time |
 |---|---|---|---|---|
-| box1 (aefinity-box) | 44.74s wall (`agent_trace gen`, K=3 N=24) | 17.84s wall (`cis_decode`, N=72, same prompt) | 1599 bytes | 40.08s wall, PASS (local, direct) |
-| box2 (aefinity-box2) | n/a — box2 never runs 2B generation (HOST RULE) | n/a | same file, copied from box1 | ALLOW (PASS), ~12m13s submit-to-ALLOW, polling-bounded (see below) |
+| box1 (host-a) | 44.74s wall (`agent_trace gen`, K=3 N=24) | 17.84s wall (`cis_decode`, N=72, same prompt) | 1599 bytes | 40.08s wall, PASS (local, direct) |
+| box2 (host-b) | n/a — box2 never runs 2B generation (HOST RULE) | n/a | same file, copied from box1 | ALLOW (PASS), ~12m13s submit-to-ALLOW, polling-bounded (see below) |
 | phone | unreachable, not attempted (no `adb` on box1 or box2) | unreachable | unreachable | unreachable |
 
 box2's verify result: per the box2 HOST RULE, box2 must never run
@@ -79,13 +79,13 @@ entries below are `n/a` for real, disclosed reasons, not omissions.
 
 | Machine | Peak RSS (gen WITH receipts) | Energy (gen WITH receipts) |
 |---|---|---|
-| box1 (aefinity-box) | 1,309,996 KB | 369.45 J (RAPL package-0 only, ~46s window) |
-| box2 (aefinity-box2) | n/a — box2 never runs 2B generation (HOST RULE); also unreachable this tick (see below) | n/a — no RAPL/energy meter on this hardware, and same HOST RULE applies |
+| box1 (host-a) | 1,309,996 KB | 369.45 J (RAPL package-0 only, ~46s window) |
+| box2 (host-b) | n/a — box2 never runs 2B generation (HOST RULE); also unreachable this tick (see below) | n/a — no RAPL/energy meter on this hardware, and same HOST RULE applies |
 | phone | n/a — unreachable (no `adb` on box1 or box2) | n/a — unreachable |
 
-box2 reachability attempted and failed both ways: `ssh box2lan` (192.168.11.69,
+box2 reachability attempted and failed both ways: `ssh box2lan` (<host-ip>,
 LAN alias) timed out at the TCP level (`Connection timed out`, network path
-down, not an auth failure); `ssh cm@192.168.10.21` (fixed WiFi alias per
+down, not an auth failure); `ssh cm@<host-ip>` (fixed WiFi alias per
 `state/BOXES.md`) reached the host but was rejected (`Permission denied
 (publickey)` — no matching private key present on this host for that path).
 Neither result is used to produce a number; both are reported as the reason
@@ -150,7 +150,7 @@ step, which the plain single-pass `cis_decode` baseline does not do. So the
 observed 2.51x (44.74s vs 17.84s) figure is an upper bound on receipt cost,
 not a clean measurement of "the hash chain alone." A closer same-model,
 single-step (K=1) isolation was already reported separately (`cost-1`,
-2026-09-17, aefinity-box): 31.2% overhead, 946 bytes/receipt, 14.865s
+2026-09-17, host-a): 31.2% overhead, 946 bytes/receipt, 14.865s
 verify. Both figures are given here rather than picking one, because they
 measure different things and neither should be read as "the" number for
 receipt overhead — it depends on episode shape (step count, re-prefill

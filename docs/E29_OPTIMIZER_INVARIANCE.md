@@ -534,7 +534,7 @@ not a tautology.
 
 | | |
 |---|---|
-| Hosts | `penguin` — ChromeOS Crostini (crosvm VM), Debian 13 trixie, x86_64, i5-10210U, 8 cores, AVX2. `cm-box2` (192.168.11.69) — bare metal, Debian 13, Celeron N4020, 2 cores, 3.7 GB, **no AVX2**. |
+| Hosts | `penguin` — ChromeOS Crostini (crosvm VM), Debian 13 trixie, x86_64, i5-10210U, 8 cores, AVX2. `box2` (`<host-ip>`) — bare metal, Debian 13, Celeron N4020, 2 cores, 3.7 GB, **no AVX2**. |
 | glibc | 2.41-12+deb13u3 on both |
 | Toolchain | `rustc 1.98.0 (88d9e12ae 2026-08-18)`, `cargo 1.98.0`, `--release --offline --features layerdump`, both hosts |
 | FP environment | `x86_64 MXCSR FTZ(bit 15)+DAZ(bit 6)`, `fpenv::pin_and_selftest()`, every run |

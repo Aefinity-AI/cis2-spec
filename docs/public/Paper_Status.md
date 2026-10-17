@@ -24,7 +24,7 @@ Cite the open-source specification and conformance suite via `CITATION.cff` / th
 
 ```
 Justin Thompson. CIS-2: a specification and verifier for bit-exact, reproducible
-LLM inference, with receipts for agent tool calls. Aefinity AI, 2026.
+LLM inference, with receipts for agent tool calls. AEFINITY AI INC., 2026.
 https://github.com/Aefinity-AI/cis2-spec
 ```
 
@@ -39,4 +39,4 @@ These artifacts are independent of any manuscript and may be used and cited on t
 - [Continuous validation experiment (2026-09-27)](../results/2026-09-27-CONTINUOUS-VALIDATION.md)
 - [CIS-2 and AI Safety](CIS2_and_AI_Safety.md)
 
-Aefinity AI Inc. · Orange, Texas
+AEFINITY AI INC. · Orange, Texas

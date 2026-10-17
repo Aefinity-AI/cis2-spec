@@ -15,6 +15,8 @@ size_categories:
 - n<1K
 ---
 
+> Status (2026-10-17): CIS-2 development is paused and archived at https://github.com/Aefinity-AI/cis2-lab-archive. AEFINITY AI INC.'s current work is A.L.I.C.E. bare-metal inference with CIS-1 receipts: https://aefinityai.com
+
 # CIS-2 — conformance vectors for bit-identical fp32 transformer inference
 
 Floating-point transformer inference is usually treated as unavoidably
@@ -115,9 +117,8 @@ check rather than a re-run of ours; that is the contribution we are asking for.
 Reproducible and deterministic inference is prior-occupied ground. Gensyn's
 `repops` demonstrates a hash-matched CPU/CUDA fp32 forward pass; Microsoft's
 RepDL provides reproducible linear-algebra operators with CPU and CUDA backends;
-vLLM and SGLang both ship batch-invariant determinism modes; and
-arXiv:2606.00279 verifies bit-exact GPU inference by emulating vendor silicon
-tables. **No "first" and no "only" claim is made here**, and none should be
+vLLM and SGLang both ship batch-invariant determinism modes.
+**No "first" and no "only" claim is made here**, and none should be
 inferred.
 
 The narrower thing CIS-2 is testing is whether a *written document* can carry
@@ -139,4 +140,4 @@ document is not yet sufficient, which is the entire property CIS-2 claims.
 
 ---
 
-Aefinity AI Inc. · Justin Brian Thompson
+AEFINITY AI INC. · Justin Brian Thompson
